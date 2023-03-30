@@ -1,0 +1,41 @@
+<html>
+  <head>
+		<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+    <script>
+			const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNvcmtzb2VrMiIsInN1YiI6NTIsImlhdCI6MTY4MDA1NTA3MywiZXhwIjoxNjgwMjI3ODczfQ.OCJFqITTPw2CHhni36WS1P9ALAZqwsLRLOns214WNlc';
+			const socket = io('ws://localhost', {
+				extraHeaders: {
+					Authorization: 'Bearer ' + token,
+				}
+			})
+			function join() {
+				socket.emit('joinChatRoom', { room_id: 95, data: 'hello' });
+			};
+
+			function exit() {
+				socket.emit('exitChatRoom', { room_id: 95, data: 'hello' });
+			};
+
+
+			socket.on('chat', (data) => {
+				console.log(data);
+			})
+
+			socket.on('error', (error) => {
+				console.log(error);
+			})
+
+			socket.on('notice', data => {
+				console.log(data);
+			})
+
+    </script>
+  </head>
+
+  <body>
+		<button onclick="join()">joinChatRoom</button>
+		<button onclick="exit()">exitChatRoom</button>
+		<button onclick="test()">testChatRoom</button>
+
+	</body>
+</html>
