@@ -2,14 +2,12 @@ import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entity/user.entity';
 import * as bcrypt from 'bcrypt';
-import { LoginService } from '../login/login.service';
-const client = require('twilio')('AC9409078cc01ffa3c66be5844f8bd145a', '53e28dea1e42e5fd0e5a143fbc8352f7');
+const client = require('twilio')('AC9409078cc01ffa3c66be5844f8bd145a', 'a80723527d59605c634c6901077190db');
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private userService: UserService,
-		private loginService: LoginService,
 
 	) {}
 
@@ -25,14 +23,16 @@ export class AuthService {
 		// const payload = { username: user.username, sub: user.unique_id };
 		return {
 			status: 'approved',
-			access_token: await this.loginService.login(user),
+			// access_token: await this.loginService.login(user),
 		};
 	}
 
 	async sendOtp(phoneNumber: string) {
+		const formatNumber = '+82' + phoneNumber.substring(1);
+		console.log(formatNumber);
 		client.verify.v2.services('VA81bb240d9cd5af57e1d1f89659a220c0')
     .verifications
-    .create({to: '+82' + phoneNumber.substring(1), channel: 'sms'})
+    .create({ to: '+821021145537', channel: 'sms' })
 		.catch(error => console.log(error));
 	}
 

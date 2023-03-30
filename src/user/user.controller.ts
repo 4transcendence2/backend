@@ -3,12 +3,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthService } from 'src/auth/auth.service';
-import { SignupService } from 'src/signup/signup.service';
 import { jwtConstants } from 'src/auth/constants';
 import { Response } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { SignupAuthGuard } from 'src/signup/signup.guard';
+import { TempJwtGuard } from 'src/auth/temp_jwt/tempJwt.guard';
 
 @Controller('user')
 export class UserController {
@@ -26,7 +24,7 @@ export class UserController {
 		return this.userService.findOne(decodedToken['username']);
 	}
 
-	@UseGuards(SignupAuthGuard)
+	@UseGuards(TempJwtGuard)
 	@Post('create')
 	async createUser(@Body() userInfo: CreateUserDto, @Res() res: Response) {
 		try {

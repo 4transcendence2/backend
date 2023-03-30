@@ -7,26 +7,25 @@ import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { TwilioModule } from 'nestjs-twilio';
-import { SignupModule } from 'src/signup/signup.module';
-import { LoginModule } from '../login/login.module';
 import { JwtStrategy } from './jwt.strategy';
-import { Login2Strategy } from 'src/login/login.strategy';
-import { SignupStrategy } from 'src/signup/signup.strategy';
+import { TempJwtModule } from './temp_jwt/tempJwt.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/user/entity/user.entity';
 
 @Module({
 	imports: [
 		forwardRef(() => UserModule),
-		SignupModule,
-		LoginModule,
 		PassportModule,
+		TempJwtModule,
 		JwtModule.register({
 			secret: jwtConstants.secret,
 			signOptions: { expiresIn: '2d' },
 		}),
 		TwilioModule.forRoot({
 			accountSid: "AC9409078cc01ffa3c66be5844f8bd145a",
-			authToken: "53e28dea1e42e5fd0e5a143fbc8352f7"
+			authToken: "a80723527d59605c634c6901077190db"
 		}),
+		TypeOrmModule.forFeature([User])
 	],
   providers: [ AuthService, LocalStrategy, JwtStrategy ],
   controllers: [ AuthController ],

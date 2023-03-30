@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { UserStatus } from "../user.status";
 
 @Entity('users')
 export class User {
@@ -6,9 +7,10 @@ export class User {
 	unique_id: number;
 
 	@Column({
-		default: 0,
+		enum: UserStatus,
+		default: 'logout',
 	})
-	status: number;
+	status: string;
 
 	@Column({
 		default: 1000,
@@ -26,11 +28,11 @@ export class User {
 	lose: number;
 
 	@Column({
-		type: "integer",
+		type: "text",
 		array: true,
 		nullable: true,
 	})
-	friend_list: number[];
+	friend_list: string[];
 
 	@Column({
 		type: "integer",

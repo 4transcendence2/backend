@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { ChatModule } from 'src/chat/chat.module';
 import { GameModule } from 'src/game/game.module';
-import { SignupModule } from 'src/signup/signup.module';
 import { WsGateWay } from './ws.gateway';
 import { WsService } from './ws.service';
 import { User } from 'src/user/entity/user.entity';
@@ -13,7 +12,6 @@ import { UserModule } from 'src/user/user.module';
 
 @Module({
 	imports: [
-		SignupModule,
 		AuthModule,
 		GameModule,
 		UserModule,

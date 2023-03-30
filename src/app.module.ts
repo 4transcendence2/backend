@@ -2,18 +2,16 @@ import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '../node_modules/@nestjs/typeorm'
 import { AuthModule } from './auth/auth.module';
-import { SignupModule } from './signup/signup.module';
 import { ChatModule } from './chat/chat.module';
 import { WsModule } from './ws/ws.module';
 import { GameModule } from './game/game.module';
-import { LoginModule } from './login/login.module';
+import { TempJwtModule } from './auth/temp_jwt/tempJwt.module';
 
 @Module({
 	imports: [
 		UserModule,
-		// SignupModule,
-		LoginModule,
 		AuthModule,
+		TempJwtModule,
 		TypeOrmModule.forRoot(
 			{
 				"type": "postgres",

@@ -15,13 +15,11 @@ export class ChatController {
 	) {}
 
 
-	// @UseGuards(AuthGuard('otp'))
 	@UseGuards(AuthGuard('jwt'))
 	@Post('create')
 	async createRoom(@Body() body: CreateChatRoomDto, @Headers() header: any, @Res() res: Response) {
 		const token = header['authorization'].split(' ')[1];
 		const decodedToken = jwt.verify(token, jwtConstants.secret);
-		// const decodedToken = jwt.verify(token, jwtConstants.otpSecret);
 		const result = await this.chatService.createRoom(body, decodedToken['username']);
 		if (result.status === 'error') res.status(400);
 		return res.json(result);

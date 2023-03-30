@@ -1,5 +1,4 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { SignupModule } from 'src/signup/signup.module';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,8 +11,7 @@ import { UserModule } from 'src/user/user.module';
 import { WsModule } from 'src/ws/ws.module';
 
 @Module({
-	imports: [ 
-		SignupModule,
+	imports: [
 		UserModule,
 		AuthModule,
 		forwardRef(() => WsModule),
