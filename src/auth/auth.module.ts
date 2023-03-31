@@ -5,7 +5,6 @@ import { UserModule } from 'src/user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
 import { TwilioModule } from 'nestjs-twilio';
 import { JwtStrategy } from './jwt.strategy';
 import { TempJwtModule } from './temp_jwt/tempJwt.module';
@@ -18,12 +17,12 @@ import { User } from 'src/user/entity/user.entity';
 		PassportModule,
 		TempJwtModule,
 		JwtModule.register({
-			secret: jwtConstants.secret,
+			secret: process.env.SECRET,
 			signOptions: { expiresIn: '2d' },
 		}),
 		TwilioModule.forRoot({
-			accountSid: "AC9409078cc01ffa3c66be5844f8bd145a",
-			authToken: "a80723527d59605c634c6901077190db"
+			accountSid: process.env.TWILIO_ACCOUNT_SID,
+			authToken: process.env.TWILIO_AUTH_TOKEN,
 		}),
 		TypeOrmModule.forFeature([User])
 	],

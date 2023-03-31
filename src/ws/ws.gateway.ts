@@ -1,6 +1,5 @@
 import { MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Socket, Server } from 'socket.io';
-import { jwtConstants } from "src/auth/constants";
 import { WsService } from "./ws.service";
 import { Repository } from "typeorm";
 import { User } from "src/user/entity/user.entity";
@@ -39,7 +38,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleConnection(client: Socket) {
 		try {
 			const token = client.handshake.headers.authorization.split(' ')[1];
-			const decodedToken = jwt.verify(token, jwtConstants.secret);
+			const decodedToken = jwt.verify(token, process.env.SECRET);
 			const username = decodedToken['username'];
 			await this.wsService.addUser(username, client.id);
 

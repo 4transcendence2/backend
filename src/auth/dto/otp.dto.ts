@@ -4,4 +4,8 @@ export class OtpDto {
 	@IsString()
 	@IsNotEmpty()
 	readonly otp: string;
+
+	@IsString()
+	@IsNotEmpty()
+	readonly phonenumber: string;
 }

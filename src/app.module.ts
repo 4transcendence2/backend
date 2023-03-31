@@ -7,6 +7,10 @@ import { WsModule } from './ws/ws.module';
 import { GameModule } from './game/game.module';
 import { TempJwtModule } from './auth/temp_jwt/tempJwt.module';
 
+
+
+
+
 @Module({
 	imports: [
 		UserModule,
@@ -15,11 +19,11 @@ import { TempJwtModule } from './auth/temp_jwt/tempJwt.module';
 		TypeOrmModule.forRoot(
 			{
 				"type": "postgres",
-				"host": "localhost",
-				"port": 5432,
-				"username": "seojin",
-				"password": "alsdl12",
-				"database": "ft_transcendence",
+				"host": process.env.POSTGRES_HOST,
+				"port": parseInt(process.env.POSTGRES_PORT),
+				"username": process.env.POSTGRES_USERNAME,
+				"password": process.env.POSTGRES_PASSWORD,
+				"database": process.env.POSTGRES_DB,
 				"synchronize": true,
 				"logging": false,
 				"entities": ["dist/**/*.entity.{ts,js}"],

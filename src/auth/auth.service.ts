@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entity/user.entity';
 import * as bcrypt from 'bcrypt';
-const client = require('twilio')('AC9409078cc01ffa3c66be5844f8bd145a', 'a80723527d59605c634c6901077190db');
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 @Injectable()
 export class AuthService {
@@ -30,17 +30,18 @@ export class AuthService {
 	async sendOtp(phoneNumber: string) {
 		const formatNumber = '+82' + phoneNumber.substring(1);
 		console.log(formatNumber);
-		client.verify.v2.services('VA81bb240d9cd5af57e1d1f89659a220c0')
+		client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
     .verifications
-    .create({ to: '+821021145537', channel: 'sms' })
+    .create({ to: formatNumber, channel: 'sms' })
 		.catch(error => console.log(error));
 	}
 
-	async checkOtp(otp: string) {
+	async checkOtp(otp: string, phoneNumber: string) {
 		try {
-			const result = await client.verify.v2.services('VA81bb240d9cd5af57e1d1f89659a220c0')
+			const formatNumber = '+82' + phoneNumber.substring(1);
+			const result = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
 				.verificationChecks
-				.create({to: '+821021145537', code: otp });
+				.create({to: formatNumber, code: otp });
 			return result;
 		} catch (error) {
 			throw new Error('Verification failed');

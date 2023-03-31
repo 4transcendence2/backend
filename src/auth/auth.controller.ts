@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { TempJwtGuard } from './temp_jwt/tempJwt.guard';
 import { TempJwtService } from './temp_jwt/tempJwt.service';
 import * as jwt from 'jsonwebtoken';
-import { jwtConstants } from './constants';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entity/user.entity';
@@ -45,7 +44,7 @@ export class AuthController {
 	@Get('get/otp/login')
 	async sendSignupOtp(@Headers() header: any) {
 		const token = header['authorization'].split(" ")[1];
-		const decodedToken = jwt.verify(token, jwtConstants.tempSecret);
+		const decodedToken = jwt.verify(token, process.env.TMP_SECRET);
 		const username = decodedToken['username'];
 		const user = await this.usersRepository.findOneBy({ username });
 		await this.authService.sendOtp(user.phone_number);
@@ -57,7 +56,7 @@ export class AuthController {
 	@Post('check/otp/login')
 	async checkLoginOtp(@Request() req, @Body() body: OtpDto, @Res() res: Response) {
 		try {
-			const result = await this.authService.checkOtp(body.otp);
+			const result = await this.authService.checkOtp(body.otp, body.phonenumber);
 			if (result.status === 'approved') {
 				return res.json({
 					status: "approved",
@@ -85,7 +84,7 @@ export class AuthController {
 	@Post('check/otp/signup')
 	async checkSignupOtp(@Request() req, @Body() body: OtpDto, @Res() res: Response) {
 		try {
-			const result = await this.authService.checkOtp(body.otp);
+			const result = await this.authService.checkOtp(body.otp, body.phonenumber);
 			if (result.status === 'approved') {
 				return res.json({
 					status: "approved",

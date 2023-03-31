@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Socket } from 'socket.io';
-import { jwtConstants } from 'src/auth/constants';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
@@ -18,8 +17,7 @@ export class WsJwtAuthGuard implements CanActivate {
 
     const token = authorizationHeader.split(' ')[1];
 		try {
-			const payload = jwt.verify(token, jwtConstants.secret);
-			// const payload = this.jwtService.verify(token, jwtConstants.otpSecret);
+			const payload = jwt.verify(token, process.env.SECRET);
 			console.log(payload);
 
 		} catch (error) {
@@ -27,6 +25,5 @@ export class WsJwtAuthGuard implements CanActivate {
 			return false;
 		}
 		
-    // client.data.user = payload;
   }
 }
