@@ -57,9 +57,14 @@ export class AuthController {
 	// 최종적으로 나머지 모든 곳에서 사용할 jwt 토큰 발행
 	@UseGuards(TempJwtGuard)
 	@Post('check/otp/login')
-	async checkLoginOtp(@Request() req, @Body() body: OtpDto, @Res() res: Response) {
+	async checkLoginOtp(@Headers() header:any, @Request() req, @Body() body: OtpDto, @Res() res: Response) {
+		const token = header['authorization'].split(" ")[1];
+		const decodedToken = jwt.verify(token, process.env.TMP_SECRET);
+		const username = decodedToken['username'];
+		const user = await this.usersRepository.findOneBy({ username });
+
 		try {
-			const result = await this.authService.checkOtp(body.otp, body.phonenumber);
+			const result = await this.authService.checkOtp(body.otp, user.phone_number);
 			if (result.status === 'approved') {
 				return res.json({
 					status: "approved",
