@@ -1,3 +1,4 @@
+require('dotenv').config();
 import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entity/user.entity';

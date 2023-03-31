@@ -4,6 +4,7 @@ import { CreateChatRoomDto } from './dto/chat-room-create.dto';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import * as jwt from 'jsonwebtoken';
+require('dotenv').config();
 
 
 @Controller('chat')

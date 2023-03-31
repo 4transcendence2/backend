@@ -11,6 +11,7 @@ import * as jwt from 'jsonwebtoken';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entity/user.entity';
+require('dotenv').config();
 
 @Controller('auth')
 export class AuthController {

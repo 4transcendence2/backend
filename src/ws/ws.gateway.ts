@@ -9,6 +9,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { ChatService } from "src/chat/chat.service";
 import { Inject, forwardRef } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
+require('dotenv').config();
 
 @WebSocketGateway({
 	cors: { origin: '*' },

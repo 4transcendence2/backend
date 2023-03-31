@@ -6,6 +6,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { TempJwtGuard } from 'src/auth/temp_jwt/tempJwt.guard';
+require('dotenv').config();
 
 @Controller('user')
 export class UserController {

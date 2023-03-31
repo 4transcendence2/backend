@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
+require('dotenv').config();
 
 @Injectable()
 export class WsJwtAuthGuard implements CanActivate {

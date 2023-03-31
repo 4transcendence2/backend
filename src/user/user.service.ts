@@ -22,7 +22,7 @@ export class UserService {
 	}
 
 	async createUser(userInfo: CreateUserDto) {
-		const hashedPassword = await bcrypt.hash(userInfo.password, 10);
+		const hashedPassword = await bcrypt.hash(userInfo.password, parseInt(process.env.HASH_KEY));
 		const newUser: User = this.usersRepository.create({
       username: userInfo.username,
 			password: hashedPassword,
