@@ -13,7 +13,7 @@ require('dotenv').config();
 			signOptions: { expiresIn: '60h' },
 		}),
 		PassportModule,
-		forwardRef(() =>UserModule),
+		forwardRef(() =>UserModule ),
 	],
 	providers: [ TempJwtStrategy, TempJwtService ],
 	exports: [ TempJwtService ],

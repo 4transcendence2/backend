@@ -11,6 +11,7 @@ import * as jwt from 'jsonwebtoken';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entity/user.entity';
+import { SignupJwtService } from './signup_jwt/signupJwt.service';
 require('dotenv').config();
 
 @Controller('auth')
@@ -19,6 +20,7 @@ export class AuthController {
 		private authService: AuthService,
 		private tempJwtService: TempJwtService,
 		private jwtService: JwtService,
+		private signupJwtService: SignupJwtService,
 		
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
@@ -81,15 +83,16 @@ export class AuthController {
 	}
 
 
-	// 최종적으로 데이터베이스에 유저정보를 저장할 수 있게 하는 otp(TempJwt) 발급
+	// 최종적으로 데이터베이스에 유저정보를 저장할 수 있게 하는 otp(SignupJwt) 발급
 	@Post('check/otp/signup')
 	async checkSignupOtp(@Request() req, @Body() body: OtpDto, @Res() res: Response) {
+		console.log(body);
 		try {
 			const result = await this.authService.checkOtp(body.otp, body.phonenumber);
 			if (result.status === 'approved') {
 				return res.json({
 					status: "approved",
-					access_token: await this.tempJwtService.login(req.user),
+					access_token: await this.signupJwtService.login(body.otp, body.phonenumber),
 				});
 			}
 

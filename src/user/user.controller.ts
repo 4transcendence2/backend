@@ -5,7 +5,7 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { TempJwtGuard } from 'src/auth/temp_jwt/tempJwt.guard';
+import { SignupJwtGuard } from 'src/auth/signup_jwt/signupJwt.guard';
 require('dotenv').config();
 
 @Controller('user')
@@ -24,7 +24,7 @@ export class UserController {
 		return this.userService.findOne(decodedToken['username']);
 	}
 
-	@UseGuards(TempJwtGuard)
+	@UseGuards(SignupJwtGuard)
 	@Post('create')
 	async createUser(@Body() userInfo: CreateUserDto, @Res() res: Response) {
 		try {

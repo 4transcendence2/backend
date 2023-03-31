@@ -11,14 +11,6 @@ export class TempJwtService {
 		private jwtService: JwtService,
 	) {}
 
-	async validateUser(id: string, password: string): Promise<User> {
-		const user = await this.userService.findOne(id);
-		if (user && await bcrypt.compare(password, user.password)) {
-			return user;
-		}
-		return null;
-	}
-
 	async login(user: User) {
 		const payload = { username: user.username, sub:user.unique_id }
 		return {

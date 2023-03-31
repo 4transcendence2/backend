@@ -1,0 +1,57 @@
+@	PROTOCOL:	HTTP
+@	PORT		:	80
+
+
+----------------------------------------------------------
+@	METHOD:	POST
+@	URI		:	/auth/login
+@ DESC	: 1차 로그인 요청
+
+@ 요청시
+@ Body data - json
+{
+	"username": string,	(필수)
+	"password": string	(필수)
+}
+
+
+@ 반환값 (성공시)
+@ Body data - json
+{
+	"status": "approved",
+	"access_token": {tooken value} (2차 로그인 핸드폰 인증 번호 요청시 필요한 토큰. 무분별한 인증 요청 방지를 위함)
+}
+
+
+@ 반환값 (실패시)
+@ Body data - json
+{
+	"statusCode": 401,
+	"message": "Unauthorized"
+}
+----------------------------------------------------------
+
+
+@	METHOD: GET
+@	URI		:	/auth/get/otp/login
+@ DESC	:	2차 로그인 핸드폰 인증 번호 요청
+
+
+@ 요청시
+@ Header data
+Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환받은 token value, 띄어쓰기까지 정확하게 보내야 함.)
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------
+
+

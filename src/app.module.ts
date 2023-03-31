@@ -6,6 +6,7 @@ import { ChatModule } from './chat/chat.module';
 import { WsModule } from './ws/ws.module';
 import { GameModule } from './game/game.module';
 import { TempJwtModule } from './auth/temp_jwt/tempJwt.module';
+import { SignupJwtModule } from './auth/signup_jwt/signupJwt.module';
 require('dotenv').config();
 
 
@@ -18,6 +19,7 @@ console.log
 		UserModule,
 		AuthModule,
 		TempJwtModule,
+		SignupJwtModule,
 		TypeOrmModule.forRoot(
 			{
 				"type": "postgres",

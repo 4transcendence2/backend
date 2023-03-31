@@ -10,6 +10,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { TempJwtModule } from './temp_jwt/tempJwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
+import { SignupJwtModule } from './signup_jwt/signupJwt.module';
 require('dotenv').config();
 
 @Module({
@@ -17,15 +18,14 @@ require('dotenv').config();
 		forwardRef(() => UserModule),
 		PassportModule,
 		TempJwtModule,
+		SignupJwtModule,
 		JwtModule.register({
 			secret: process.env.SECRET,
 			signOptions: { expiresIn: '2d' },
 		}),
 		TwilioModule.forRoot({
 			accountSid: process.env.TWILIO_ACCOUNT_SID,
-			// accountSid: "AC9409078cc01ffa3c66be5844f8bd145a",
 			authToken: process.env.TWILIO_AUTH_TOKEN,
-			// authToken: "a80723527d59605c634c6901077190db",
 		}),
 		TypeOrmModule.forFeature([User])
 	],
