@@ -18,7 +18,6 @@
 
 
 @ 반환값 (성공시)
-@ Body data - json
 {
 	"status": "approved",
 	"access_token": {tooken value} (2차 로그인 핸드폰 인증 번호 요청시 필요한 토큰. 무분별한 인증 요청 방지를 위함)
@@ -26,7 +25,6 @@
 
 
 @ 반환값 (실패시)
-@ Body data - json
 {
 	"statusCode": 401,
 	"message": "Unauthorized"
@@ -43,7 +41,7 @@
 
 @ 요청시
 @ Header data
-Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환받은 token value, 띄어쓰기까지 정확하게 보내야 함.)
+Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받은 token value, 띄어쓰기까지 정확하게 보내야 함.)
 
 
 ----------------------------------------------------------
@@ -53,27 +51,145 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환받�
 @	URI		:	/auth/check/otp/login
 @	DESC	:	2차 로그인 핸드폰 인증 번호 확인
 
+@요청시
+@ Body data - json
+{
+	"otp": string
+}
 
 
+@ 반환값 (성공시)
+{
+	"status": "approved",
+	"access_token": {tooken value} (소켓 연결할 때 같이 전달해줘야 연결이 됩니다. 이후 모든 http 요청에도 사용해야합니다.)
+}
+
+
+@ 반환값 (실패시)
+{
+	"status": "error"
+	"detail": "Invalid Token" || "Invalid Check Request"
+}
+
 
 ----------------------------------------------------------
-----------------------------------------------------------
-----------------------------------------------------------
-----------------------------------------------------------
-----------------------------------------------------------
-----------------------------------------------------------
+
+
+@ METHOD:	POST
+@	URI		:	/auth/get/otp/signup
+@	DESC	:	회원가입 핸드폰 인증 번호 요청
+
+@	요청시
+@ Body data - json
+{
+	"phonenumber": string
+}
+
+
 ----------------------------------------------------------
 
+
+@	METHOD:	POST
+@	URI		:	/auth/check/otp/signup
+@	DESC	:	회원가입 핸드폰 인증 번호 확인
+
+@	요청시
+@	Body data - json
+{
+	"phonenumber": string
+	"otp": string
+}
+
+@ 반환값 (성공시)
+{
+	"status": "approved",
+	"access_token": {tooken value} (/user/create 요청시 함께 넣어줘야 할 토큰)
+}
+
+@ 반환값 (실패시)
+{
+	"status": "error"
+	"detail": "Invalid Token" || "Invalid Check Request"
+}
+
+
+----------------------------------------------------------
+
+
+@	METHOD:	POST
+@	URI		:	/user/create
+@	DESC	:	유저 생성 요청
+
+@	요청시
+@	Body data - json
+{
+	"username": string,	(아이디)
+	"password": string,	(비밀번호)
+	"nickname":	string, (닉네임)
+	"phonenumber": string, (폰번호)
+}
+
+@	반환값 (성공시)
+{
+	"status":	"approved",
+	"detail": "User is created"
+}
+
+@	반환값 (실패시, username 중복, nickname 중복, 토큰이 없는 경우, 요청시 프로퍼티가 잘못된 경우)
+{
+	"status": "error",
+	"detail": {상황에 따른 에러 내용}
+}
+
+
+----------------------------------------------------------
+
+
+@	METHOD:	GET
+@	URI		:	/user/profile
+@	DESC	:	요청을 한 유저의 모든 프로필 정보
+
+@ 반환값 (성공시)
+{
+	// 아직 user 테이블 요소가 미정.
+	// 현재는 해당 유저의 모든 정보가 반환됩니다.
+	// 다른 유저 데이터 요청 API는 구현중
+	// 게임 기록 데이터는, 추후 게임 서버 구현할 때 추가할 예정입니다.
+}
+
+@	반환값 (실패시, 토큰이 없는경우)
+{
+	"statusCode": 401,
+	"detail":	"Unauthorized"
+}
+
+
+----------------------------------------------------------
 
 
 @ METHOD:	POST
 @	URI		:	/auth/get/otp/signup
 @	DESC	:	회원가입시 핸드폰 인증 번호 요청
 
-@ 요청시
-@ Body data - json
+@	요청시
+@	Body data - json
 {
-	"phonenumber": string	(필수)
+	"status": string(public, private, protected 셋 중 하나여야 합니다.)
+	"title": string,
+	"password": string (protected인 경우만)
+}
+
+@ 반환값 (성공시)
+{
+	"status":	"approved",
+	"detail":	"Chat room is created"
+}
+
+
+@	반환값 (실패시, 프로퍼티 조건 미충족, 토큰 미 첨부시)
+{
+	"status":	"error",
+	"detail":	{에러내용}
 }
 
 
@@ -90,6 +206,66 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환받�
 
 
 
+@	PROTOCOL:	WS
+@	PORT		:	80
+@	CAUTION	:	2 FA 인증 후 받은 토큰을 소켓 연결 할 때 꼭 함께 첨부해주세요.
+const socket = io('ws://localhost', {
+	extraHeaders: {
+		Authorization: 'Bearer ' + token,
+	}
+})
 
+
+
+@	EMIT_EVENTS ( 보내는 이벤트 )
+
+// 서버로부터 응답을 받아야 하는 이벤트가 있고 받지 않아도 되는 이벤트가 있습니다.
+// 어떤식으로 이벤트에 대한 결과값을 주고 받을지 상의를 해볼 필요가 있습니다.
+// 아래는 일단 발생시킬 수 있는 이벤트들 입니다.
+
+socket.emit('joinChatRoom', {
+	"room_id": number,
+	"password": string (protected 채팅방인 경우)
+})
+
+socket.emit('exitChatRoom', {
+	"room_id": number,
+})
+
+socket.emit('chat', {
+	"room_id": number,
+	"content": string,
+})
+
+socket.emit('kick', {
+	"room_id": number,
+	"username": string (퇴장 시킬 유저네임)
+})
+
+socket.emit('ban', {
+	"room_id": number,
+	"username": string (밴 시킬 유저네임)
+})
+
+
+socket.emit('unban', {
+	"room_id": number,
+	"username": string (언밴 시킬 유저네임)
+})
+
+
+socket.emit('mute, {
+	"room_id": number,
+	"username": string (mute 시킬 유저네임)
+})
+
+
+socket.emit('unmute', {
+	"room_id": number,
+	"username": string (unmute 시킬 유저네임)
+})
+
+
+// 차단 기능 미구현
 
 

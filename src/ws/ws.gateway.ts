@@ -137,7 +137,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 
 
-
 		// 유저, 채팅방 데이터베이스 업데이트
 		await this.chatService.addUser(room_id, client, this.server);
 
@@ -171,7 +170,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 		// 채팅방의 멤버인지 확인
 		if (!(await this.chatService.isExistUser(room_id, client))) return;
-
 
 		// 유저, 채팅방 데이터베이스 업데이트
 		await this.chatService.removeUser(room_id, client, this.server);

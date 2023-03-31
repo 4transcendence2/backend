@@ -285,7 +285,7 @@ export class ChatService {
 			})
 		})
 
-		server.emit('updateRooms', chatRoomList);
+		server.emit('updateChatRooms', chatRoomList);
 	}
 
 	async updateMyRooms(client: Socket) {
@@ -305,7 +305,7 @@ export class ChatService {
 				})
 			})
 		}
-		client.emit('updateMyRooms', roomList);
+		client.emit('updateMyChatRooms', roomList);
 	}
 
 	async updateRoomsToOne(client: Socket) {

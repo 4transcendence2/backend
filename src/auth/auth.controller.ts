@@ -82,7 +82,7 @@ export class AuthController {
 			res.status(404);
 			return res.json({
 				status: "error",
-				detail: 'Invaild Verification Check Request'
+				detail: 'Invalid Check Request'
 			})
 		}
 	}

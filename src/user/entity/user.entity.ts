@@ -68,11 +68,6 @@ export class User {
 	password: string;
 
 	@Column({
-		nullable: true
-	})
-	intra_id: string;
-
-	@Column({
 		unique: true,
 	})
 	nickname: string;
@@ -87,13 +82,4 @@ export class User {
 	})
 	phone_number: string;
 
-	@Column({
-		nullable: true,
-	})
-	chat_socket_ip: string;
-
-	@Column({
-		nullable: true,
-	})
-	game_socket_ip: string;
 }

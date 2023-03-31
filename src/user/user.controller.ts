@@ -17,7 +17,7 @@ export class UserController {
 	
 
 	@UseGuards(AuthGuard('jwt'))
-	@Get('profile/')
+	@Get('profile')
 	findOne(@Headers() header: any) {
 		const token = header['authorization'].split(" ")[1];
 		const decodedToken = jwt.verify(token, process.env.SECRET);
@@ -32,6 +32,7 @@ export class UserController {
 			res.status(201);
 			return res.json({
 				status: 'approved',
+				detail: "User is created",
 			});
 		} catch (error) {
 			res.status(400);
