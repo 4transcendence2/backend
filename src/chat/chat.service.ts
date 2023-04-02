@@ -245,8 +245,8 @@ export class ChatService {
 
 		server.to('room' + room_id).emit('updateRoom', {
 			joinningUsers: roomUserList,
-			muteUsers: chatRoom.mute_list,
-			banUsers: chatRoom.ban_list,
+			muteList: chatRoom.mute_list,
+			banList: chatRoom.ban_list,
 		});
 	}
 
@@ -322,6 +322,20 @@ export class ChatService {
 
 	async banResult(client: Socket, status: string, detail?: string) {
 		client.emit('banResult', {
+			status: status,
+			detail: detail,
+		})
+	}
+
+	async unbanResult(client: Socket, status: string, detail?: string) {
+		client.emit('unbanResult', {
+			status: status,
+			detail: detail,
+		})
+	}
+
+	async muteResult(client: Socket, status: string, detail?: string) {
+		client.emit('muteResult', {
 			status: status,
 			detail: detail,
 		})
