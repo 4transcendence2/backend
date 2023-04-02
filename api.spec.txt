@@ -65,10 +65,16 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 }
 
 
-@ 반환값 (실패시)
+@ 반환값 (실패시) 인증번호 요청 없이 바로 check 요청한 경우
 {
 	"status": "error"
-	"detail": "Invalid Token" || "Invalid Check Request"
+	"detail": "Invalid Check Request"
+}
+
+@ 반환값 (실패시) 인즌벙호는 요청했지만 인증번호가 잘못 된 경우
+{
+	"status": "pending"
+	"detail": "Invalid Token"
 }
 
 
