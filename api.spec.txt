@@ -12,22 +12,24 @@
 @ 요청시
 @ Body data - json
 {
-	"username": string,	(필수)
-	"password": string	(필수)
+  "username": string,	(필수)
+  "password": string	(필수)
 }
 
 
 @ 반환값 (성공시)
+@ StatusCode 201
 {
-	"status": "approved",
-	"access_token": {tooken value} (2차 로그인 핸드폰 인증 번호 요청시 필요한 토큰. 무분별한 인증 요청 방지를 위함)
+  "status": "approved",
+  "access_token": {tooken value} (2차 로그인 핸드폰 인증 번호 요청시 필요한 토큰. 무분별한 인증 요청 방지를 위함)
 }
 
 
 @ 반환값 (실패시)
+@ StatusCode 401
 {
-	"statusCode": 401,
-	"message": "Unauthorized"
+  "statusCode": 401,
+  "message": "Unauthorized"
 }
 
 
@@ -44,6 +46,11 @@
 Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받은 token value, 띄어쓰기까지 정확하게 보내야 함.)
 
 
+@ 토큰이 없는경우
+@ statusCode 401, Unauthorized
+
+
+
 ----------------------------------------------------------
 
 
@@ -54,27 +61,30 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 @요청시
 @ Body data - json
 {
-	"otp": string
+  "otp": string
 }
 
 
 @ 반환값 (성공시)
+@ StatusCode 200
 {
-	"status": "approved",
-	"access_token": {tooken value} (소켓 연결할 때 같이 전달해줘야 연결이 됩니다. 이후 모든 http 요청에도 사용해야합니다.)
+  "status": "approved",
+  "access_token": {tooken value} (소켓 연결할 때 같이 전달해줘야 연결이 됩니다. 이후 모든 http 요청에도 사용해야합니다.)
 }
 
 
 @ 반환값 (실패시) 인증번호 요청 없이 바로 check 요청한 경우
+@ StatusCode 404
 {
-	"status": "error"
-	"detail": "Invalid Check Request"
+  "status": "error"
+  "detail": "Invalid Check Request"
 }
 
 @ 반환값 (실패시) 인즌벙호는 요청했지만 인증번호가 잘못 된 경우
+@ StatusCode 401
 {
-	"status": "pending"
-	"detail": "Invalid Token"
+  "status": "pending"
+  "detail": "Invalid Token"
 }
 
 
@@ -88,8 +98,23 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 @	요청시
 @ Body data - json
 {
-	"phonenumber": string
+  "phonenumber": string
 }
+
+
+@ 반환값 (프로퍼티에 문제가 있는경우)
+{
+	"statusCode": 400,
+	"message": [
+		"phonenumber should not be empty",
+		"phonenumber must be a string"
+	],
+	"error": "Bad Request"
+}
+
+
+@ 반환값 ( 성공시 )
+@ StatusCode 201
 
 
 ----------------------------------------------------------
@@ -102,22 +127,31 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 @	요청시
 @	Body data - json
 {
-	"phonenumber": string
-	"otp": string
+  "phonenumber": string
+  "otp": string
 }
 
 @ 반환값 (성공시)
+@ StatusCode 200
 {
-	"status": "approved",
-	"access_token": {tooken value} (/user/create 요청시 함께 넣어줘야 할 토큰)
+  "status": "approved",
+  "access_token": {tooken value} (/user/create 요청시 함께 넣어줘야 할 토큰)
 }
 
-@ 반환값 (실패시)
+
+@ 반환값 (실패시) 인증번호 요청 없이 바로 check 요청한 경우
+@ StatusCode 404
 {
-	"status": "error"
-	"detail": "Invalid Token" || "Invalid Check Request"
+  "status": "error"
+  "detail": "Invalid Check Request"
 }
 
+@ 반환값 (실패시) 인즌벙호는 요청했지만 인증번호가 잘못 된 경우
+@ StatusCode 401
+{
+  "status": "pending"
+  "detail": "Invalid Token"
+}
 
 ----------------------------------------------------------
 
@@ -129,22 +163,22 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 @	요청시
 @	Body data - json
 {
-	"username": string,	(아이디)
-	"password": string,	(비밀번호)
-	"nickname":	string, (닉네임)
-	"phonenumber": string, (폰번호)
+  "username": string,	(아이디)
+  "password": string,	(비밀번호)
+  "nickname":	string, (닉네임)
+  "phonenumber": string, (폰번호)
 }
 
 @	반환값 (성공시)
 {
-	"status":	"approved",
-	"detail": "User is created"
+  "status":	"approved",
+  "detail": "User is created"
 }
 
 @	반환값 (실패시, username 중복, nickname 중복, 토큰이 없는 경우, 요청시 프로퍼티가 잘못된 경우)
 {
-	"status": "error",
-	"detail": {상황에 따른 에러 내용}
+  "status": "error",
+  "detail": {상황에 따른 에러 내용}
 }
 
 
@@ -157,16 +191,16 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 
 @ 반환값 (성공시)
 {
-	// 아직 user 테이블 요소가 미정.
-	// 현재는 해당 유저의 모든 정보가 반환됩니다.
-	// 다른 유저 데이터 요청 API는 구현중
-	// 게임 기록 데이터는, 추후 게임 서버 구현할 때 추가할 예정입니다.
+  // 아직 user 테이블 요소가 미정.
+  // 현재는 해당 유저의 모든 정보가 반환됩니다.
+  // 다른 유저 데이터 요청 API는 구현중
+  // 게임 기록 데이터는, 추후 게임 서버 구현할 때 추가할 예정입니다.
 }
 
 @	반환값 (실패시, 토큰이 없는경우)
 {
-	"statusCode": 401,
-	"detail":	"Unauthorized"
+  "statusCode": 401,
+  "detail":	"Unauthorized"
 }
 
 
@@ -180,22 +214,22 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 @	요청시
 @	Body data - json
 {
-	"status": string(public, private, protected 셋 중 하나여야 합니다.)
-	"title": string,
-	"password": string (protected인 경우만)
+  "status": string(public, private, protected 셋 중 하나여야 합니다.)
+  "title": string,
+  "password": string (protected인 경우만)
 }
 
 @ 반환값 (성공시)
 {
-	"status":	"approved",
-	"detail":	"Chat room is created"
+  "status":	"approved",
+  "detail":	"Chat room is created"
 }
 
 
 @	반환값 (실패시, 프로퍼티 조건 미충족, 토큰 미 첨부시)
 {
-	"status":	"error",
-	"detail":	{에러내용}
+  "status":	"error",
+  "detail":	{에러내용}
 }
 
 
@@ -216,62 +250,234 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 @	PORT		:	80
 @	CAUTION	:	2 FA 인증 후 받은 토큰을 소켓 연결 할 때 꼭 함께 첨부해주세요.
 const socket = io('ws://localhost', {
-	extraHeaders: {
-		Authorization: 'Bearer ' + token,
-	}
+  extraHeaders: {
+    Authorization: 'Bearer ' + token,
+  }
 })
 
 
 
-@	EMIT_EVENTS ( 보내는 이벤트 )
+----------------------------------------------------------
 
-// 서버로부터 응답을 받아야 하는 이벤트가 있고 받지 않아도 되는 이벤트가 있습니다.
-// 어떤식으로 이벤트에 대한 결과값을 주고 받을지 상의를 해볼 필요가 있습니다.
-// 아래는 일단 발생시킬 수 있는 이벤트들 입니다.
+
+@ 채팅방 입장 이벤트
 
 socket.emit('joinChatRoom', {
-	"room_id": number,
-	"password": string (protected 채팅방인 경우)
+  "room_id": number,
+  "password": string (protected 채팅방인 경우)
 })
+
+socket.on('joinChatRoomResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
+
+"status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
+
+
+----------------------------------------------------------
+
+
+@ 채팅방 퇴장 이벤트 (뒤로 가기가 아니라, 완전히 나가기)
 
 socket.emit('exitChatRoom', {
-	"room_id": number,
+  "room_id": number,
 })
+
+
+socket.on('exitChatRoomResult', data)
+data: {
+  "status": "error" || "approved" ( error는 개발자에게 알림)
+  "detail": string
+}
+
+
+----------------------------------------------------------
+
+
+@ 채팅 이벤트
 
 socket.emit('chat', {
-	"room_id": number,
-	"content": string,
+  "room_id": number,
+  "content": string,
 })
+
+// 채팅 이벤트를 발생시켰을 때 결과를 반환받을 이벤트
+socket.on('chatResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
+
+// 채팅방에 채팅이 발생했을 때 이벤트
+socket.on('chat', data)
+data: {
+  "status": "plain" || "notice" (plain은 일반 채팅, notice는 입장, 퇴장 알림 등등)
+  "from": string,
+  "content": string,
+}
+
+"status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
+
+
+----------------------------------------------------------
+
+
+@ 퇴장 이벤트
 
 socket.emit('kick', {
-	"room_id": number,
-	"username": string (퇴장 시킬 유저네임)
+  "room_id": number,
+  "username": string (퇴장 시킬 유저네임)
 })
+
+
+socket.on('kickResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
+
+"status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
+
+// 구현 중.
+// 추방 당했을 때, 이벤트
+socket.on('kick', data)
+
+
+----------------------------------------------------------
+
+
+@ ban 이벤트
 
 socket.emit('ban', {
-	"room_id": number,
-	"username": string (밴 시킬 유저네임)
+  "room_id": number,
+  "username": string (밴 시킬 유저네임)
 })
 
+socket.on('banResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
+
+"status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
+
+// 구현 중.
+// ban 당했을 때, 이벤트
+socket.on('ban', data)
+
+
+----------------------------------------------------------
+
+
+@ unban 이벤트
 
 socket.emit('unban', {
-	"room_id": number,
-	"username": string (언밴 시킬 유저네임)
+  "room_id": number,
+  "username": string (언밴 시킬 유저네임)
 })
 
+socket.on('unbanResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
+
+"status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
+
+
+----------------------------------------------------------
+
+
+@ mute 이벤트
 
 socket.emit('mute, {
-	"room_id": number,
-	"username": string (mute 시킬 유저네임)
+  "room_id": number,
+  "username": string (mute 시킬 유저네임)
 })
 
+socket.on('muteResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
 
-socket.emit('unmute', {
-	"room_id": number,
-	"username": string (unmute 시킬 유저네임)
-})
+"status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
 
 
-// 차단 기능 미구현
+// 구현중
+// mute 당했을 때, 이벤트
+socket.on('mute', data)
 
 
+----------------------------------------------------------
+
+
+// 차단 기능 구현중
+
+
+----------------------------------------------------------
+
+
+@ 채팅방 목록 업데이트 이벤트
+
+socket.on('updateChatRoomList', data)
+data: {
+	status: string,
+	title: string,
+	room_id: number,
+} []
+
+
+----------------------------------------------------------
+
+
+@ 본인 채팅방 목록 업데이트 이벤트
+
+socket.on('updateMyChatRoomList', data)
+data: {
+	title: string,
+	room_id: number,
+} []
+
+
+----------------------------------------------------------
+
+
+@ 친구 업데이트
+
+socket.on('updateFriend', data)
+data: {
+	username: string,
+	status: string,
+} []
+
+
+----------------------------------------------------------
+
+
+@ 게임방 목록 업데이트
+// 구현중
+
+
+----------------------------------------------------------
+
+
+@ 게임방 상태 업데이트
+// 구현중
+
+
+----------------------------------------------------------
+
+
+
+
+
+
+----------------------------------------------------------
+----------------------------------------------------------
+----------------------------------------------------------
+----------------------------------------------------------
+----------------------------------------------------------
+----------------------------------------------------------

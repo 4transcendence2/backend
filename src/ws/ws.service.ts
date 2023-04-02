@@ -108,7 +108,6 @@ export class WsService {
 				if ((user.friend_list.find(elem => elem === username)) !== undefined) {
 					let tmpList: {
 						username: string,
-						nickname: string,
 						status: string,
 					} [] = [];
 
@@ -116,7 +115,6 @@ export class WsService {
 						let tmpUser = await this.userService.findOne(elem2);
 						tmpList.push({
 							username: tmpUser.username,
-							nickname: tmpUser.nickname,
 							status: tmpUser.status,
 						})
 					})

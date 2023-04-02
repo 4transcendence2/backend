@@ -29,7 +29,9 @@ export class AuthService {
 		client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
     .verifications
     .create({ to: formatNumber, channel: 'sms' })
-		.catch(error => console.log(error));
+		.catch(error => {
+			console.log(error);
+		});
 	}
 
 	async checkOtp(otp: string, phoneNumber: string) {

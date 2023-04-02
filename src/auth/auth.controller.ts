@@ -66,6 +66,7 @@ export class AuthController {
 		try {
 			const result = await this.authService.checkOtp(body.otp, user.phone_number);
 			if (result.status === 'approved') {
+				res.status(200);
 				return res.json({
 					status: "approved",
 					access_token: this.jwtService.sign(req.user),
@@ -95,6 +96,7 @@ export class AuthController {
 		try {
 			const result = await this.authService.checkOtp(body.otp, body.phonenumber);
 			if (result.status === 'approved') {
+				res.status(200);
 				return res.json({
 					status: "approved",
 					access_token: await this.signupJwtService.login(body.otp, body.phonenumber),
