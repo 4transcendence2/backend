@@ -168,8 +168,8 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 
 
 @ METHOD:	POST
-@	URI		:	/auth/get/otp/signup
-@	DESC	:	회원가입시 핸드폰 인증 번호 요청
+@	URI		:	/chat/create
+@	DESC	:	채팅방 만들기 요청
 
 @	요청시
 @	Body data - json
