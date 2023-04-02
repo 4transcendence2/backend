@@ -102,6 +102,7 @@ export class AuthController {
 			}
 
 			if (result.status === 'pending') {
+				res.status(401);
 				return res.json({
 					status: "pending",
 					detail: "Invalid Token",
