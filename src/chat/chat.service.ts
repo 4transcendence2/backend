@@ -79,7 +79,7 @@ export class ChatService {
 
 			const client = server.sockets.sockets.get(clientId);
 			client.join('room' + room_id);
-			await this.updateRooms(server)
+			await this.updateChatRoomList(server);
 
 		} catch(error) {
 			const detail: string = newRoom.status === 'protected' ? 'Password is required for protected room.' : 'Password is not required for public or private room.';
@@ -95,32 +95,16 @@ export class ChatService {
 		};
 	}
 
-	async isExist(room_id: number, client?: Socket): Promise<boolean> {
-		if (await this.findRoomById(room_id) === undefined) {
-			if (client !== undefined) {
-				client.emit('notice', {
-					status: "notice",
-					detail: "존재하지 않는 채팅방입니다."
-				})
-			}
-			return false;
-		}
+	async isExist(room_id: number): Promise<boolean> {
+		if (await this.findRoomById(room_id) === undefined) return false;
 		return true;
 	}
 
-	async isExistUser(room_id: number, client?: Socket): Promise<boolean> {
+	async isExistUser(room_id: number, client: Socket): Promise<boolean> {
 		const username = await this.wsService.findUserByClientId(client.id);
 		const chatRoom = await this.chatRoomRepository.findOneBy({ room_id });
 
-		if (chatRoom.user_list.find(element => element === username) === undefined) {
-			if (client !== undefined) {
-				client.emit('error', {
-					status: "error",
-					detail: "이 유저는 해당 방의 멤버가 아닙니다.",
-				})
-			}
-			return false;
-		}
+		if (chatRoom.user_list.find(element => element === username) === undefined) return false;
 		return true;
 
 	}
@@ -144,13 +128,7 @@ export class ChatService {
 		const chatRoom = await this.findRoomById(room_id);
 		if (chatRoom.ban_list === null || chatRoom.ban_list.length === 0) return false;
 
-		if (chatRoom.ban_list.find(element => element === username) !== undefined) {
-			client.emit('notice', {
-				status: "notice",
-				detail: "입장 목록에 등록되어 입장이 불가능합니다."
-			})
-			return true;
-		}
+		if (chatRoom.ban_list.find(element => element === username) !== undefined) return true;
 		return false;
 	}
 
@@ -171,7 +149,7 @@ export class ChatService {
 		// 방에 마지막 남은 유저가 한 명(소유자)인 경우
 		if (chatRoom.user_list.length === 1) {
 			await this.chatRoomRepository.delete({ room_id: room_id });
-			await this.updateRooms(server);
+			await this.updateChatRoomList(server);
 			return;
 		}
 
@@ -181,7 +159,8 @@ export class ChatService {
 
 		server.to('room' + room_id).emit('chat', {
 			status: "notice",
-			detail: `${username}님이 퇴장하셨습니다.`,
+			from: 'server',
+			content: `${username}님이 퇴장하셨습니다.`,
 		})
 
 
@@ -198,10 +177,11 @@ export class ChatService {
 			}
 			server.to('room' + room_id).emit('chat', {
 				status: "notice",
-				detail: `${chatRoom.owner}님이 새로운 소유자가 되었습니다.`,
+				from: 'server',
+				content: `${chatRoom.owner}님이 새로운 소유자가 되었습니다.`,
 			})
 		}
-		
+
 		// 나가는 유저가 관리자인 경우
 		if (await this.isAdmin(username, room_id)) {
 			index = chatRoom.admin_list.findIndex(element => element === username);
@@ -233,7 +213,8 @@ export class ChatService {
 		client.join('room' + room_id);
 		server.to('room' + room_id).emit('chat', {
 			status: "notice",
-			detail: `${username}님이 입장하셨습니다.`,
+			from: 'server',
+			content: `${username}님이 입장하셨습니다.`,
 		})
 	}
 
@@ -269,7 +250,7 @@ export class ChatService {
 		});
 	}
 
-	async updateRooms(server: Server) {
+	async updateChatRoomList(server: Server, client?: Socket) {
 		const chatRooms = await this.chatRoomRepository.find();
 		const chatRoomList: {
 			status: string,
@@ -285,10 +266,13 @@ export class ChatService {
 			})
 		})
 
-		server.emit('updateChatRooms', chatRoomList);
+		if (client === undefined)
+			server.emit('updateChatRoomList', chatRoomList);
+		else
+			client.emit('updateChatRoomList', chatRoomList);
 	}
 
-	async updateMyRooms(client: Socket) {
+	async updateMyChatRoomList(client: Socket) {
 		const username = await this.wsService.findUserByClientId(client.id);
 		const user = await this.userService.findOne(username);
 		const roomList: {
@@ -305,25 +289,42 @@ export class ChatService {
 				})
 			})
 		}
-		client.emit('updateMyChatRooms', roomList);
+		client.emit('updateMyChatRoomList', roomList);
 	}
 
-	async updateRoomsToOne(client: Socket) {
-		const chatRooms = await this.chatRoomRepository.find();
-		const chatRoomList: {
-			status: string,
-			title: string,
-			room_id: number,
-		} [] = [];
-
-		chatRooms.forEach(room => {
-			chatRoomList.push({
-				status: room.status,
-				title: room.title,
-				room_id: room.room_id,
-			})
+	async joinChatRoomResult(client: Socket, status: string, detail?: string) {
+		client.emit('joinChatRoomResult', {
+			status: status,
+			detail: detail,
 		})
-
-		client.emit('updateRooms', chatRoomList);
 	}
+
+	async exitChatRoomResult(client: Socket, status: string, detail?: string) {
+		client.emit('exitChatRoomResult', {
+			status: status,
+			detail: detail,
+		})
+	}
+
+	async chatResult(client: Socket, status: string, detail?: string) {
+		client.emit('chatResult', {
+			status: status,
+			detail: detail,
+		})
+	}
+
+	async kickResult(client: Socket, status: string, detail?: string) {
+		client.emit('kickResult', {
+			status: status,
+			detail: detail,
+		})
+	}
+
+	async banResult(client: Socket, status: string, detail?: string) {
+		client.emit('banResult', {
+			status: status,
+			detail: detail,
+		})
+	}
+
 }

@@ -2,7 +2,8 @@ require('dotenv').config();
 import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entity/user.entity';
-import * as bcrypt from 'bcrypt';
+// import * as bcrypt from 'bcrypt';
+const bcrypt = require('bcrypt');
 import { format } from 'path';
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 

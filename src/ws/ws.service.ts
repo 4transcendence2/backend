@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ChatRoom } from 'src/chat/entity/chat-room.entity';
-import { User } from 'src/user/entity/user.entity';
-import { Repository } from 'typeorm';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
+// import { InjectRepository } from '@nestjs/typeorm';
+// import { ChatRoom } from 'src/chat/entity/chat-room.entity';
+// import { User } from 'src/user/entity/user.entity';
+// import { Repository } from 'typeorm';
 import { Socket, Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
+import { ChatService } from 'src/chat/chat.service';
 
 interface connectedUserInfo {
 	username: string,
@@ -17,23 +18,28 @@ const userList: connectedUserInfo[] = [];
 export class WsService {
 
 	constructor(
-		@InjectRepository(ChatRoom)
-		private chatRoomRepository: Repository<ChatRoom>,
+		// @InjectRepository(ChatRoom)
+		// private chatRoomRepository: Repository<ChatRoom>,
 
-		@InjectRepository(User)
-		private usersRepository: Repository<User>,
+		// @InjectRepository(User)
+		// private usersRepository: Repository<User>,
 
 		private userService: UserService,
+
+		@Inject(forwardRef(() => ChatService))
+		private chatService: ChatService,
 	) {}
 
-	async addUser(username: string, clientId: string) {
+	async addUser(username: string, clientId: string): Promise<boolean>{
 		const result = userList.find(element => element.username === username);
 		if (result === undefined) {
 			userList.push({
 				username: username,
 				clientId: clientId,
 			});
+			return true;
 		}
+		return false;
 	}
 
 	async deleteUser(clientId: string) {
@@ -64,13 +70,7 @@ export class WsService {
 	async isLogin(client?: Socket, username?: string): Promise<boolean> {
 		if (client !== undefined) {
 			const username = await this.findUserByClientId(client.id);
-			if (username === undefined) {
-				client.emit('notice', {
-					status: "notice",
-					detail: "접속중인 유저가 아닙니다.",
-				})
-				return false;
-			}
+			if (username === undefined) return false;
 			return true;
 		}
 
@@ -95,10 +95,9 @@ export class WsService {
 			})
 		});
 		server.emit('updateuUsers', tmpList);
-
 	}
 
-	async updateFriends(client: Socket, server: Server) {
+	async updateFriend(server: Server, client: Socket) {
 		const list = await this.getConnectingUser();
 		const username = await this.findUserByClientId(client.id);
 
@@ -122,10 +121,20 @@ export class WsService {
 						})
 					})
 					let socket = server.of('/').sockets.get(await this.findClientIdByUsername(element.username));
-					socket.emit('updateFriends', tmpList);
+					socket.emit('updateFriend', tmpList);
 				}
 			}
 		})
-
 	}
+
+	async	initUpdate(server: Server, client: Socket) {
+		await this.chatService.updateChatRoomList(server, client);
+		await this.chatService.updateMyChatRoomList(client);
+		await this.updateFriend(server, client);
+		// DM LIST
+		// GAME ROOM LIST
+	}
+
+ 
+
 }

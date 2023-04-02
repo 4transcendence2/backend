@@ -11,9 +11,6 @@ require('dotenv').config();
 
 
 
-
-console.log
-
 @Module({
 	imports: [
 		UserModule,

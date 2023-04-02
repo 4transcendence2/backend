@@ -16,15 +16,17 @@ export class UserController {
 
 	
 
-	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(AuthGuard('jwt'))
 	@Get('profile')
 	findOne(@Headers() header: any) {
-		const token = header['authorization'].split(" ")[1];
-		const decodedToken = jwt.verify(token, process.env.SECRET);
-		return this.userService.findOne(decodedToken['username']);
+		// const token = header['authorization'].split(" ")[1];
+		// const decodedToken = jwt.verify(token, process.env.SECRET);
+		// return this.userService.findOne(decodedToken['username']);
+		const username = '한글닉네임';
+		return this.userService.findOne(username);
 	}
 
-	@UseGuards(SignupJwtGuard)
+	// @UseGuards(SignupJwtGuard)
 	@Post('create')
 	async createUser(@Body() userInfo: CreateUserDto, @Res() res: Response) {
 		try {
