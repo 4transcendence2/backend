@@ -1,25 +1,26 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/user.create.dto';
 import { User } from './entity/user.entity';
 import { Socket } from 'socket.io';
-// import * as bcrypt from 'bcrypt';
 const bcrypt = require('bcrypt');
+import { join } from 'path';
 
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
+
 	) {}
 
 	async findAll(): Promise<User[]> {
-		return this.usersRepository.find();
+		return await this.usersRepository.find();
 	}
 
 	async findOne(username: string): Promise<User> {
-		return this.usersRepository.findOneBy({ username });
+		return await this.usersRepository.findOneBy({ username });
 	}
 
 	async createUser(userInfo: CreateUserDto) {
@@ -27,8 +28,8 @@ export class UserService {
 		const newUser: User = this.usersRepository.create({
       username: userInfo.username,
 			password: hashedPassword,
-			nickname: userInfo.nickname,
 			phone_number: userInfo.phonenumber,
+			avatar_path: join('public', 'default.png'),
     });
 
     await this.usersRepository.insert(newUser);
@@ -67,6 +68,13 @@ export class UserService {
 				user.chat_room_list.push(room_id);
 			}
 		}
+		await this.usersRepository.save(user);
+	}
+
+	async updateAvatar(username: string, file_path: string) {
+		const user = await this.findOne(username);
+
+		user.avatar_path = file_path;
 		await this.usersRepository.save(user);
 	}
 }

@@ -9,3 +9,9 @@ export class OtpDto {
 	@IsNotEmpty()
 	readonly phonenumber: string;
 }
+
+export class LoginOtpDto {
+	@IsString()
+	@IsNotEmpty()
+	readonly otp: string;
+}

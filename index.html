@@ -29,6 +29,33 @@
 				console.log(data);
 			})
 
+			async function submitForm() {
+				req.open('POST', 'http://localhost/user/avatar', true);
+				req.setRequestHeader('Authorization', token);
+				req.setRequestHeader('Content-Type', 'multipart/form-data');
+				
+				const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfaWQiOjUyLCJ1c2VybmFtZSI6InNvcmtzb2VrMiIsImlhdCI6MTY4MDQ5MjAzOSwiZXhwIjoxNjgwNjY0ODM5fQ.Mu63apzXx2zsTUKA31IvpU_s2JfrsWKXQwyYxBT4J4U";
+				const file = (document.getElementById('image')).files[0];
+				const formData = new FormData();
+				formData.append('avatar', file);
+				fetch('http://localhost/user/avatar', {
+					method: 'POST',
+					body: formData,
+					headers: {
+						'Authorization': token,
+					}
+				}).then(res => {
+					console.log(res);
+				}).catch(err => {
+					console.log(err);
+				})
+				// console.log(formData);
+				// console.log(files);
+				// const blob = new Blob()
+				// console.log(await files.arrayBuffer());
+				// req.send(await files.arrayBuffer());
+			}
+
     </script>
   </head>
 
@@ -37,5 +64,12 @@
 		<button onclick="exit()">exitChatRoom</button>
 		<button onclick="test()">testChatRoom</button>
 
+
+		<form action="http://localhost/user/avatar" id="myForm" method="Post" enctype="multipart/form-data">
+			<label for="image">Select a PNG image to upload:</label><br>
+			<input id="image" type="file" id="image" name="image"><br><br>
+			<input type="submit" value="Upload" onclick="submitForm()">
+		</form>
+		<button value="CLICK" onclick="submitForm()">CLICK HERE</button>
 	</body>
 </html>

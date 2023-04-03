@@ -186,22 +186,118 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 
 
 @	METHOD:	GET
-@	URI		:	/user/profile
-@	DESC	:	요청을 한 유저의 모든 프로필 정보
+@	URI		:	/user/profile/:username
+@	DESC	:	username의 프로필
 
 @ 반환값 (성공시)
 {
-  // 아직 user 테이블 요소가 미정.
-  // 현재는 해당 유저의 모든 정보가 반환됩니다.
-  // 다른 유저 데이터 요청 API는 구현중
-  // 게임 기록 데이터는, 추후 게임 서버 구현할 때 추가할 예정입니다.
+	"username": "sorksoek2",
+	"status": "logout",
+	"rating": 1000,
+	"win": 0,
+	"lose": 0,
+	"game_history": [
+		{
+			"red": "user1",
+			"blue": "sorksoek2",
+			"red_score": 11,
+			"blue_score": 9,
+			"winner": "user1",
+			"type": "rank"
+		},
+		{
+			"red": "sorksoek2",
+			"blue": "eleel",
+			"red_score": 2,
+			"blue_score": 11,
+			"winner": "elee1",
+			"type": "arcade"
+		},
+		{
+			"red": "sorksoek2",
+			"blue": "damon",
+			"red_score": 11,
+			"blue_score": 4,
+			"winner": "sorksoek2,
+			"type": "normal"
+		}
+	]
 }
 
-@	반환값 (실패시, 토큰이 없는경우)
+@	반환값 (실패시, 토큰이 없는 경우)
+@ Statuscode: 401
 {
-  "statusCode": 401,
+  "status": "error",
   "detail":	"Unauthorized"
 }
+
+@	반환값 (실패시, 없는 유저인 경우)
+@ Statuscode: 400
+{
+	"status": "error",
+	"detail": "Not exist user"
+}
+
+
+----------------------------------------------------------
+
+
+@	METHOD:	GET
+@	URI		:	/user/avatar/:username
+@	DESC	:	username의 아바타 이미지 요청
+
+@	반환값 (실패시, 토큰이 없는 경우)
+@ StatusCode: 401
+{
+  "status": "error,
+  "detail":	"Unauthorized"
+}
+
+@ 반환값 (실패시, 파일이 손상된 경우)
+@ Statuscode: 404
+{
+	"status": "error",
+	"detail": detail: "This user's profile file is damaged. Try again after update user's porifle."
+}
+
+@	반환값 (실패시, 없는 유저인 경우)
+@ StatusCode: 401
+{
+	"status": "error",
+	"detail": "Not exist user"
+}
+
+
+----------------------------------------------------------
+
+@	METHOD:	POST
+@	URI		:	/user/avatar
+@	DESC	:	해당 유저의 아바파를 변경
+
+
+!--------!
+20000byte 미만,
+input 태그의 name value가 꼭 "avatar" 이어야 합니다.
+png file만 업로드 됩니다.
+!--------!
+
+// 예시
+const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfaWQiOjUyLCJ1c2VybmFtZSI6InNvcmtzb2VrMiIsImlhdCI6MTY4MDQ5MjAzOSwiZXhwIjoxNjgwNjY0ODM5fQ.Mu63apzXx2zsTUKA31IvpU_s2JfrsWKXQwyYxBT4J4U";
+const file = (document.getElementById('image')).files[0];
+const formData = new FormData();
+formData.append('avatar', file);   // formData로 데이터 전송하는 경우, 첫 번째 인자에 주목해주세요.
+fetch('http://localhost/user/avatar', {
+	method: 'POST',
+	body: formData,
+	headers: {
+		'Authorization': token,
+	}
+}).then(res => {
+	console.log(res);
+}).catch(err => {
+	console.log(err);
+})
+
 
 
 ----------------------------------------------------------

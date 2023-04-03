@@ -85,13 +85,10 @@ export class WsService {
 	async updateUsers(server: Server) {
 		let tmpList: {
 			username: string,
-			nickname: string,
 		}[] = [];
 		(await this.getConnectingUser()).forEach(async element => {
-			let nickname = (await this.userService.findOne(element.username)).nickname;
 			tmpList.push({
 				username: element.username,
-				nickname: nickname,
 			})
 		});
 		server.emit('updateuUsers', tmpList);

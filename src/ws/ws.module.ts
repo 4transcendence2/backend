@@ -6,7 +6,6 @@ import { GameModule } from 'src/game/game.module';
 import { WsGateWay } from './ws.gateway';
 import { WsService } from './ws.service';
 import { User } from 'src/user/entity/user.entity';
-import { Repository } from 'typeorm';
 import { ChatRoom } from 'src/chat/entity/chat-room.entity';
 import { UserModule } from 'src/user/user.module';
 
@@ -19,7 +18,7 @@ import { UserModule } from 'src/user/user.module';
 		TypeOrmModule.forFeature([ User, ChatRoom ]),
 	],
 	
-	providers: [ WsGateWay, WsService, Repository ],
+	providers: [ WsGateWay, WsService ],
 	exports: [ WsGateWay, WsService ],
 
 })

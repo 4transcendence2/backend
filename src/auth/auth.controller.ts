@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { PhoneNumberDto } from './dto/phone-number.dto';
 import { Response } from 'express'
-import { OtpDto } from './dto/otp.dto';
+import { OtpDto, LoginOtpDto } from './dto/otp.dto';
 import { JwtService } from '@nestjs/jwt';
 import { TempJwtGuard } from './temp_jwt/tempJwt.guard';
 import { TempJwtService } from './temp_jwt/tempJwt.service';
@@ -57,7 +57,7 @@ export class AuthController {
 	// 최종적으로 나머지 모든 곳에서 사용할 jwt 토큰 발행
 	@UseGuards(TempJwtGuard)
 	@Post('check/otp/login')
-	async checkLoginOtp(@Headers() header:any, @Request() req, @Body() body: OtpDto, @Res() res: Response) {
+	async checkLoginOtp(@Headers() header:any, @Request() req, @Body() body: LoginOtpDto, @Res() res: Response) {
 		const token = header['authorization'].split(" ")[1];
 		const decodedToken = jwt.verify(token, process.env.TMP_SECRET);
 		const username = decodedToken['username'];

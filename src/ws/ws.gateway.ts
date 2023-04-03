@@ -66,7 +66,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			// 친구, 채팅방, 내 채팅방, DM, 게임방 업데이트
 			await this.wsService.initUpdate(this.server, client);
 
-			console.log(`Client ${username} with Socket ID ${client.id} is connected.`);
+			// console.log(`Client ${username} with Socket ID ${client.id} is connected.`);
 
 		} catch (error) {
 			client.emit('error', {
@@ -86,7 +86,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		this.usersRepository.save(user)
 		await this.wsService.deleteUser(client.id);
 		await this.wsService.updateFriend(this.server, client);
-		console.log(`Client ${username} with Socket ID ${client.id} is disconnected.`);
+		// console.log(`Client ${username} with Socket ID ${client.id} is disconnected.`);
 	}
 
 

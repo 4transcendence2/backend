@@ -40,23 +40,6 @@ export class User {
 		nullable: true,
 	})
 	chat_room_list: number[];
-
-	@Column({
-		type: "text",
-		array: true,
-		nullable: true,
-	})
-	block_list: string[];
-
-	@Column({
-		default: 0,
-	})
-	game_history_id: number;
-
-	@Column({
-		default: 0,
-	})
-	current_game_id: number;
 	
 	@Column({
 		unique: true,
@@ -66,11 +49,6 @@ export class User {
 	@Column({
 	})
 	password: string;
-
-	@Column({
-		unique: true,
-	})
-	nickname: string;
 
 	@Column({
 		nullable: true,
