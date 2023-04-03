@@ -178,7 +178,6 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 {
   "username": string,	(아이디)
   "password": string,	(비밀번호)
-  "nickname":	string, (닉네임)
   "phonenumber": string, (폰번호)
 }
 
