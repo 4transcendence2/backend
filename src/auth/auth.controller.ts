@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Request, UseGuards, Body, Res, Headers} from '@nestjs/common';
+import { Controller, Get, Post, Request, UseGuards, Param, Body, Res, Headers} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { PhoneNumberDto } from './dto/phone-number.dto';
@@ -12,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { SignupJwtService } from './signup_jwt/signupJwt.service';
+import { UserService } from 'src/user/user.service';
 require('dotenv').config();
 
 @Controller('auth')
@@ -21,6 +22,8 @@ export class AuthController {
 		private tempJwtService: TempJwtService,
 		private jwtService: JwtService,
 		private signupJwtService: SignupJwtService,
+
+		private userService: UserService,
 		
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
@@ -34,6 +37,21 @@ export class AuthController {
 		return await this.tempJwtService.login(req.user);
 	}
 
+
+	@Get('exist/:username')
+	async isExist(@Param('username') username: string, @Res() res: Response) {
+		const result =  await this.userService.isExist(username);
+
+		if (result) {
+			return res.json({
+				status: true
+			})
+		}
+
+		return res.json({
+			status: false
+		})
+	}
 
 	//회원가입 할 때, 핸드폰 otp 요청
 	@Post('get/otp/signup')

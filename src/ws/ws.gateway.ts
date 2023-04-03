@@ -297,7 +297,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 
 		// 킥 대상이 존재하는 유저인지 확인
-		if (!(await this.userService.isExist(toUsername, client))) {
+		if (!(await this.userService.isExist(toUsername))) {
 			await this.chatService.kickResult(client, 'error', '대상이 존재하지 않습니다.');
 			return;
 		}
@@ -376,7 +376,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 
 		// 밴 대상이 존재하는 유저인지 확인
-		if (!(await this.userService.isExist(toUsername, client))) {
+		if (!(await this.userService.isExist(toUsername))) {
 			await this.chatService.banResult(client, 'error', '존재하지 않는 대상입니다.');
 			return;
 		}
@@ -461,7 +461,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 
 		// 언밴 대상이 존재하는 유저인지 확인
-		if (!(await this.userService.isExist(toUsername, client))) {
+		if (!(await this.userService.isExist(toUsername))) {
 			await this.chatService.unbanResult(client, 'error', '존재하지 않는 대상입니다.');
 			return;
 		}
@@ -543,7 +543,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 
 		// mute 대상이 존재하는 유저인지 확인
-		if (!(await this.userService.isExist(toUsername, client))) {
+		if (!(await this.userService.isExist(toUsername))) {
 			await this.chatService.muteResult(client, 'error', '존재하지 않는 대상입니다.');
 			return;
 		}

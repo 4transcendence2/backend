@@ -45,7 +45,6 @@ export class UserController {
 	}
 
 
-
 	@UseGuards(AuthGuard('jwt'))
 	@Get('avatar/:username')
 	async getAvatar(@Param('username') username, @Res() res: Response) {
@@ -113,5 +112,6 @@ export class UserController {
 			})
 		}
 	}
+
 
 }

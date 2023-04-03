@@ -35,12 +35,8 @@ export class UserService {
     await this.usersRepository.insert(newUser);
 	}
 
-	async isExist(username: string, client: Socket): Promise<boolean> {
-		if (await this.findOne(username) === undefined) {
-			client.emit("notice", {
-				status: "notice",
-				detail: "존재하지 않는 유저입니다."
-			})
+	async isExist(username: string): Promise<boolean> {
+		if (await this.findOne(username) === null) {
 			return false;
 		}
 		return true;
