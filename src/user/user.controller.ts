@@ -21,7 +21,7 @@ export class UserController {
 	) { }
 
 
-	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(AuthGuard('jwt'))
 	@Get('profile/:username')
 	async getProfile(@Param('username') username, @Res() res: Response) {
 		const user = await this.userService.findOne(username);
@@ -45,7 +45,7 @@ export class UserController {
 	}
 
 
-	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(AuthGuard('jwt'))
 	@Get('avatar/:username')
 	async getAvatar(@Param('username') username, @Res() res: Response) {
 		const user = await this.userService.findOne(username);
@@ -72,7 +72,7 @@ export class UserController {
 	}
 
 
-	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(AuthGuard('jwt'))
 	@Post('avatar')
 	@UseInterceptors(FileInterceptor('avatar'))
 	async updateAvatar(@UploadedFile(
@@ -94,7 +94,7 @@ export class UserController {
 	}
 
 
-	@UseGuards(SignupJwtGuard)
+	// @UseGuards(SignupJwtGuard)
 	@Post('create')
 	async createUser(@Body() userInfo: CreateUserDto, @Res() res: Response) {
 		try {

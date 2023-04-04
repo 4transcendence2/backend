@@ -15,7 +15,7 @@ export class ChatController {
 	) {}
 
 
-	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(AuthGuard('jwt'))
 	@Post('create')
 	async createRoom(@Body() body: CreateChatRoomDto, @Headers() header: any, @Res() res: Response) {
 		const token = header['authorization'].split(' ')[1];
