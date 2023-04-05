@@ -1,7 +1,6 @@
 @	PROTOCOL:	HTTP
 @	PORT		:	80
 
-
 ----------------------------------------------------------
 
 
@@ -315,36 +314,6 @@ fetch('http://localhost/user/avatar', {
 })
 
 
-
-----------------------------------------------------------
-
-
-@ METHOD:	POST
-@	URI		:	/chat/create
-@	DESC	:	채팅방 만들기 요청
-
-@	요청시
-@	Body data - json
-{
-  "status": string(public, private, protected 셋 중 하나여야 합니다.)
-  "title": string,
-  "password": string (protected인 경우만)
-}
-
-@ 반환값 (성공시)
-{
-  "status":	"approved",
-  "detail":	"Chat room is created"
-}
-
-
-@	반환값 (실패시, 프로퍼티 조건 미충족, 토큰 미 첨부시)
-{
-  "status":	"error",
-  "detail":	{에러내용}
-}
-
-
 ----------------------------------------------------------
 
 
@@ -367,6 +336,25 @@ const socket = io('ws://localhost', {
   }
 })
 
+
+
+----------------------------------------------------------
+
+
+@ 채팅방 만들기 이벤트
+socket.emit('createChatRoom', {
+	"status": "public" || "protected" || "private" || "dm"
+	"title": string,
+	"password": string( protected 인 경우 ),
+	"opponent": string( dm인 경우 상대방의 username을 넣어주세요)
+})
+
+
+socket.on('createChatRoomResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
 
 
 ----------------------------------------------------------
@@ -526,6 +514,24 @@ socket.on('mute', data)
 ----------------------------------------------------------
 
 
+@ 친구 추가 이벤트
+
+socket.emit('addFriend', {
+	"username": string (친구 추가 할 상대방 유저네임)
+})
+
+
+
+socket.on('addFriendResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
+
+
+----------------------------------------------------------
+
+
 // 차단 기능 구현중
 
 
@@ -564,6 +570,17 @@ data: {
 	username: string,
 	status: string,
 } []
+
+
+----------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 ----------------------------------------------------------
