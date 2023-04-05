@@ -15,7 +15,7 @@ export class TempJwtService {
 		const payload = { username: user.username, sub:user.unique_id }
 		return {
 			status: 'approved',
-			access_token: this.jwtService.sign(payload),
+			accessToken: this.jwtService.sign(payload),
 		}
 	}
 }

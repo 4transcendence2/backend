@@ -218,6 +218,9 @@ export class ChatService {
 		})
 	}
 
+
+
+	
 	async updateRoom(room_id: number, server: Server) {
 		const roomUserList: {
 			username: string,
@@ -255,14 +258,14 @@ export class ChatService {
 		const chatRoomList: {
 			status: string,
 			title: string,
-			room_id: number,
+			roomId: number,
 		} [] = [];
 
 		chatRooms.forEach(room => {
 			chatRoomList.push({
 				status: room.status,
 				title: room.title,
-				room_id: room.room_id,
+				roomId: room.room_id,
 			})
 		})
 
@@ -277,7 +280,7 @@ export class ChatService {
 		const user = await this.userService.findOne(username);
 		const roomList: {
 			title: string,
-			room_id: number,
+			roomId: number,
 		}[] = []
 		if (user.chat_room_list === null || user.chat_room_list.length === 0) {}
 		else {
@@ -285,12 +288,16 @@ export class ChatService {
 				let chatRoom = await this.findRoomById(room_id);
 				roomList.push({
 					title: chatRoom.title,
-					room_id: chatRoom.room_id,
+					roomId: chatRoom.room_id,
 				})
 			})
 		}
 		client.emit('updateMyChatRoomList', roomList);
 	}
+
+
+
+
 
 	async joinChatRoomResult(client: Socket, status: string, detail?: string) {
 		client.emit('joinChatRoomResult', {

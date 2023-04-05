@@ -31,7 +31,7 @@ export class AuthController {
 
 
 	//아이디 비번 확인 후, TempJwt 토큰을 발행
-	// @UseGuards(AuthGuard('local'))
+	@UseGuards(AuthGuard('local'))
 	@Post('login')
 	async login(@Request() req) {
 		return await this.tempJwtService.login(req.user);
@@ -61,7 +61,7 @@ export class AuthController {
 
 
 	//로그인 할 때, 핸드폰 otp 요청
-	// @UseGuards(TempJwtGuard)
+	@UseGuards(TempJwtGuard)
 	@Get('get/otp/login')
 	async sendSignupOtp(@Headers() header: any) {
 		const token = header['authorization'].split(" ")[1];
@@ -73,7 +73,7 @@ export class AuthController {
 
 
 	// 최종적으로 나머지 모든 곳에서 사용할 jwt 토큰 발행
-	// @UseGuards(TempJwtGuard)
+	@UseGuards(TempJwtGuard)
 	@Post('check/otp/login')
 	async checkLoginOtp(@Headers() header:any, @Request() req, @Body() body: LoginOtpDto, @Res() res: Response) {
 		const token = header['authorization'].split(" ")[1];
@@ -87,7 +87,7 @@ export class AuthController {
 				res.status(200);
 				return res.json({
 					status: "approved",
-					access_token: this.jwtService.sign(req.user),
+					accessToken: this.jwtService.sign(req.user),
 				});
 			}
 
@@ -117,7 +117,7 @@ export class AuthController {
 				res.status(200);
 				return res.json({
 					status: "approved",
-					access_token: await this.signupJwtService.login(body.otp, body.phonenumber),
+					accessToken: await this.signupJwtService.login(body.otp, body.phonenumber),
 				});
 			}
 

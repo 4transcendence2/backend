@@ -6,6 +6,7 @@ import { User } from './entity/user.entity';
 import { Socket } from 'socket.io';
 const bcrypt = require('bcrypt');
 import { join } from 'path';
+const fs = require('fs');
 
 @Injectable()
 export class UserService {
@@ -25,11 +26,14 @@ export class UserService {
 
 	async createUser(userInfo: CreateUserDto) {
 		const hashedPassword = await bcrypt.hash(userInfo.password, parseInt(process.env.HASH_KEY));
+		const defaultAvatar = await fs.readFileSync(join(__dirname, '../..', 'public', 'default.png'), (err, data) => {
+			if (err) console.log(err);
+		});
 		const newUser: User = this.usersRepository.create({
       username: userInfo.username,
 			password: hashedPassword,
 			phone_number: userInfo.phonenumber,
-			avatar_path: join('public', 'default.png'),
+			avatar: defaultAvatar,
     });
 
     await this.usersRepository.insert(newUser);
@@ -67,10 +71,11 @@ export class UserService {
 		await this.usersRepository.save(user);
 	}
 
-	async updateAvatar(username: string, file_path: string) {
+	async updateAvatar(username: string, file: Buffer) {
 		const user = await this.findOne(username);
 
-		user.avatar_path = file_path;
+		user.avatar = file;
 		await this.usersRepository.save(user);
 	}
+
 }

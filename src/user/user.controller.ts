@@ -6,7 +6,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { SignupJwtGuard } from 'src/auth/signup_jwt/signupJwt.guard';
-import { join } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GameService } from 'src/game/game.service';
 const fs = require('fs');
@@ -18,12 +17,11 @@ export class UserController {
 		private userService: UserService,
 		private gameService: GameService,
 
-	) { }
+	) {}
 
-
-	// @UseGuards(AuthGuard('jwt'))
+	@UseGuards(AuthGuard('jwt'))
 	@Get('profile/:username')
-	async getProfile(@Param('username') username, @Res() res: Response) {
+	async getProfile(@Headers() header, @Param('username') username, @Res() res: Response) {
 		const user = await this.userService.findOne(username);
 
 		if (user === null) {
@@ -33,6 +31,21 @@ export class UserController {
 				detail: "Not exist username",
 			})
 		}
+
+		const token = header['authorization'].split(" ")[1];
+		const decodedToken = jwt.verify(token, process.env.TMP_SECRET);
+		const reqUsername = decodedToken['username'];
+
+		let relation: string;
+		if (reqUsername === username) {
+			relation = 'myself';
+		} else {
+			const reqUser = await this.userService.findOne(reqUsername);
+			const result = reqUser.friend_list.find(element => element === username);
+			relation = result !== undefined ? 'friend' : 'others'
+
+		}
+
 
 		return res.json({
 			username: user.username,
@@ -40,14 +53,18 @@ export class UserController {
 			rating: user.rating,
 			win: user.win,
 			lose: user.lose,
-			game_history: await this.gameService.findHistory(user.username, 10),
+			relation: relation,
+			gameHistory: await this.gameService.findHistory(user.username, 10),
 		})
 	}
 
 
-	// @UseGuards(AuthGuard('jwt'))
+	@UseGuards(AuthGuard('jwt'))
 	@Get('avatar/:username')
 	async getAvatar(@Param('username') username, @Res() res: Response) {
+		
+		
+		
 		const user = await this.userService.findOne(username);
 		if (user === null) {
 			res.status(400);
@@ -56,23 +73,13 @@ export class UserController {
 				detail: "Not exist username",
 			})
 		}
-
-		const filePath = join(__dirname, '..', '..', 'public', user.avatar_path);
-		fs.access(filePath, fs.constants.F_OK, (err) => {
-			if (err) {
-				res.status(404);
-				return res.json({
-					status: "error",
-					detail: "This user's profile file is damaged. Try again after update user's porifle.",
-				})
-			} else {
-				res.sendFile(filePath);
-			}
-		})
+		
+		res.setHeader('Content-Type', 'image/png');
+		res.send(user.avatar);
 	}
 
 
-	// @UseGuards(AuthGuard('jwt'))
+	@UseGuards(AuthGuard('jwt'))
 	@Post('avatar')
 	@UseInterceptors(FileInterceptor('avatar'))
 	async updateAvatar(@UploadedFile(
@@ -87,14 +94,11 @@ export class UserController {
 		const token = header['authorization'].split(" ")[1];
 		const decodedToken = jwt.verify(token, process.env.SECRET);
 		const username = decodedToken['username'];
-		fs.writeFile(join(__dirname, '..', '..', 'public', 'avatar', username + '.png'), data, (err) => {
-			if (err) console.log(err);
-		})
-		await this.userService.updateAvatar(username, join('avatar', username + '.png'));
+		await this.userService.updateAvatar(username, data);
 	}
 
 
-	// @UseGuards(SignupJwtGuard)
+	@UseGuards(SignupJwtGuard)
 	@Post('create')
 	async createUser(@Body() userInfo: CreateUserDto, @Res() res: Response) {
 		try {

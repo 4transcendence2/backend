@@ -15,3 +15,4 @@ export class GameController {
 		await this.gameService.createRoom();
 	}
 }
+

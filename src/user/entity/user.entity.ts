@@ -51,12 +51,13 @@ export class User {
 	password: string;
 
 	@Column({
-		nullable: true,
+		type: "bytea",
+		nullable: false,
 	})
-	avatar_path: string;
+	avatar: Buffer;
 
 	@Column({	
-		unique: true,
+		nullable: false,
 	})
 	phone_number: string;
 

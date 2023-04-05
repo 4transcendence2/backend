@@ -34,9 +34,6 @@ require('dotenv').config();
 				"entities": ["dist/**/*.entity.{ts,js}"],
 			}
 		),
-		ServeStaticModule.forRoot({
-			rootPath: join(__dirname, '..', 'public', 'avatar')
-		}),
 		ChatModule,
 		WsModule,
 		GameModule,

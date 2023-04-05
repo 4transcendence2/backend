@@ -25,9 +25,8 @@ export class GameService {
 		try {
 			const result = await this.gameHistoryRepository
 			.createQueryBuilder('history')
-			.select(['history.red', 'history.blue', 'history.red_score', 'history.blue_score', 'history.winner', 'history.type'])
 			.where('history.red LIKE :username OR history.blue LIKE :username', { username: `%${username}%`})
-			.orderBy('history.unique_id', 'DESC')
+			.orderBy('history.uniqueId', 'DESC')
 			.take(howmay)
 			.getMany();
 

@@ -96,7 +96,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('joinChatRoom')
 	async joinChatRoom(client: Socket, body: any) {
 
-		const room_id = body.room_id;
+		const room_id = body.roomId;
 
 		// 로그인 중인 유저인지 확인
 		if (!(await this.wsService.isLogin(client))) {
@@ -164,7 +164,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@SubscribeMessage('exitChatRoom')
 	async exitChatRoom(client: Socket, body: any) {
-		const room_id = body.room_id;
+		const room_id = body.roomId;
 
 		// room_id 프로퍼티 확인
 		if (room_id === undefined) {
@@ -208,7 +208,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('chat')
 	async chat(client: Socket, body: any) {
 		const username = await this.wsService.findUserByClientId(client.id);
-		const room_id = body.room_id;
+		const room_id = body.roomId;
 		const content = body.content;
 
 
@@ -268,7 +268,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async kick(client: Socket, body: any) {
 		const fromUsername = await this.wsService.findUserByClientId(client.id);
 		const toUsername = body.username;
-		const room_id = body.room_id;
+		const room_id = body.roomId;
 
 
 		// 접속중인 유저의 요청인지 확인.
@@ -347,7 +347,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async ban(client: Socket, body: any) {
 		const fromUsername = await this.wsService.findUserByClientId(client.id);
 		const toUsername = body.username;
-		const room_id = body.room_id;
+		const room_id = body.roomId;
 
 
 		// 접속중인 유저의 요청인지 확인.
@@ -433,7 +433,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async unBan(client: Socket, body: any) {
 		const fromUsername = await this.wsService.findUserByClientId(client.id);
 		const toUsername = body.username;
-		const room_id = body.room_id;
+		const room_id = body.roomId;
 
 
 		// 접속중인 유저의 요청인지 확인.
@@ -514,7 +514,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async mute(client: Socket, body: any) {
 		const fromUsername = await this.wsService.findUserByClientId(client.id);
 		const toUsername = body.username;
-		const room_id = body.room_id;
+		const room_id = body.roomId;
 
 
 		// 접속중인 유저의 요청인지 확인.
@@ -605,7 +605,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	// async unmute(client: Socket, body: any) {
 	// 	const fromUsername = await this.wsService.findUserByClientId(client.id);
 	// 	const toUsername = body.username;
-	// 	const room_id = body.room_id;
+	// 	const room_id = body.roomId;
 
 
 	// 	// 접속중인 유저의 요청인지 확인.

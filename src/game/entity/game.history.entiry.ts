@@ -6,7 +6,7 @@ import { GameResult } from "../game.result";
 @Entity('game_history')
 export class GameHistory {
 	@PrimaryGeneratedColumn()
-	unique_id: number;
+	uniqueId: number;
 
 	@Column({
 		nullable: false,
@@ -21,12 +21,12 @@ export class GameHistory {
 	@Column({
 		default: 0,
 	})
-	red_score: number;
+	redScore: number;
 
 	@Column({
 		default: 0,
 	})
-	blue_score: number;
+	blueScore: number;
 
 	@Column({
 		enum: GameResult,
