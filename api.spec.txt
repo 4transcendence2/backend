@@ -21,7 +21,7 @@
 @ StatusCode 201
 {
   "status": "approved",
-  "access_token": {tooken value} (2차 로그인 핸드폰 인증 번호 요청시 필요한 토큰. 무분별한 인증 요청 방지를 위함)
+  "accessToken": {tooken value} (2차 로그인 핸드폰 인증 번호 요청시 필요한 토큰. 무분별한 인증 요청 방지를 위함)
 }
 
 
@@ -68,7 +68,7 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 @ StatusCode 200
 {
   "status": "approved",
-  "access_token": {tooken value} (소켓 연결할 때 같이 전달해줘야 연결이 됩니다. 이후 모든 http 요청에도 사용해야합니다.)
+  "accessToken": {tooken value} (소켓 연결할 때 같이 전달해줘야 연결이 됩니다. 이후 모든 http 요청에도 사용해야합니다.)
 }
 
 
@@ -148,7 +148,7 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 @ StatusCode 200
 {
   "status": "approved",
-  "access_token": {tooken value} (/user/create 요청시 함께 넣어줘야 할 토큰)
+  "accessToken": {tooken value} (/user/create 요청시 함께 넣어줘야 할 토큰)
 }
 
 
@@ -208,28 +208,32 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 	"rating": 1000,
 	"win": 0,
 	"lose": 0,
-	"game_history": [
+	"relation": "myself" || "friend" || "others"
+	"gameHistory": [
 		{
+			"uniqueId": 1
 			"red": "user1",
 			"blue": "sorksoek2",
-			"red_score": 11,
-			"blue_score": 9,
+			"redScore": 11,
+			"blueScore": 9,
 			"winner": "user1",
 			"type": "rank"
 		},
 		{
+			"uniqueId": 2
 			"red": "sorksoek2",
 			"blue": "eleel",
-			"red_score": 2,
-			"blue_score": 11,
+			"redScore": 2,
+			"blueScore": 11,
 			"winner": "elee1",
 			"type": "arcade"
 		},
 		{
+			"uniqueId": 3
 			"red": "sorksoek2",
 			"blue": "damon",
-			"red_score": 11,
-			"blue_score": 4,
+			"redScore": 11,
+			"blueScore": 4,
 			"winner": "sorksoek2,
 			"type": "normal"
 		}
@@ -371,7 +375,7 @@ const socket = io('ws://localhost', {
 @ 채팅방 입장 이벤트
 
 socket.emit('joinChatRoom', {
-  "room_id": number,
+  "roomId": number,
   "password": string (protected 채팅방인 경우)
 })
 
@@ -390,7 +394,7 @@ data: {
 @ 채팅방 퇴장 이벤트 (뒤로 가기가 아니라, 완전히 나가기)
 
 socket.emit('exitChatRoom', {
-  "room_id": number,
+  "roomId": number,
 })
 
 
@@ -407,7 +411,7 @@ data: {
 @ 채팅 이벤트
 
 socket.emit('chat', {
-  "room_id": number,
+  "roomId": number,
   "content": string,
 })
 
@@ -435,7 +439,7 @@ data: {
 @ 퇴장 이벤트
 
 socket.emit('kick', {
-  "room_id": number,
+  "roomId": number,
   "username": string (퇴장 시킬 유저네임)
 })
 
@@ -459,7 +463,7 @@ socket.on('kick', data)
 @ ban 이벤트
 
 socket.emit('ban', {
-  "room_id": number,
+  "roomId": number,
   "username": string (밴 시킬 유저네임)
 })
 
@@ -482,7 +486,7 @@ socket.on('ban', data)
 @ unban 이벤트
 
 socket.emit('unban', {
-  "room_id": number,
+  "roomId": number,
   "username": string (언밴 시킬 유저네임)
 })
 
@@ -501,7 +505,7 @@ data: {
 @ mute 이벤트
 
 socket.emit('mute, {
-  "room_id": number,
+  "roomId": number,
   "username": string (mute 시킬 유저네임)
 })
 
@@ -534,7 +538,7 @@ socket.on('updateChatRoomList', data)
 data: {
 	status: string,
 	title: string,
-	room_id: number,
+	roomId: number,
 } []
 
 
@@ -546,7 +550,7 @@ data: {
 socket.on('updateMyChatRoomList', data)
 data: {
 	title: string,
-	room_id: number,
+	roomId: number,
 } []
 
 
