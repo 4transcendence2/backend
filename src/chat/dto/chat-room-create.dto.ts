@@ -14,4 +14,8 @@ export class CreateChatRoomDto {
 	@IsOptional()
 	readonly password: string;
 
+	@IsString()
+	@IsOptional()
+	readonly opponent: string;
+
 }

@@ -34,67 +34,6 @@ export class ChatService {
 		return await this.chatRoomRepository.findOneBy({ room_id });
 	}
 
-	async createRoom(roomInfo: CreateChatRoomDto, username: string) {
-		const clientId = await this.wsService.findClientIdByUsername(username);
-		if (clientId === undefined) {
-			return {
-				status: "error",
-				detail: "접속중인 유저가 아닙니다.",
-			}
-		}
-
-
-		const newRoom: ChatRoom = this.chatRoomRepository.create({
-			status: roomInfo.status,
-			title: roomInfo.title,
-			owner: username,
-			password: roomInfo.password,
-		});
-
-		try {
-			await this.chatRoomRepository.insert(newRoom);
-
-			const room_id = newRoom.room_id;
-			const user = await this.usersRepository.findOneBy({ username });
-			const chatRoom = await this.chatRoomRepository.findOneBy({ room_id });
-
-
-			if (chatRoom.user_list === null) {
-				chatRoom.user_list = [username];
-			} else {
-				if (chatRoom.user_list.find(element => element === username) === undefined)
-					chatRoom.user_list.push(username);
-			}
-			await this.chatRoomRepository.save(chatRoom);
-
-			if (user.chat_room_list === null ) {
-				user.chat_room_list = [room_id];
-			} else {
-				if (user.chat_room_list.find(element => element === room_id) === undefined)
-					user.chat_room_list.push(room_id);
-			}
-			await this.usersRepository.save(user);
-
-			const server = this.wsGateway.server;
-
-			const client = server.sockets.sockets.get(clientId);
-			client.join('room' + room_id);
-			await this.updateChatRoomList(server);
-
-		} catch(error) {
-			const detail: string = newRoom.status === 'protected' ? 'Password is required for protected room.' : 'Password is not required for public or private room.';
-			return {
-				status: "error",
-				detail: detail,
-			}
-		}
-
-		return {
-			status: "approved",
-			detail: "Chat room is created.",
-		};
-	}
-
 	async isExist(room_id: number): Promise<boolean> {
 		if (await this.findRoomById(room_id) === undefined) return false;
 		return true;
@@ -146,6 +85,7 @@ export class ChatService {
 
 		await this.userService.exitChatRoom(username, room_id);
 		await client.leave('room' + room_id);
+
 		// 방에 마지막 남은 유저가 한 명(소유자)인 경우
 		if (chatRoom.user_list.length === 1) {
 			await this.chatRoomRepository.delete({ room_id: room_id });
@@ -296,7 +236,12 @@ export class ChatService {
 	}
 
 
-
+	async createChatRoomResult(client: Socket, status: string, detail?: string) {
+		client.emit('createChatRoomResult', {
+			status: status,
+			detail: detail,
+		})
+	}
 
 
 	async joinChatRoomResult(client: Socket, status: string, detail?: string) {

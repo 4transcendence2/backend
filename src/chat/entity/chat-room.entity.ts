@@ -11,64 +11,49 @@ export class ChatRoom {
 		nullable: false,
 		enum: RoomStatus
 	})
-	status: string
+	status: string;
 
 	@Column({
 		nullable: true,
 	})
-	password: string
+	password: string;
 
 	@Column({
 		nullable: false,
 	})
-	title: string
+	title: string;
 
 	@Column({
 		nullable: false,
 	})
-	owner: string
+	owner: string;
 
 	@Column({
 		type: "text",
 		array: true,
 		nullable: true,
 	})
-	admin_list: string[]
+	admin_list: string[];
 
 	@Column({
 		type: 'text',
 		array: true,
 		nullable: true,
 	})
-	user_list: string[]
+	user_list: string[];
 
 	@Column({
 		type: 'text',
 		array: true,
 		nullable: true,
 	})
-	mute_list: string[]
+	mute_list: string[];
 
 	@Column({
 		type: 'text',
 		array: true,
 		nullable: true,
 	})
-	ban_list: string[]
-
-
-
-
-	@BeforeInsert()
-  @BeforeUpdate()
-  validatePassword() {
-		if (this.status === 'protected' && (this.password === null || this.password === undefined)) {
-			throw new Error('Password is required for protected rooms.');
-    } 
-		
-		if ((this.status === 'public' || this.status === 'private') && (this.password !== undefined && this.password !== null)) {
-			throw new Error('Password is not required for public or private rooms.');
-		}
-  }
+	ban_list: string[];
 
 }

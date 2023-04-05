@@ -78,4 +78,27 @@ export class UserService {
 		await this.usersRepository.save(user);
 	}
 
+	async addFriend(fromUsername: string, toUsername: string) {
+		const from = await this.findOne(fromUsername);
+
+		if (from.friend_list === null || from.friend_list.length === 0) {
+			from.friend_list = [toUsername];
+		} else {
+			from.friend_list.push(toUsername);
+		}
+
+		await this.usersRepository.save(from);
+	}
+
+	async addFriendResult(client: Socket, status: string, detail?: string) {
+		client.emit('addFriendResult', {
+			status: status,
+			detail: detail,
+		})
+	}
+
+	async isFriend(fromUsername: string, toUsername: string): Promise<boolean> {
+		const from = await this.findOne(fromUsername);
+		return from.friend_list.find(el => el === toUsername) !== undefined ? true : false;
+	}
 }

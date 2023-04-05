@@ -91,7 +91,73 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 
 	/*
-	Join Room Event
+		Create Chat Room Event
+	*/
+	@SubscribeMessage('createChatRoom')
+	async createChatRoom(client: Socket, body: any) {
+		const username = await this.wsService.findUserByClientId(client.id);
+		const status = body.status;
+		const title = body.title;
+		const password = body.password;
+		const opponent = body.opponent;
+
+
+		// 접속중인 유저의 요청인지 확인.
+		if (!(await this.wsService.isLogin(client))) {
+			await this.chatService.createChatRoomResult(client, 'error', '접속중인 유저가 아닙니다.');
+			return;
+		}
+
+		// status 프로퍼티 확인
+		if (status === undefined) {
+			await this.chatService.createChatRoomResult(client, 'error', 'status 프로퍼티가 없습니다.');
+			return;
+		}
+
+		// title 프로퍼티 확인
+		if (title === undefined) {
+			await this.chatService.createChatRoomResult(client, 'error', 'title 프로퍼티가 없습니다.');
+			return;
+		}
+
+		// password 프로퍼티 확인
+		if (status === 'protected' && password === undefined) {
+			await this.chatService.createChatRoomResult(client, 'warning', '암호를 입력해주세요.');
+			return;
+		}
+
+
+		// opponent 프로퍼티 확인
+		if (status === 'dm' && opponent === undefined) {
+			await this.chatService.createChatRoomResult(client, 'error', 'opponent 프로퍼티가 없습니다.');
+			return;
+		}
+
+		// 상대방이 존재하는지 확인
+		if (status === 'dm' && !(await this.userService.isExist(opponent))) {
+			await this.chatService.createChatRoomResult(client, 'error', '존재하지 않는 상대방입니다.');
+			return;
+		}
+
+
+		const newRoom: ChatRoom = this.chatRoomRepository.create({
+			status: status,
+			title: title,
+			owner: username,
+			password: password,
+			user_list: [username],
+		})
+
+		if (status === 'dm' && opponent !== undefined) newRoom.user_list.push(opponent);
+		await this.chatRoomRepository.save(newRoom);
+
+		await this.userService.joinChatRoom(username, newRoom.room_id);
+		await this.userService.joinChatRoom(opponent, newRoom.room_id);
+	}
+
+
+	/*
+		Join Room Event
 	*/
 	@SubscribeMessage('joinChatRoom')
 	async joinChatRoom(client: Socket, body: any) {
@@ -110,6 +176,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.chatService.joinChatRoomResult(client, 'error', 'room_id 프로퍼티가 없습니다.');
 			return;
 		}
+
+		
 
 		// 존재하는 방인지 확인
 		if (!(await this.chatService.isExist(room_id))) {
@@ -138,6 +206,11 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 				await this.chatService.joinChatRoomResult(client, 'warning', '잘못된 비밀번호입니다.');
 				return;
 			}
+		}
+
+		if (chatRoom.status === 'dm') {
+			await this.chatService.joinChatRoomResult(client, 'error', 'DM 룸은 해당 방식으로 접근 할 수 없습니다.');
+			return;
 		}
 
 
@@ -289,6 +362,11 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
 
+		// dm 룸인지 확인
+		const chatRoom = await this.chatService.findRoomById(room_id);
+		if (chatRoom.status === 'dm') {
+			await this.chatService.kickResult(client, 'warning', 'dm 방에서는 할 수 없습니다.')
+		}
 
 		// 킥 대상 유저 프로퍼티가 입력되었는지 확인
 		if (toUsername === undefined) {
@@ -368,6 +446,11 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
 
+		// dm 룸인지 확인
+		const chatRoom = await this.chatService.findRoomById(room_id);
+		if (chatRoom.status === 'dm') {
+			await this.chatService.banResult(client, 'warning', 'dm 방에서는 할 수 없습니다.')
+		}
 
 		// 밴 대상 유저 프로퍼티가 입력되었는지 확인
 		if (toUsername === undefined) {
@@ -408,7 +491,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 
 		await this.chatService.removeUser(room_id, client, this.server);
-		const chatRoom = await this.chatService.findRoomById(room_id);
 		if (chatRoom.ban_list === null || chatRoom.ban_list.length === 0) {
 			chatRoom.ban_list = [toUsername];
 		} else {
@@ -454,6 +536,13 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
 
+
+		// dm 룸인지 확인
+		const chatRoom = await this.chatService.findRoomById(room_id);
+		if (chatRoom.status === 'dm') {
+			await this.chatService.unbanResult(client, 'warning', 'dm 방에서는 할 수 없습니다.')
+		}
+
 		// 언밴 대상 유저 프로퍼티가 입력되었는지 확인
 		if (toUsername === undefined) {
 			await this.chatService.unbanResult(client, 'error', 'username 프로퍼티가 없습니다.');
@@ -486,7 +575,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 
 		// 밴 목록에 있는 유저인지 확인
-		const chatRoom = await this.chatService.findRoomById(room_id);
+		// const chatRoom = await this.chatService.findRoomById(room_id);
 		if (chatRoom.ban_list === null || chatRoom.ban_list.length === 0) {
 			await this.chatService.unbanResult(client, 'warning', 'ban 목록에 등록되지 않은 유저입니다.')
 			return;
@@ -535,6 +624,11 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
 
+		// dm 룸인지 확인
+		const chatRoom = await this.chatService.findRoomById(room_id);
+		if (chatRoom.status === 'dm') {
+			await this.chatService.muteResult(client, 'warning', 'dm 방에서는 할 수 없습니다.')
+		}
 
 		// mute 대상 유저 프로퍼티가 입력되었는지 확인
 		if (toUsername === undefined) {
@@ -561,7 +655,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 
 		// 이미 mute된 대상인지
-		const chatRoom = await this.chatService.findRoomById(room_id);
 		if (chatRoom.mute_list === null || chatRoom.mute_list.length === 0) {
 			chatRoom.mute_list = [toUsername];
 		} else {
@@ -598,97 +691,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 
-	/*
-		Unmute
-	*/
-	// @SubscribeMessage('unmute')
-	// async unmute(client: Socket, body: any) {
-	// 	const fromUsername = await this.wsService.findUserByClientId(client.id);
-	// 	const toUsername = body.username;
-	// 	const room_id = body.roomId;
-
-
-	// 	// 접속중인 유저의 요청인지 확인.
-	// 	if (!(await this.wsService.isLogin(client))) return;
-
-	// 	// room_id 프로퍼티가 입력되었는지 확인
-	// 	if (room_id === undefined) {
-	// 		client.emit('error', {
-	// 			status: "error",
-	// 			detail: "room_id property가 없습니다."
-	// 		})
-	// 		return;
-	// 	}
-
-	// 	// 존재하는 채팅방인지 확인
-	// 	if (!(await this.chatService.isExist(room_id, client))) return;
-
-
-	// 	// unmute 대상 유저 프로퍼티가 입력되었는지 확인
-	// 	if (toUsername === undefined) {
-	// 		client.emit('error', {
-	// 			status: "error",
-	// 			detail: "username property가 없습니다."
-	// 		})
-	// 		return;
-	// 	}
-
-	// 	// unmute 대상이 존재하는 유저인지 확인
-	// 	if (!(await this.userService.isExist(toUsername, client))) return;
-
-	// 	// unmute 대상이 방에 존재하는 유저인지 확인
-	// 	if (!(await this.chatService.isExistUser(room_id, toUsername))) return;
-
-	// 	// unmute 권한이 있는지 확인
-	// 	if (!(await this.chatService.isAdmin(fromUsername, room_id)) && !(await this.chatService.isOwner(fromUsername, room_id))) {
-	// 		client.emit('notice', {
-	// 			status: "notice",
-	// 			detail: "권한이 없습니다."
-	// 		})
-	// 	}
-
-	// 	// unmute 대상이 소유자인지 확인
-	// 	if (await this.chatService.isOwner(toUsername, room_id)) {
-	// 		client.emit('notice', {
-	// 			status: "notice",
-	// 			detail: "소유자는 unmute 할 수 없습니다."
-	// 		})
-	// 	}
-
-	// 	// 자기 자신을 unmute 하는지 확인.
-	// 	if (fromUsername === toUsername) {
-	// 		client.emit('notice', {
-	// 			status: "notice",
-	// 			detail: "자신은 unmute 할 수 없습니다."
-	// 		})
-	// 		return;
-	// 	}
-
-
-	// 	const chatRoom = await this.chatService.findRoomById(room_id);
-	// 	if (chatRoom.mute_list === null || chatRoom.mute_list.length === 0) {
-	// 		client.emit('notice', {
-	// 			status: "notice",
-	// 			detail: "unmute 대상이 아닙니다."
-	// 		})
-	// 	} else {
-	// 		let index = chatRoom.mute_list.findIndex(element => element === toUsername);
-	// 		if (index === -1) {
-	// 			client.emit('notice', {
-	// 				status: "notice",
-	// 				detail: "unmute 대상이 아닙니다."
-	// 			})
-	// 		} else {
-	// 			chatRoom.mute_list.splice(index, 1);
-	// 		}
-	// 	}
-	// 	await this.chatRoomRepository.save(chatRoom);
-	// 	await this.chatService.updateRoom(room_id, this.server);
-
-	// }
-
-
-
 
 	/*
 		Block
@@ -696,6 +698,44 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('block')
 	async blockUser(client: Socket, body: any) {
 		
+	}
+
+
+
+	@SubscribeMessage('addFriend')
+	async addFriend(client: Socket, body: any) {
+		const fromUsername = await this.wsService.findUserByClientId(client.id);
+		const toUsername = body.username;
+
+		// 접속중인 유저의 요청인지 확인.
+		if (!(await this.wsService.isLogin(client))) {
+			await this.userService.addFriendResult(client, 'error', '접속중인 유저가 아닙니다.');
+			return;
+		}
+
+		// 대상 유저 프로퍼티가 입력되었는지 확인
+		if (toUsername === undefined) {
+			await this.userService.addFriendResult(client, 'error', 'username 프로퍼티가 없습니다.');
+			return;
+		}
+
+		// 이미 친구인지 확인
+		if (await this.userService.isFriend(fromUsername, toUsername)) {
+			await this.userService.addFriendResult(client, 'warning', '해당 유저와 이미 친구입니다.');
+			return;
+		}
+
+		// 자기 자신인지
+		if (fromUsername === toUsername) {
+			await this.userService.addFriendResult(client, 'warning', '자기 자신과는 친구 추가를 할 수 없습니다.');
+			return;
+		}
+		
+
+		await this.userService.addFriend(fromUsername, toUsername);
+		await this.userService.addFriendResult(client, 'approved');
+		await this.wsService.updateFriend(this.server, client, toUsername);
+
 	}
 
 
