@@ -38,7 +38,7 @@ export class AuthController {
 	}
 
 
-	// @Get('exist/:username')
+	@Get('exist/:username')
 	async isExist(@Param('username') username: string, @Res() res: Response) {
 		const result =  await this.userService.isExist(username);
 
@@ -54,7 +54,7 @@ export class AuthController {
 	}
 
 	//회원가입 할 때, 핸드폰 otp 요청
-	// @Post('get/otp/signup')
+	@Post('get/otp/signup')
 	async sendLoginOtp(@Body() body: PhoneNumberDto) {
 		await this.authService.sendOtp(body.phonenumber);
 	}
