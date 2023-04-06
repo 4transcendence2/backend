@@ -8,6 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import { SignupJwtGuard } from 'src/auth/signup_jwt/signupJwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GameService } from 'src/game/game.service';
+import { TempJwtGuard } from 'src/auth/temp_jwt/tempJwt.guard';
 const fs = require('fs');
 require('dotenv').config();
 
@@ -19,7 +20,8 @@ export class UserController {
 
 	) {}
 
-	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(AuthGuard('jwt'))
+	@UseGuards(TempJwtGuard)
 	@Get('profile/:username')
 	async getProfile(@Headers() header, @Param('username') username, @Res() res: Response) {
 		const user = await this.userService.findOne(username);
@@ -59,7 +61,8 @@ export class UserController {
 	}
 
 
-	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(AuthGuard('jwt'))
+	@UseGuards(TempJwtGuard)
 	@Get('avatar/:username')
 	async getAvatar(@Param('username') username, @Res() res: Response) {
 		
@@ -79,7 +82,8 @@ export class UserController {
 	}
 
 
-	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(AuthGuard('jwt'))
+	@UseGuards(TempJwtGuard)
 	@Post('avatar')
 	@UseInterceptors(FileInterceptor('avatar'))
 	async updateAvatar(@UploadedFile(
@@ -98,7 +102,7 @@ export class UserController {
 	}
 
 
-	@UseGuards(SignupJwtGuard)
+	// @UseGuards(SignupJwtGuard)
 	@Post('create')
 	async createUser(@Body() userInfo: CreateUserDto, @Res() res: Response) {
 		try {

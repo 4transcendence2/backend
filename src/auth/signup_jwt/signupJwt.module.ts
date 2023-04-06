@@ -8,8 +8,8 @@ import { SignupJwtService } from "./signupJwt.service";
 @Module({
 	imports: [
 		JwtModule.register({
-			secret: process.env.TMP_SECRET,
-			signOptions: { expiresIn: '60h' },
+			secret: process.env.SIGNUP_SECRET,
+			signOptions: { expiresIn: '3d' },
 		}),
 		PassportModule,
 		forwardRef(() => UserModule )

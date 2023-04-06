@@ -41,7 +41,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 			// 토큰 확인
 			const token = client.handshake.headers.authorization.split(' ')[1];
-			const decodedToken = jwt.verify(token, process.env.SECRET);
+			// const decodedToken = jwt.verify(token, process.env.SECRET);
+			const decodedToken = jwt.verify(token, process.env.TMP_SECRET);
 			const username = decodedToken['username'];
 
 

@@ -10,7 +10,7 @@ require('dotenv').config();
 	imports: [
 		JwtModule.register({
 			secret: process.env.TMP_SECRET,
-			signOptions: { expiresIn: '60h' },
+			signOptions: { expiresIn: '3d' },
 		}),
 		PassportModule,
 		forwardRef(() =>UserModule ),

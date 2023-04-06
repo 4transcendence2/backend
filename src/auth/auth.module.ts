@@ -21,7 +21,7 @@ require('dotenv').config();
 		SignupJwtModule,
 		JwtModule.register({
 			secret: process.env.SECRET,
-			signOptions: { expiresIn: '2d' },
+			signOptions: { expiresIn: '3d' },
 		}),
 		TwilioModule.forRoot({
 			accountSid: process.env.TWILIO_ACCOUNT_SID,
