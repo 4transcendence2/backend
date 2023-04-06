@@ -9,6 +9,9 @@ import { SignupJwtGuard } from 'src/auth/signup_jwt/signupJwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GameService } from 'src/game/game.service';
 import { TempJwtGuard } from 'src/auth/temp_jwt/tempJwt.guard';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './entity/user.entity';
 const fs = require('fs');
 require('dotenv').config();
 
@@ -18,6 +21,8 @@ export class UserController {
 		private userService: UserService,
 		private gameService: GameService,
 
+		@InjectRepository(User)
+		private usersRepository: Repository<User>
 	) {}
 
 	// @UseGuards(AuthGuard('jwt'))
@@ -43,9 +48,12 @@ export class UserController {
 			relation = 'myself';
 		} else {
 			const reqUser = await this.userService.findOne(reqUsername);
-			const result = reqUser.friend_list.find(element => element === username);
-			relation = result !== undefined ? 'friend' : 'others'
-
+			if (reqUser.friend_list === null || reqUser.friend_list.length === 0) {
+				relation = 'others';
+			} else {
+				const result = reqUser.friend_list.find(element => element === username);
+				relation = result !== undefined ? 'friend' : 'others'
+			}
 		}
 
 
@@ -65,9 +73,8 @@ export class UserController {
 	@UseGuards(TempJwtGuard)
 	@Get('avatar/:username')
 	async getAvatar(@Param('username') username, @Res() res: Response) {
-		
-		
-		
+
+
 		const user = await this.userService.findOne(username);
 		if (user === null) {
 			res.status(400);
