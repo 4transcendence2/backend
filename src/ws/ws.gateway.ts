@@ -842,11 +842,17 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
 
+		// 존재하는 대상인지 확인
+		if (!(await this.userService.isExist(toUsername))) {
+			await this.userService.addFriendResult(client, 'error', '존재하지 않는 대상입니다.');
+		}
+
 		// 이미 친구인지 확인
 		if (await this.userService.isFriend(fromUsername, toUsername)) {
 			await this.userService.addFriendResult(client, 'warning', '해당 유저와 이미 친구입니다.');
 			return;
 		}
+
 
 		// 자기 자신인지
 		if (fromUsername === toUsername) {

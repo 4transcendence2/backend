@@ -100,6 +100,7 @@ export class UserService {
 
 	async isFriend(fromUsername: string, toUsername: string): Promise<boolean> {
 		const from = await this.findOne(fromUsername);
+		if (from.friend_list === null || from.friend_list === undefined || from.friend_list.length === 0) return false;
 		return from.friend_list.find(el => el === toUsername) !== undefined ? true : false;
 	}
 }
