@@ -123,11 +123,28 @@ export class WsService {
 	}
 
 	async	initUpdate(server: Server, client: Socket) {
+		const username = await this.findUserByClientId(client.id);
+		const user = await this.userService.findOne(username);
+
+		const chatRoomList = user.chat_room_list;
+		const dmList = user.dm_list;
+
+		if (chatRoomList !== null && chatRoomList !== undefined && chatRoomList.length !== 0) {
+			chatRoomList.forEach(id => {
+				client.join('room' + id);
+			})
+		}
+
+		if (dmList !== null && dmList !== undefined && dmList.length !== 0) {
+			dmList.forEach(dm => {
+				client.join('dm' + dm.id);
+			})
+		}
+
 		await this.chatService.updateChatRoomList(server, client);
 		await this.chatService.updateMyChatRoomList(client);
 		await this.chatService.updateDmList(client);
-		await this.updateFriend(server, client);
-		// DM LIST
+		await this.updateFriend(server, client, undefined);
 		// GAME ROOM LIST
 	}
 

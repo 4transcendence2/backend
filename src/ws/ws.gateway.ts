@@ -12,7 +12,7 @@ import { UserService } from "src/user/user.service";
 import Dm from "src/chat/entity/chat.dm.entity";
 require('dotenv').config();
 
-@WebSocketGateway(81, {
+@WebSocketGateway({
 	cors: { origin: '*' },
 })
 export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
@@ -91,40 +91,33 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		this.usersRepository.save(user)
 		await this.wsService.deleteUser(client.id);
 		await this.wsService.updateFriend(this.server, client);
-		// console.log(`Client ${username} with Socket ID ${client.id} is disconnected.`);
 	}
 
 
 	/*
-		DM
+		Create DM room
 	*/
-	@SubscribeMessage('dm')
-	async directMessage(client: Socket, body: any) {
+	@SubscribeMessage('createDmRoom')
+	async createDmRoom(client: Socket, body: any) {
 		const username = await this.wsService.findUserByClientId(client.id);
 		const opponent = body.opponent;
-		const content = body.content;
 
 		// 접속중인 유저의 요청인지 확인.
 		if (!(await this.wsService.isLogin(client))) {
-			await this.chatService.dmResult(client, 'error', '접속중인 유저가 아닙니다.');
+			await this.chatService.createDmRoomResult(client, 'error', '접속중인 유저가 아닙니다.');
 			return;
 		}
 
 		// opponent 프로퍼티 확인.
 		if (opponent === undefined) {
-			await this.chatService.dmResult(client, 'error', 'opponent 프로퍼티가 없습니다.');
+			await this.chatService.createDmRoomResult(client, 'error', 'opponent 프로퍼티가 없습니다.');
 			return;
 		}
 
 		// 존재하는 상대방인지 확인
 		if (!(await this.userService.isExist(opponent))) {
-			await this.chatService.dmResult(client, 'error', '존재하지 않는 대상입니다.');
+			await this.chatService.createDmRoomResult(client, 'error', '존재하지 않는 대상입니다.');
 			return;
-		}
-
-		// content 프로퍼티 확인
-		if (content === undefined) {
-			await this.chatService.dmResult(client, 'error', 'content 프로퍼티가 없습니다.');
 		}
 
 		const fromUser = await this.userService.findOne(username);
@@ -147,14 +140,96 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			toUser.dm_list.push(newDm);
 		}
 		await this.usersRepository.save(toUser);
+		await this.chatService.createDmRoomResult(client, 'approved');
 
 		client.join('dm' + newDm.id);
-		if (await this.wsService.isLogin(undefined, opponent))
+		this.chatService.updateDmList(client);
+
+		if (await this.wsService.isLogin(undefined, opponent)) {
 			this.server.of('/').sockets.get(await this.wsService.findClientIdByUsername(opponent)).join('dm' + newDm.id);
-
-
+			this.chatService.updateDmList(this.server.of('/').sockets.get(await this.wsService.findClientIdByUsername(opponent)));
+		}
 
 	}
+
+
+	/*
+		DM
+	*/
+	@SubscribeMessage('dm')
+	async directMessage(client: Socket, body: any) {
+		const username = await this.wsService.findUserByClientId(client.id);
+		const roomId = body.roomId;
+		const content = body.content;
+
+
+		// 접속중인 유저의 요청인지 확인.
+		if (!(await this.wsService.isLogin(client))) {
+			await this.chatService.dmResult(client, 'error', '접속중인 유저가 아닙니다.');
+			return;
+		}
+
+		// roomId 프로퍼티 확인
+		if (roomId === undefined) {
+			await this.chatService.dmResult(client, 'error', 'roomId 프로퍼티가 없습니다.');
+			return;
+		}
+
+		// content 프로퍼티 확인
+		if (content === undefined) {
+			await this.chatService.dmResult(client, 'error', 'content 프로퍼티가 없습니다.');
+			return;
+		}
+
+
+		const dm = await this.dmRepository.findOneBy({ id: roomId });
+		const user = await this.userService.findOne(username);
+		
+		// 존재하는 roomId 확인
+		if (dm === null) {
+			await this.chatService.dmResult(client, 'error', '존재하는 roomId가 아닙니다.');
+			return;
+		}
+
+		// dm방의 멤버인지 확인
+		if (dm.user_list.find(elem => elem === user) === undefined) {
+			await this.chatService.dmResult(client, 'error', '해당 dm방의 유저가 아닙니다.');
+			return;
+		}
+
+
+		// 상대방이 나갔지만 다시 대화를 요청함
+		if (dm.user_list.length === 1) {
+			let index = dm.user_list.findIndex(elem => elem === user);
+			const opponent = index === 0 ? dm.user_list[1] : dm.user_list[0];
+
+			if (opponent.dm_list === null || opponent.dm_list === undefined || opponent.dm_list.length === 0) {
+				opponent.dm_list = [dm];
+			} else {
+				opponent.dm_list.push(dm);
+			}
+			await this.usersRepository.save(opponent);
+			this.server.of('/').sockets.get(await this.wsService.findClientIdByUsername(opponent.username)).join('dm' + dm.id);
+			await this.chatService.updateDmList(this.server.of('/').sockets.get(await this.wsService.findClientIdByUsername(opponent.username)));
+		}
+
+
+		await this.chatService.dmResult(client, 'approved');
+
+
+		this.server.to('dm' + roomId).emit('dm', {
+			status: 'plain',
+			from: username,
+			content: content
+		});
+
+	}
+
+
+	/*
+		Exit dm Room
+	*/
+	@SubscribeMessage('exitDmRoom')
 
 	/*
 		Create Chat Room Event

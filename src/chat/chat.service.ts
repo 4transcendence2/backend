@@ -198,6 +198,9 @@ export class ChatService {
 			roomId: number,
 		} [] = [];
 
+		if (chatRooms === null) return;
+
+
 		chatRooms.forEach(room => {
 			if (room.status !== 'dm') {
 				chatRoomList.push({
@@ -215,6 +218,33 @@ export class ChatService {
 	}
 
 	async updateDmList(client: Socket) {
+		const username = await this.wsService.findUserByClientId(client.id);
+		const user = await this.userService.findOne(username);
+
+		const dmList: {
+			roomId: number,
+			opponent: string,
+		}[] = [];
+
+		if (user.dm_list === null || user.dm_list === undefined || user.dm_list.length === 0) {
+			client.emit('updateDmList', []);
+			return;
+		}
+
+		user.dm_list.forEach(dm => {
+			if (dm.user_list[0] === user) {
+				dmList.push({
+					roomId: dm.id,
+					opponent: dm.user_list[1].username,
+				})
+			} else {
+				dmList.push({
+					roomId: dm.id,
+					opponent: dm.user_list[0].username,
+				})
+			}
+		})
+		client.emit('updateDmList', dmList);
 
 	}
 
@@ -239,6 +269,13 @@ export class ChatService {
 	}
 
 
+	async createDmRoomResult(client: Socket, status: string, detail?: string) {
+		client.emit('createDmRoomResult', {
+			status: status,
+			detail: detail,
+		})
+	}
+	
 	async dmResult(client: Socket, status: string, detail?: string) {
 		client.emit('dmResult', {
 			status: status,
