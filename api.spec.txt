@@ -496,6 +496,7 @@ socket.emit('mute, {
   "username": string (mute 시킬 유저네임)
 })
 
+
 socket.on('muteResult', data)
 data: {
   "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
@@ -503,6 +504,8 @@ data: {
 }
 
 "status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
+
+
 
 
 // 구현중
@@ -539,16 +542,69 @@ data: {
 
 @ DM 목록 업데이트 이벤트
 
-socket.in('updateDmList', data)
+socket.on('updateDmList', data)
 data: {
-	roomId: number;
+	roomId: number,
+	opponent: string,
 }
 
 
+----------------------------------------------------------
 
 
+@ DM 방 만들기 요청
+
+socket.emit('createDmRoom', {
+	opponent: string
+})
 
 
+socket.on('createDmRoomResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
+
+
+----------------------------------------------------------
+
+@ DM 메시지 보내기 이벤트
+
+socket.emit('dm', {
+	roomId: number,
+	content: string
+})
+
+
+socket.on('dmResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
+
+
+socket.on('dm', data)
+data: {
+  "status": "plain"
+  "from": string,
+  "content": string,
+}
+
+
+----------------------------------------------------------
+
+일반 채팅방과 다르게, 두 명중 한 명이 나간 상태에서, 남아있는 사람이 다시 채팅을 치면 자동으로 다시 들어와짐.
+@ DM 방 나가기 이벤트
+
+socket.emit('exitDmRoom', {
+	roomId: number
+})
+
+socket.on('exitDmRoomResult', data)
+data: {
+  "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+  "detail": string
+}
 
 
 ----------------------------------------------------------
