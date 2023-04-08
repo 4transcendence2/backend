@@ -100,6 +100,7 @@ export class WsService {
 
 		list.forEach(async element => {
 			let user = await this.userService.findOne(element.username);
+			console.log(user.username);
 			if (user.friend_list === null || user.friend_list.length === 0) {}
 			else {
 				if ((user.friend_list.find(elem => elem === username)) !== undefined) {
@@ -116,7 +117,8 @@ export class WsService {
 						})
 					})
 					let socket = server.of('/').sockets.get(await this.findClientIdByUsername(element.username));
-					socket.emit('updateFriend', tmpList);
+					console.log(tmpList);
+					// socket.emit('updateFriend', tmpList);
 				}
 			}
 		})
@@ -145,6 +147,22 @@ export class WsService {
 		await this.chatService.updateMyChatRoomList(client);
 		await this.chatService.updateDmList(client);
 		await this.updateFriend(server, client, undefined);
+		const friendList: {
+			username: string,
+			status: string,
+		}[] = [];
+		if (user.friend_list === null || user.friend_list === undefined || user.friend_list.length === 0) {
+			client.emit('updateFriend', []);
+		} else {
+			for(let i = 0; i < user.friend_list.length; ++i) {
+				let friend = await this.userService.findOne(user.friend_list[i]);
+				friendList.push({
+					username: friend.username,
+					status: friend.status,
+				})
+			}
+			client.emit('updateFriend', friendList);
+		}
 		// GAME ROOM LIST
 	}
 

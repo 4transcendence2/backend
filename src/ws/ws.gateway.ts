@@ -845,6 +845,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		// 존재하는 대상인지 확인
 		if (!(await this.userService.isExist(toUsername))) {
 			await this.userService.addFriendResult(client, 'error', '존재하지 않는 대상입니다.');
+			return;
 		}
 
 		// 이미 친구인지 확인
@@ -859,7 +860,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.userService.addFriendResult(client, 'warning', '자기 자신과는 친구 추가를 할 수 없습니다.');
 			return;
 		}
-		
+
 
 		await this.userService.addFriend(fromUsername, toUsername);
 		await this.userService.addFriendResult(client, 'approved');

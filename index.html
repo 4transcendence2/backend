@@ -20,6 +20,10 @@
 				socket.emit('addFriend', { username: 'sorksoek22222'});
 			}
 
+			socket.on('addFriendResult', data => {
+				console.log(data);
+			})
+
 			socket.on('chat', (data) => {
 				console.log(data);
 			})
@@ -33,9 +37,10 @@
 			})
 
 			socket.on('updateFriend', data => {
-				console.log('friend');
+				console.log('updateFriend');
 				console.log(data);
 			})
+
 
 			socket.on('updateChatRoomList', data => {
 				console.log('chatRoomList');
