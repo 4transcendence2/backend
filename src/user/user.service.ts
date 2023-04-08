@@ -68,6 +68,7 @@ export class UserService {
 				user.chat_room_list.push(room_id);
 			}
 		}
+		
 		await this.usersRepository.save(user);
 	}
 

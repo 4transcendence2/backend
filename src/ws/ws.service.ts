@@ -125,6 +125,7 @@ export class WsService {
 	async	initUpdate(server: Server, client: Socket) {
 		await this.chatService.updateChatRoomList(server, client);
 		await this.chatService.updateMyChatRoomList(client);
+		await this.chatService.updateDmList(client);
 		await this.updateFriend(server, client);
 		// DM LIST
 		// GAME ROOM LIST

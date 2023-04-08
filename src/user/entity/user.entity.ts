@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserStatus } from "../user.status";
+import Dm from "src/chat/entity/chat.dm.entity";
 
 @Entity('users')
 export class User {
@@ -40,7 +41,12 @@ export class User {
 		nullable: true,
 	})
 	chat_room_list: number[];
-	
+
+	@ManyToMany(() => Dm)
+	@JoinTable()
+	dm_list: Dm[];
+
+
 	@Column({
 		unique: true,
 	})

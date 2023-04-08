@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate } from "typeorm";
-import { RoomStatus } from "../chat-room.status";
+import { RoomStatus } from "../chat.room.status";
 
 
 @Entity('chat_room')

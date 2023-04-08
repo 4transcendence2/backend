@@ -4,14 +4,15 @@ import { WsService } from "./ws.service";
 import { Repository } from "typeorm";
 import { User } from "src/user/entity/user.entity";
 import * as jwt from 'jsonwebtoken';
-import { ChatRoom } from "src/chat/entity/chat-room.entity";
+import { ChatRoom } from "src/chat/entity/chat.room.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ChatService } from "src/chat/chat.service";
 import { Inject, forwardRef } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
+import Dm from "src/chat/entity/chat.dm.entity";
 require('dotenv').config();
 
-@WebSocketGateway({
+@WebSocketGateway(81, {
 	cors: { origin: '*' },
 })
 export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
@@ -28,13 +29,16 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		
 		@InjectRepository(ChatRoom)
 		private chatRoomRepository: Repository<ChatRoom>,
+
+		@InjectRepository(Dm)
+		private dmRepository: Repository<Dm>,
 	) {}
 		
 	@WebSocketServer()
 	server: Server
 		
 	/*
-	Socket connect Event
+		Socket connect Event
 	*/
 	async handleConnection(client: Socket) {
 		try {
@@ -78,7 +82,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	/*
-	Socket Disconnect Event
+		Socket Disconnect Event
 	*/
 	async handleDisconnect(client: Socket) {
 		const username = await this.wsService.findUserByClientId(client.id);
@@ -92,6 +96,67 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 
 	/*
+		DM
+	*/
+	@SubscribeMessage('dm')
+	async directMessage(client: Socket, body: any) {
+		const username = await this.wsService.findUserByClientId(client.id);
+		const opponent = body.opponent;
+		const content = body.content;
+
+		// 접속중인 유저의 요청인지 확인.
+		if (!(await this.wsService.isLogin(client))) {
+			await this.chatService.dmResult(client, 'error', '접속중인 유저가 아닙니다.');
+			return;
+		}
+
+		// opponent 프로퍼티 확인.
+		if (opponent === undefined) {
+			await this.chatService.dmResult(client, 'error', 'opponent 프로퍼티가 없습니다.');
+			return;
+		}
+
+		// 존재하는 상대방인지 확인
+		if (!(await this.userService.isExist(opponent))) {
+			await this.chatService.dmResult(client, 'error', '존재하지 않는 대상입니다.');
+			return;
+		}
+
+		// content 프로퍼티 확인
+		if (content === undefined) {
+			await this.chatService.dmResult(client, 'error', 'content 프로퍼티가 없습니다.');
+		}
+
+		const fromUser = await this.userService.findOne(username);
+		const toUser = await this.userService.findOne(opponent);
+
+		const newDm = this.dmRepository.create({
+			user_list: [fromUser, toUser],
+		})
+
+		if (fromUser.dm_list === undefined || fromUser.dm_list === null) {
+			fromUser.dm_list = [newDm];
+		} else {
+			fromUser.dm_list.push(newDm);
+		}
+		await this.usersRepository.save(fromUser);
+
+		if (toUser.dm_list === undefined || toUser.dm_list === null) {
+			toUser.dm_list = [newDm];
+		} else {
+			toUser.dm_list.push(newDm);
+		}
+		await this.usersRepository.save(toUser);
+
+		client.join('dm' + newDm.id);
+		if (await this.wsService.isLogin(undefined, opponent))
+			this.server.of('/').sockets.get(await this.wsService.findClientIdByUsername(opponent)).join('dm' + newDm.id);
+
+
+
+	}
+
+	/*
 		Create Chat Room Event
 	*/
 	@SubscribeMessage('createChatRoom')
@@ -100,7 +165,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		const status = body.status;
 		const title = body.title;
 		const password = body.password;
-		const opponent = body.opponent;
 
 
 		// 접속중인 유저의 요청인지 확인.
@@ -128,19 +192,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 
 
-		// opponent 프로퍼티 확인
-		if (status === 'dm' && opponent === undefined) {
-			await this.chatService.createChatRoomResult(client, 'error', 'opponent 프로퍼티가 없습니다.');
-			return;
-		}
-
-		// 상대방이 존재하는지 확인
-		if (status === 'dm' && !(await this.userService.isExist(opponent))) {
-			await this.chatService.createChatRoomResult(client, 'error', '존재하지 않는 상대방입니다.');
-			return;
-		}
-
-
 		const newRoom: ChatRoom = this.chatRoomRepository.create({
 			status: status,
 			title: title,
@@ -149,13 +200,11 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			user_list: [username],
 		})
 
-		if (status === 'dm' && opponent !== undefined) newRoom.user_list.push(opponent);
-		await this.chatRoomRepository.save(newRoom);
+		client.join('room' + newRoom.room_id);
 
 		await this.userService.joinChatRoom(username, newRoom.room_id);
-		await this.userService.joinChatRoom(opponent, newRoom.room_id);
+		await this.chatService.updateChatRoomList(this.server);
 	}
-
 
 	/*
 		Join Room Event
@@ -170,7 +219,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			await this.chatService.joinChatRoomResult(client, 'error', '접속중인 유저가 아닙니다.');
 			return;
 		}
-
 
 		// room_id 프로퍼티가 있는지 확인
 		if (room_id === undefined) {
@@ -258,7 +306,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
 
-
 		// 채팅방의 멤버인지 확인
 		if (!(await this.chatService.isExistUser(room_id, client))) {
 			await this.chatService.exitChatRoomResult(client, 'error', '해당 방의 유저가 아닙니다.');
@@ -269,10 +316,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 		// 유저, 채팅방 데이터베이스 업데이트
 		await this.chatService.removeUser(room_id, client, this.server);
-		
+
 		// 자신이 현재 joinning 중인 채팅방 목록 업데이트.
 		await this.chatService.updateMyChatRoomList(client);
-		}
+	}
 
 
 

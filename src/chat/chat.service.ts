@@ -2,13 +2,14 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateChatRoomDto } from './dto/chat-room-create.dto';
-import { ChatRoom } from './entity/chat-room.entity';
+import { ChatRoom } from './entity/chat.room.entity';
 import { User } from 'src/user/entity/user.entity';
 import { WsGateWay } from 'src/ws/ws.gateway';
 import { WsService } from 'src/ws/ws.service';
 import { Socket, Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
 import { use } from 'passport';
+import Dm from './entity/chat.dm.entity';
 
 
 @Injectable()
@@ -17,11 +18,8 @@ export class ChatService {
 		@InjectRepository(ChatRoom)
 		private chatRoomRepository: Repository<ChatRoom>,
 
-		@InjectRepository(User)
-		private usersRepository: Repository<User>,
-
-		@Inject(forwardRef(() => WsGateWay))
-		private wsGateway: WsGateWay,
+		@InjectRepository(Dm)
+		private dmRepository: Repository<Dm>,
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
@@ -45,7 +43,6 @@ export class ChatService {
 
 		if (chatRoom.user_list.find(element => element === username) === undefined) return false;
 		return true;
-
 	}
 
 	async isOwner(username: string, room_id: number): Promise<boolean> {
@@ -202,17 +199,23 @@ export class ChatService {
 		} [] = [];
 
 		chatRooms.forEach(room => {
-			chatRoomList.push({
-				status: room.status,
-				title: room.title,
-				roomId: room.room_id,
-			})
+			if (room.status !== 'dm') {
+				chatRoomList.push({
+					status: room.status,
+					title: room.title,
+					roomId: room.room_id,
+				})
+			}
 		})
 
 		if (client === undefined)
 			server.emit('updateChatRoomList', chatRoomList);
 		else
 			client.emit('updateChatRoomList', chatRoomList);
+	}
+
+	async updateDmList(client: Socket) {
+
 	}
 
 	async updateMyChatRoomList(client: Socket) {
@@ -235,6 +238,13 @@ export class ChatService {
 		client.emit('updateMyChatRoomList', roomList);
 	}
 
+
+	async dmResult(client: Socket, status: string, detail?: string) {
+		client.emit('dmResult', {
+			status: status,
+			detail: detail,
+		})
+	}
 
 	async createChatRoomResult(client: Socket, status: string, detail?: string) {
 		client.emit('createChatRoomResult', {

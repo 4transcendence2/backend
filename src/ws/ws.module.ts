@@ -6,8 +6,9 @@ import { GameModule } from 'src/game/game.module';
 import { WsGateWay } from './ws.gateway';
 import { WsService } from './ws.service';
 import { User } from 'src/user/entity/user.entity';
-import { ChatRoom } from 'src/chat/entity/chat-room.entity';
+import { ChatRoom } from 'src/chat/entity/chat.room.entity';
 import { UserModule } from 'src/user/user.module';
+import Dm from 'src/chat/entity/chat.dm.entity';
 
 @Module({
 	imports: [
@@ -15,7 +16,7 @@ import { UserModule } from 'src/user/user.module';
 		GameModule,
 		UserModule,
 		forwardRef(() => ChatModule),
-		TypeOrmModule.forFeature([ User, ChatRoom ]),
+		TypeOrmModule.forFeature([ User, ChatRoom, Dm ]),
 	],
 	
 	providers: [ WsGateWay, WsService ],
