@@ -201,15 +201,14 @@ export class ChatService {
 		if (chatRooms === null) return;
 
 
-		chatRooms.forEach(room => {
-			if (room.status !== 'dm') {
-				chatRoomList.push({
-					status: room.status,
-					title: room.title,
-					roomId: room.room_id,
-				})
-			}
-		})
+		for (let i = 0; i < chatRooms.length; ++ i) {
+			let room = chatRooms[i];
+			chatRoomList.push({
+				status: room.status,
+				title: room.title,
+				roomId: room.room_id,
+			})
+		}
 
 		if (client === undefined)
 			server.emit('updateChatRoomList', chatRoomList);
@@ -257,13 +256,13 @@ export class ChatService {
 		}[] = []
 		if (user.chat_room_list === null || user.chat_room_list.length === 0) {}
 		else {
-			user.chat_room_list.forEach(async room_id => {
-				let chatRoom = await this.findRoomById(room_id);
+			for (let i = 0; i < user.chat_room_list.length; ++i) {
+				let room = await this.findRoomById(user.chat_room_list[i]);
 				roomList.push({
-					title: chatRoom.title,
-					roomId: chatRoom.room_id,
+					title: room.title,
+					roomId: room.room_id,
 				})
-			})
+			};
 		}
 		client.emit('updateMyChatRoomList', roomList);
 	}

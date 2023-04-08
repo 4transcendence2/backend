@@ -99,6 +99,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@SubscribeMessage('createDmRoom')
 	async createDmRoom(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.createDmRoomResult(client, 'error', '바디 데이터가 없습니다.');
+			return;
+		}
 		const username = await this.wsService.findUserByClientId(client.id);
 		const opponent = body.opponent;
 
@@ -158,6 +162,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@SubscribeMessage('dm')
 	async directMessage(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.dmResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
 		const username = await this.wsService.findUserByClientId(client.id);
 		const roomId = body.roomId;
 		const content = body.content;
@@ -229,18 +237,21 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	/*
 		Exit dm Room
 	*/
-	@SubscribeMessage('exitDmRoom')
 
 	/*
 		Create Chat Room Event
 	*/
 	@SubscribeMessage('createChatRoom')
 	async createChatRoom(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.createChatRoomResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
+
 		const username = await this.wsService.findUserByClientId(client.id);
 		const status = body.status;
 		const title = body.title;
 		const password = body.password;
-
 
 		// 접속중인 유저의 요청인지 확인.
 		if (!(await this.wsService.isLogin(client))) {
@@ -275,7 +286,9 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			user_list: [username],
 		})
 
+		await this.chatRoomRepository.insert(newRoom);
 		client.join('room' + newRoom.room_id);
+		console.log(1);
 
 		await this.userService.joinChatRoom(username, newRoom.room_id);
 		await this.chatService.updateChatRoomList(this.server);
@@ -287,6 +300,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('joinChatRoom')
 	async joinChatRoom(client: Socket, body: any) {
 
+		if (body === undefined) {
+			await this.chatService.joinChatRoomResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
 		const room_id = body.roomId;
 
 		// 로그인 중인 유저인지 확인
@@ -361,6 +378,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@SubscribeMessage('exitChatRoom')
 	async exitChatRoom(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.exitChatRoomResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
 		const room_id = body.roomId;
 
 		// room_id 프로퍼티 확인
@@ -403,6 +424,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@SubscribeMessage('chat')
 	async chat(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.chatResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
 		const username = await this.wsService.findUserByClientId(client.id);
 		const room_id = body.roomId;
 		const content = body.content;
@@ -462,6 +487,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@SubscribeMessage('kick')
 	async kick(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.kickResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
 		const fromUsername = await this.wsService.findUserByClientId(client.id);
 		const toUsername = body.username;
 		const room_id = body.roomId;
@@ -546,6 +575,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@SubscribeMessage('ban')
 	async ban(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.banResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
 		const fromUsername = await this.wsService.findUserByClientId(client.id);
 		const toUsername = body.username;
 		const room_id = body.roomId;
@@ -636,6 +669,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@SubscribeMessage('unban')
 	async unBan(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.unbanResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
 		const fromUsername = await this.wsService.findUserByClientId(client.id);
 		const toUsername = body.username;
 		const room_id = body.roomId;
@@ -724,6 +761,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@SubscribeMessage('mute')
 	async mute(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.muteResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
 		const fromUsername = await this.wsService.findUserByClientId(client.id);
 		const toUsername = body.username;
 		const room_id = body.roomId;
@@ -827,6 +868,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('addFriend')
 	async addFriend(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.userService.addFriendResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
 		const fromUsername = await this.wsService.findUserByClientId(client.id);
 		const toUsername = body.username;
 

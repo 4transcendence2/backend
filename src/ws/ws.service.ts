@@ -100,7 +100,6 @@ export class WsService {
 
 		list.forEach(async element => {
 			let user = await this.userService.findOne(element.username);
-			console.log(user.username);
 			if (user.friend_list === null || user.friend_list.length === 0) {}
 			else {
 				if ((user.friend_list.find(elem => elem === username)) !== undefined) {

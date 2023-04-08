@@ -18,11 +18,26 @@
 
 			function addFriend() {
 				socket.emit('addFriend', { username: 'sorksoek22222'});
-			}
+			};
+
+			function createChatRoom() {
+				socket.emit('createChatRoom', {
+					status: "public",
+					title: "sijfhsadkjfhsadf",
+				});
+			};
+
+			socket.on('createChatRoomResult', data => {
+				console.log(data);
+			})
+
+			socket.on('joinChatRoomResult', data => {
+				console.log(data);
+			});
 
 			socket.on('addFriendResult', data => {
 				console.log(data);
-			})
+			});
 
 			socket.on('chat', (data) => {
 				console.log(data);
@@ -92,6 +107,7 @@
 		<button onclick="join()">joinChatRoom</button>
 		<button onclick="exit()">exitChatRoom</button>
 		<button onclick="addFriend()">addFriend</button>
+		<button onclick="createChatRoom()">createChatRoom</button>
 
 
 		<form action="http://localhost/user/avatar" id="myForm" method="Post" enctype="multipart/form-data">
