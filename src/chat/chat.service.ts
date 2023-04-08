@@ -1,14 +1,10 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateChatRoomDto } from './dto/chat-room-create.dto';
 import { ChatRoom } from './entity/chat.room.entity';
-import { User } from 'src/user/entity/user.entity';
-import { WsGateWay } from 'src/ws/ws.gateway';
 import { WsService } from 'src/ws/ws.service';
 import { Socket, Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
-import { use } from 'passport';
 import Dm from './entity/chat.dm.entity';
 
 

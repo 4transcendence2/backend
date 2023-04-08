@@ -108,16 +108,15 @@ export class WsService {
 						status: string,
 					} [] = [];
 
-					user.friend_list.forEach(async elem2 => {
-						let tmpUser = await this.userService.findOne(elem2);
+					for(let i = 0; i < user.friend_list.length; ++i) {
+						let tmpUser = await this.userService.findOne(user.friend_list[i]);
 						tmpList.push({
 							username: tmpUser.username,
 							status: tmpUser.status,
 						})
-					})
+					}
 					let socket = server.of('/').sockets.get(await this.findClientIdByUsername(element.username));
-					console.log(tmpList);
-					// socket.emit('updateFriend', tmpList);
+					socket.emit('updateFriend', tmpList);
 				}
 			}
 		})
