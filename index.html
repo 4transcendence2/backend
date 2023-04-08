@@ -23,7 +23,7 @@
 			function createChatRoom() {
 				socket.emit('createChatRoom', {
 					status: "public",
-					title: "sijfhsadkjfhsadf",
+					title: "sijfhsadkjfhsadf"
 				});
 			};
 
@@ -52,7 +52,7 @@
 			})
 
 			socket.on('updateFriend', data => {
-				console.log('updateFriend');
+				console.log('friend');
 				console.log(data);
 			})
 
@@ -93,11 +93,6 @@
 				}).catch(err => {
 					console.log(err);
 				})
-				// console.log(formData);
-				// console.log(files);
-				// const blob = new Blob()
-				// console.log(await files.arrayBuffer());
-				// req.send(await files.arrayBuffer());
 			}
 
     </script>

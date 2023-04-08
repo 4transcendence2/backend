@@ -278,6 +278,13 @@ export class ChatService {
 		})
 	}
 
+	async exitDmRoomResult(client: Socket, status: string, detail?: string) {
+		client.emit('exitDmRoomResult', {
+			status: status,
+			detail: detail,
+		})
+	}
+
 	async createChatRoomResult(client: Socket, status: string, detail?: string) {
 		client.emit('createChatRoomResult', {
 			status: status,

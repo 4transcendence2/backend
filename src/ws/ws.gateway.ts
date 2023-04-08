@@ -124,6 +124,22 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
 
+
+		// 이미 상대방과의 dm 방이 있는지 확인
+		const dmList = await this.dmRepository.find();
+		if (dmList === null || dmList === undefined || dmList.length === 0) {}
+		else {
+			dmList.forEach(async elem => {
+				let index1 = elem.user_list.find(user => user.username === username);
+				let index2 = elem.user_list.find(user => user.username === opponent);
+
+				if (index1 !== undefined && index2 !== undefined) {
+					await this.chatService.createDmRoomResult(client, 'approved');
+					return;
+				}
+			})
+		}
+
 		const fromUser = await this.userService.findOne(username);
 		const toUser = await this.userService.findOne(opponent);
 
@@ -237,6 +253,62 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	/*
 		Exit dm Room
 	*/
+	async exitDmRoom(client: Socket, body: any) {
+		if (body === undefined) {
+			await this.chatService.exitDmRoomResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return;
+		}
+
+		const username = await this.wsService.findUserByClientId(client.id);
+		const roomId = body.roomId;
+
+		// 접속중인 유저의 요청인지 확인.
+		if (!(await this.wsService.isLogin(client))) {
+			await this.chatService.createDmRoomResult(client, 'error', '접속중인 유저가 아닙니다.');
+			return;
+		}
+
+		// roomId 프로퍼티 확인
+		if (roomId === undefined) {
+			await this.chatService.exitChatRoomResult(client, 'error', 'roomId 프로퍼티가 없습니다.');
+			return;
+		}
+
+
+		const user = await this.userService.findOne(username);
+		const dm = await this.dmRepository.findOneBy({
+			id: roomId
+		});
+
+
+		// 존재하는 dm방인지 확인
+		if (dm === null) {
+			await this.chatService.exitDmRoomResult(client, 'error', '존재하지 않는 DM 방입니다.');
+			return;
+		}
+
+
+		// 해당 dm 방의 유저인지 확인
+		if (dm.user_list.find(elem => elem === user) === undefined) {
+			await this.chatService.exitDmRoomResult(client, 'error', '해당 DM방의 유저가 아닙니다.');
+			return;
+		}
+
+
+		// 이미 나간 방인지
+		const index = user.dm_list.findIndex(elem => elem === dm);
+		if (index === -1) {
+			await this.chatService.exitDmRoomResult(client, 'error', '이미 나간 DM방입니다.');
+			return;
+		} else {
+			user.dm_list.splice(index, 1);
+			await this.usersRepository.save(user);
+			client.leave('dm' + roomId);
+		}
+
+		await this.chatService.exitDmRoomResult(client, 'approved');
+
+	}
 
 	/*
 		Create Chat Room Event
