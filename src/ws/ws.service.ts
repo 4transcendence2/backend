@@ -96,7 +96,7 @@ export class WsService {
 
 	async updateFriend(server: Server, client: Socket, userName?: string) {
 		const list = await this.getConnectingUser();
-		const username = userName === undefined ? await this.findUserByClientId(client.id) : userName;
+		const username = (userName === undefined) ? await this.findUserByClientId(client.id) : userName;
 
 		list.forEach(async element => {
 			let user = await this.userService.findOne(element.username);
