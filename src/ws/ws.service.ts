@@ -55,6 +55,7 @@ export class WsService {
 	
 
 	async findUserByClientId(clientId: string): Promise<string> {
+		if (clientId === undefined) return undefined;
 		if (userList.length > 0)
 			return userList.find(element => element.clientId === clientId).username;
 		return undefined;
