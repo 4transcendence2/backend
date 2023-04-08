@@ -33,7 +33,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		@InjectRepository(Dm)
 		private dmRepository: Repository<Dm>,
 	) {}
-		
+
 	@WebSocketServer()
 	server: Server
 		
@@ -85,6 +85,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		Socket Disconnect Event
 	*/
 	async handleDisconnect(client: Socket) {
+		if (client === undefined || client === null) return;
 		const username = await this.wsService.findUserByClientId(client.id);
 		const user = await this.usersRepository.findOneBy({ username });
 		user.status = 'logout';
@@ -343,7 +344,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 			return;
 		}
 
-		// password 프로퍼티 확인
+		// password 프로퍼티 확인₩
 		if (status === 'protected' && password === undefined) {
 			await this.chatService.createChatRoomResult(client, 'warning', '암호를 입력해주세요.');
 			return;
