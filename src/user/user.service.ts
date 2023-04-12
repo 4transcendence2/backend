@@ -14,7 +14,7 @@ export class UserService {
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 
-	) {}
+	) { }
 
 	async findAll(): Promise<User[]> {
 		return await this.usersRepository.find();
@@ -31,15 +31,15 @@ export class UserService {
 			if (err) console.log(err);
 		});
 		const newUser: User = this.usersRepository.create({
-      friend: [],
+			friend: [],
 			owner: [],
 			name: userInfo.username,
 			password: hashedPassword,
 			avatar: defaultAvatar,
 			phone: userInfo.phonenumber,
-    });
+		});
 
-    await this.usersRepository.insert(newUser);
+		await this.usersRepository.insert(newUser);
 	}
 
 	async updateAvatar(username: string, file: Buffer) {
@@ -64,7 +64,7 @@ export class UserService {
 		if (user.chat_room_list === null) return;
 
 		let index = user.chat_room_list.findIndex(element => element === room_id);
-		if (index === -1) return ;
+		if (index === -1) return;
 		user.chat_room_list.splice(index, 1);
 
 		await this.usersRepository.save(user);
@@ -80,11 +80,11 @@ export class UserService {
 				user.chat_room_list.push(room_id);
 			}
 		}
-		
+
 		await this.usersRepository.save(user);
 	}
 
-	
+
 
 	async addFriend(fromUsername: string, toUsername: string) {
 		const from = await this.findOne(fromUsername);
