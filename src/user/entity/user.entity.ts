@@ -1,11 +1,12 @@
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserStatus } from "../user.status";
-import Dm from "src/chat/entity/chat.dm.entity";
+import { ChatRoom } from "src/chat/entity/chat.room.entity";
+import Friend from "./user.friend.entity";
 
 @Entity('users')
 export class User {
 	@PrimaryGeneratedColumn()
-	unique_id: number;
+	id: number;
 
 	@Column({
 		enum: UserStatus,
@@ -28,29 +29,17 @@ export class User {
 	})
 	lose: number;
 
-	@Column({
-		type: "text",
-		array: true,
-		nullable: true,
-	})
-	friend_list: string[];
-
-	@Column({
-		type: "integer",
-		array: true,
-		nullable: true,
-	})
-	chat_room_list: number[];
-
-	@ManyToMany(() => Dm)
+	@ManyToMany(() => User)
 	@JoinTable()
-	dm_list: Dm[];
+	friend: User[];
 
+	@OneToMany(() => ChatRoom, (chatRoom) => chatRoom.owner)
+	owner: ChatRoom[];
 
 	@Column({
 		unique: true,
 	})
-	username: string;
+	name: string;
 
 	@Column({
 	})
@@ -65,6 +54,6 @@ export class User {
 	@Column({	
 		nullable: false,
 	})
-	phone_number: string;
+	phone: string;
 
 }

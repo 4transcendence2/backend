@@ -10,9 +10,9 @@ export class GameController {
 	) {}
 	
 
-	@Post('create')
-	async createRoom() {
-		await this.gameService.createRoom();
-	}
+	// @Post('create')
+	// async createRoom() {
+	// 	await this.gameService.createRoom();
+	// }
 }
 

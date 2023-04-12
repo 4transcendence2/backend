@@ -1,11 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, ManyToOne, ManyToMany, JoinTable } from "typeorm";
 import { RoomStatus } from "../chat.room.status";
+import { User } from "src/user/entity/user.entity";
 
 
 @Entity('chat_room')
 export class ChatRoom {
 	@PrimaryGeneratedColumn()
-	room_id: number;
+	id: number;
 
 	@Column({
 		nullable: false,
@@ -23,37 +24,24 @@ export class ChatRoom {
 	})
 	title: string;
 
-	@Column({
-		nullable: false,
-	})
-	owner: string;
+	@ManyToOne(() => User, (user) => user.owner)
+	owner: User;
 
-	@Column({
-		type: "text",
-		array: true,
-		nullable: true,
-	})
-	admin_list: string[];
+	@ManyToMany(() => User)
+	@JoinTable()
+	admin: User[];
 
-	@Column({
-		type: 'text',
-		array: true,
-		nullable: true,
-	})
-	user_list: string[];
+	@ManyToMany(() => User)
+	@JoinTable()
+	user: User[];
 
-	@Column({
-		type: 'text',
-		array: true,
-		nullable: true,
-	})
-	mute_list: string[];
+	@ManyToMany(() => User)
+	@JoinTable()
+	mute: User[];
+	
+	@ManyToMany(() => User)
+	@JoinTable()
+	ban: User[];
 
-	@Column({
-		type: 'text',
-		array: true,
-		nullable: true,
-	})
-	ban_list: string[];
-
+	
 }

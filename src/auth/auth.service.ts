@@ -1,9 +1,10 @@
-require('dotenv').config();
-import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
+import { Injectable, Headers } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entity/user.entity';
+import * as jwt from 'jsonwebtoken';
 const bcrypt = require('bcrypt');
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+require('dotenv').config();
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,6 @@ export class AuthService {
 	}
 
 	
-
 	async sendOtp(phoneNumber: string) {
 		const formatNumber = '+82' + phoneNumber.substring(1);
 		client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
@@ -44,4 +44,16 @@ export class AuthService {
 		}
 	}
 
+
+	async decodeToken(@Headers() header, secret: string): Promise<string> {
+		const token = await this.extractToken(header);
+		const decodedToken = jwt.verify(token, process.env.SECRET);
+		return decodedToken['username'];
+	}
+
+	async extractToken(@Headers() header): Promise<string> {
+		const authorization = header['authorization'];
+		return authorization === undefined || authorization === null ?
+		undefined : header['authorization'].split(" ")[1];
+	}
 }

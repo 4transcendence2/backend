@@ -20,24 +20,36 @@ export class UserService {
 		return await this.usersRepository.find();
 	}
 
-	async findOne(username: string): Promise<User> {
-		return await this.usersRepository.findOneBy({ username });
+	async findOne(name: string): Promise<User> {
+		return await this.usersRepository.findOneBy({ name });
 	}
+
 
 	async createUser(userInfo: CreateUserDto) {
 		const hashedPassword = await bcrypt.hash(userInfo.password, parseInt(process.env.HASH_KEY));
-		const defaultAvatar = await fs.readFileSync(join(__dirname, '../..', 'public', 'default.png'), (err, data) => {
+		const defaultAvatar = await fs.readFileSync(join(__dirname, '../..', 'public', 'default.png'), (err) => {
 			if (err) console.log(err);
 		});
 		const newUser: User = this.usersRepository.create({
-      username: userInfo.username,
+      friend: [],
+			owner: [],
+			name: userInfo.username,
 			password: hashedPassword,
-			phone_number: userInfo.phonenumber,
 			avatar: defaultAvatar,
+			phone: userInfo.phonenumber,
     });
 
     await this.usersRepository.insert(newUser);
 	}
+
+	async updateAvatar(username: string, file: Buffer) {
+		const user = await this.findOne(username);
+
+		user.avatar = file;
+		await this.usersRepository.save(user);
+	}
+
+
 
 	async isExist(username: string): Promise<boolean> {
 		if (await this.findOne(username) === null) {
@@ -72,12 +84,7 @@ export class UserService {
 		await this.usersRepository.save(user);
 	}
 
-	async updateAvatar(username: string, file: Buffer) {
-		const user = await this.findOne(username);
-
-		user.avatar = file;
-		await this.usersRepository.save(user);
-	}
+	
 
 	async addFriend(fromUsername: string, toUsername: string) {
 		const from = await this.findOne(fromUsername);

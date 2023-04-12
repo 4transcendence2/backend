@@ -192,6 +192,8 @@ export class ChatService {
 			status: string,
 			title: string,
 			roomId: number,
+			owner: string,
+			
 		} [] = [];
 
 		if (chatRooms === null) return;
@@ -203,13 +205,18 @@ export class ChatService {
 				status: room.status,
 				title: room.title,
 				roomId: room.room_id,
+				owner: room.owner,
+
 			})
 		}
 
-		if (client === undefined)
+		if (client === undefined) {
 			server.emit('updateChatRoomList', chatRoomList);
-		else
+		}
+		else {
 			client.emit('updateChatRoomList', chatRoomList);
+		
+		}
 	}
 
 	async updateDmList(client: Socket) {
