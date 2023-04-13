@@ -33,8 +33,10 @@ export class User {
 	@JoinTable()
 	friend: User[];
 
-	@OneToMany(() => ChatRoom, (chatRoom) => chatRoom.owner)
-	owner: ChatRoom[];
+
+	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.user)
+	@JoinTable()
+	chat: ChatRoom[];
 
 	@Column({
 		unique: true,

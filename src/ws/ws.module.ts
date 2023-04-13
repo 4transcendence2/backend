@@ -14,7 +14,7 @@ import Dm from 'src/chat/entity/chat.dm.entity';
 	imports: [
 		AuthModule,
 		GameModule,
-		UserModule,
+		forwardRef(() => UserModule),
 		forwardRef(() => ChatModule),
 		TypeOrmModule.forFeature([ User, ChatRoom, Dm ]),
 	],

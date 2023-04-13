@@ -13,8 +13,8 @@ import Dm from './entity/chat.dm.entity';
 
 @Module({
 	imports: [
-		UserModule,
 		AuthModule,
+		forwardRef(() => UserModule),
 		forwardRef(() => WsModule),
 		TypeOrmModule.forFeature([ChatRoom, User, Dm]),
 	],

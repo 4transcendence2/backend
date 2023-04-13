@@ -2,7 +2,7 @@
   <head>
 		<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
     <script>
-			const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNvcmtzb2VrMjIyMiIsInN1YiI6ODEsImlhdCI6MTY4MDk0OTA3NSwiZXhwIjoxNjgxMjA4Mjc1fQ.O1-BEp78JmXa0VZ34FKqESOZ2oqLqw3l8YrEPOnkCaM';
+			const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyIiwiaWQiOjEsInBob25lIjoiMDEwMjExNDU1MzciLCJpYXQiOjE2ODEyODg2NzksImV4cCI6MTY4MTU0Nzg3OX0.8NWQHZTkwl0lQpjXca2jaogvjqcAuLy8dQwkOGN8N8g';
 			const socket = io('ws://localhost', {
 				extraHeaders: {
 					Authorization: 'Bearer ' + token,
@@ -23,7 +23,7 @@
 			function createChatRoom() {
 				socket.emit('createChatRoom', {
 					status: "public",
-					title: "sijfhsadkjfhsadf"
+					title: "hello my name is seojin"
 				});
 			};
 
@@ -31,25 +31,25 @@
 				console.log(data);
 			})
 
-			socket.on('joinChatRoomResult', data => {
-				console.log(data);
-			});
+			// socket.on('joinChatRoomResult', data => {
+			// 	console.log(data);
+			// });
 
-			socket.on('addFriendResult', data => {
-				console.log(data);
-			});
+			// socket.on('addFriendResult', data => {
+			// 	console.log(data);
+			// });
 
-			socket.on('chat', (data) => {
-				console.log(data);
-			})
+			// socket.on('chat', (data) => {
+			// 	console.log(data);
+			// })
 
 			socket.on('error', (error) => {
 				console.log(error);
 			})
 
-			socket.on('notice', data => {
-				console.log(data);
-			})
+			// socket.on('notice', data => {
+			// 	console.log(data);
+			// })
 
 			socket.on('updateFriend', data => {
 				console.log('friend');
@@ -60,6 +60,9 @@
 			socket.on('updateChatRoomList', data => {
 				console.log('chatRoomList');
 				console.log(data);
+
+
+				
 			})
 
 			socket.on('updateMyChatRoomList', data => {

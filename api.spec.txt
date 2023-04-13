@@ -247,10 +247,10 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
 }
 
 @	반환값 (실패시, 없는 유저인 경우)
-@ Statuscode: 400
+@ Statuscode: 404
 {
 	"status": "error",
-	"detail": "Not exist user"
+	"detail": "존재하지 않는 유저입니다."
 }
 
 
@@ -268,18 +268,11 @@ Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받�
   "detail":	"Unauthorized"
 }
 
-@ 반환값 (실패시, 파일이 손상된 경우)
-@ Statuscode: 404
-{
-	"status": "error",
-	"detail": detail: "This user's profile file is damaged. Try again after update user's porifle."
-}
-
 @	반환값 (실패시, 없는 유저인 경우)
-@ StatusCode: 401
+@ StatusCode: 404
 {
 	"status": "error",
-	"detail": "Not exist user"
+	"detail": "존재하지 않는 유저입니다."
 }
 
 
@@ -617,6 +610,7 @@ data: {
 	status: string,
 	title: string,
 	roomId: number,
+	owner: string,
 } []
 
 
@@ -630,6 +624,26 @@ data: {
 	title: string,
 	roomId: number,
 } []
+
+
+----------------------------------------------------------
+
+
+@ 채팅방 유저 목록 업데이트 이벤트
+socket.on('updateChatRoom', data)
+data: {
+	userList: {
+		username: string,
+		owner: boolean,
+		admin: boolean,
+		login: boolean,
+		ban: boolean,
+	} []
+}
+
+
+
+
 
 
 ----------------------------------------------------------

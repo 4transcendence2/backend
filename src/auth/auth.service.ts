@@ -1,14 +1,16 @@
-import { Injectable, Headers } from '@nestjs/common';
+require('dotenv').config();
+import { Injectable, Headers, forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entity/user.entity';
 import * as jwt from 'jsonwebtoken';
 const bcrypt = require('bcrypt');
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-require('dotenv').config();
 
 @Injectable()
 export class AuthService {
 	constructor(
+
+		@Inject(forwardRef(() => UserService))
 		private userService: UserService,
 
 	) {}
@@ -46,14 +48,16 @@ export class AuthService {
 
 
 	async decodeToken(@Headers() header, secret: string): Promise<string> {
-		const token = await this.extractToken(header);
-		const decodedToken = jwt.verify(token, process.env.SECRET);
-		return decodedToken['username'];
+		try {
+			const token = await this.extractToken(header);
+			const decodedToken = jwt.verify(token, secret);
+			return decodedToken['name'];
+		} catch (err) {
+			throw new UnauthorizedException();
+		}
 	}
 
 	async extractToken(@Headers() header): Promise<string> {
-		const authorization = header['authorization'];
-		return authorization === undefined || authorization === null ?
-		undefined : header['authorization'].split(" ")[1];
+		return header['authorization'].split(" ")[1];
 	}
 }

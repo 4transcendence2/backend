@@ -5,12 +5,13 @@ import { User } from './entity/user.entity';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { GameModule } from 'src/game/game.module';
+import { WsModule } from 'src/ws/ws.module';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([User]),
 		forwardRef(() => AuthModule),
-		GameModule,
+		forwardRef(() => WsModule),
 ],
 	controllers: [ UserController ],
 	providers: [ UserService ],

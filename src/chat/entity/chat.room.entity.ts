@@ -1,6 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, ManyToOne, ManyToMany, JoinTable } from "typeorm";
 import { RoomStatus } from "../chat.room.status";
 import { User } from "src/user/entity/user.entity";
+import { userInfo } from "os";
 
 
 @Entity('chat_room')
@@ -24,15 +25,14 @@ export class ChatRoom {
 	})
 	title: string;
 
-	@ManyToOne(() => User, (user) => user.owner)
+	@ManyToOne(() => User)
 	owner: User;
 
 	@ManyToMany(() => User)
 	@JoinTable()
 	admin: User[];
 
-	@ManyToMany(() => User)
-	@JoinTable()
+	@ManyToMany(() => User, (user) => user.chat)
 	user: User[];
 
 	@ManyToMany(() => User)

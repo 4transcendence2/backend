@@ -1,4 +1,4 @@
-import { Injectable, forwardRef, Inject } from '@nestjs/common';
+import { Injectable, forwardRef, Inject, UseGuards } from '@nestjs/common';
 // import { InjectRepository } from '@nestjs/typeorm';
 // import { ChatRoom } from 'src/chat/entity/chat-room.entity';
 // import { User } from 'src/user/entity/user.entity';
@@ -6,13 +6,16 @@ import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
 import { ChatService } from 'src/chat/chat.service';
+import { AuthService } from 'src/auth/auth.service';
+import { UserStatus } from 'src/user/user.status';
+import { TokenGuard } from './guard/ws.token.guard';
 
-interface connectedUserInfo {
-	username: string,
-	clientId: string
+interface login {
+	name: string,
+	client: Socket,
 }
 
-const userList: connectedUserInfo[] = [];
+const users: login[] = [];
 
 @Injectable()
 export class WsService {
@@ -24,146 +27,119 @@ export class WsService {
 		// @InjectRepository(User)
 		// private usersRepository: Repository<User>,
 
+		@Inject(forwardRef(() => UserService))
 		private userService: UserService,
+
+		@Inject(forwardRef(() => AuthService))
+		private authService: AuthService,
 
 		@Inject(forwardRef(() => ChatService))
 		private chatService: ChatService,
 	) {}
 
-	async addUser(username: string, clientId: string): Promise<boolean>{
-		const result = userList.find(element => element.username === username);
-		if (result === undefined) {
-			userList.push({
-				username: username,
-				clientId: clientId,
-			});
-			return true;
-		}
-		return false;
-	}
-
-	async deleteUser(clientId: string) {
-		const index = userList.findIndex(element => element.clientId === clientId);
-		if (index !== -1) {
-			userList.splice(index, 1);
-		}
-	}
-
-	async getConnectingUser() {
-		return userList;
-	}
-	
-
-	async findUserByClientId(clientId: string): Promise<string> {
-		if (clientId === undefined) return undefined;
-		if (userList.length > 0)
-			return userList.find(element => element.clientId === clientId).username;
-		return undefined;
-	}
-
-	async findClientIdByUsername(username: string): Promise<string> {
-		if (userList.length > 0)
-			return userList.find(element => element.username === username).clientId;
-		return undefined;
-	}
-
-
-	async isLogin(client?: Socket, username?: string): Promise<boolean> {
-		if (client !== undefined) {
-			const username = await this.findUserByClientId(client.id);
-			if (username === undefined) return false;
-			return true;
-		}
-
-		if (username !== undefined) {
-			const clientId = await this.findClientIdByUsername(username);
-			if (clientId === undefined) return false;
-			return true;
-		}
-	}
-
-
-	async updateUsers(server: Server) {
-		let tmpList: {
-			username: string,
-		}[] = [];
-		(await this.getConnectingUser()).forEach(async element => {
-			tmpList.push({
-				username: element.username,
-			})
-		});
-		server.emit('updateuUsers', tmpList);
-	}
-
-	async updateFriend(server: Server, client: Socket, userName?: string) {
-		const list = await this.getConnectingUser();
-		const username = (userName === undefined) ? await this.findUserByClientId(client.id) : userName;
-
-		list.forEach(async element => {
-			let user = await this.userService.findOne(element.username);
-			if (user.friend_list === null || user.friend_list.length === 0) {}
-			else {
-				if ((user.friend_list.find(elem => elem === username)) !== undefined) {
-					let tmpList: {
-						username: string,
-						status: string,
-					} [] = [];
-
-					for(let i = 0; i < user.friend_list.length; ++i) {
-						let tmpUser = await this.userService.findOne(user.friend_list[i]);
-						tmpList.push({
-							username: tmpUser.username,
-							status: tmpUser.status,
-						})
-					}
-					let socket = server.of('/').sockets.get(await this.findClientIdByUsername(element.username));
-					socket.emit('updateFriend', tmpList);
-				}
+	async login(client: Socket) {
+		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
+		.then(async name => {
+			if (await this.isLogin(client)) {
+				client.emit('error', {
+					status: 'error',
+					detail: '이미 접속중인 유저입니다.',
+				})
+				client.disconnect();
+				return;
 			}
+
+			users.push({
+				name: name,
+				client: client,
+			});
+
+			await this.userService.updateStatus(name, UserStatus.LOGIN);
+			await this.updateFriend(name, client);
+			await this.chatService.joinRooms(name, client);
+			await this.chatService.updateMyChatRoomList(name, client);
+			await this.chatService.updateChatRoomList(name, client);
+			//DM 룸 업데이트 필요
+			//게임 룸 업데이트 필요
+			
+
+		})
+		.catch(err => {
+			client.emit('error', err);
+			client.disconnect();
+		})
+
+	}
+
+	async logout(client: Socket) {
+		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
+		.then(async name => {
+			let index = users.findIndex(user => user.name === name);
+			if (index !== -1) users.splice(index, 1);
+			await this.userService.updateStatus(name, UserStatus.LOGOUT);
+			await this.chatService.leaveRooms(name, client);
+		})
+		.catch(err => {
+			client.emit('error', err);
 		})
 	}
+	
+	async findName(client: Socket): Promise<string> {
+		const login = users.find(user => user.client === client);
+		if (login === undefined) return undefined;
+		return login.name;
+	}
 
-	async	initUpdate(server: Server, client: Socket) {
-		const username = await this.findUserByClientId(client.id);
-		const user = await this.userService.findOne(username);
+	async findClient(name: string): Promise<Socket> {
+		const login = users.find(user => user.name === name);
+		if (login === undefined) return undefined;
+		return login.client;
+	}
 
-		const chatRoomList = user.chat_room_list;
-		const dmList = user.dm_list;
-
-		if (chatRoomList !== null && chatRoomList !== undefined && chatRoomList.length !== 0) {
-			chatRoomList.forEach(id => {
-				client.join('room' + id);
-			})
+	async isLogin(client: Socket, name?: string): Promise<boolean> {
+		if (client !== undefined) {
+			const res = await this.findName(client);
+			if (res === undefined) return false;
+			return true;
 		}
 
-		if (dmList !== null && dmList !== undefined && dmList.length !== 0) {
-			dmList.forEach(dm => {
-				client.join('dm' + dm.id);
-			})
+		if (name !== undefined) {
+			const res = await this.findClient(name);
+			if (res === undefined) return false;
+			return true;
 		}
+	}
 
-		await this.chatService.updateChatRoomList(server, client);
-		await this.chatService.updateMyChatRoomList(client);
-		await this.chatService.updateDmList(client);
-		await this.updateFriend(server, client, undefined);
+	async updateFriend(name: string, client: Socket) {
+		const user = await this.userService.findOne(name);
 		const friendList: {
 			username: string,
 			status: string,
 		}[] = [];
-		if (user.friend_list === null || user.friend_list === undefined || user.friend_list.length === 0) {
-			client.emit('updateFriend', []);
-		} else {
-			for(let i = 0; i < user.friend_list.length; ++i) {
-				let friend = await this.userService.findOne(user.friend_list[i]);
-				friendList.push({
-					username: friend.username,
-					status: friend.status,
-				})
-			}
-			client.emit('updateFriend', friendList);
+		for(let i = 0; i < user.friend.length; ++i) {
+			friendList.push({
+				username: user.friend[i].name,
+				status: user.friend[i].status,
+			})
 		}
-		// GAME ROOM LIST
+		client.emit('updateFriend', friendList);
 	}
+
+	async updateYourFriend(name: string) {
+		const friend = await this.userService.findOne(name);
+		users.forEach(async elem => {
+			const user = await this.userService.findOne(elem.name);
+			if (user.friend.find(f => f === friend) !== undefined) {
+				this.updateFriend(user.name, await this.findClient(user.name));
+			}
+		})
+	}
+
+	getLoginUsers(): login[] {
+		return users;
+	}
+
+
 
 
 }

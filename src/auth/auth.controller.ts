@@ -38,9 +38,9 @@ export class AuthController {
 	}
 
 
-	@Get('exist/:username')
-	async isExist(@Param('username') username: string, @Res() res: Response) {
-		const result =  await this.userService.isExist(username);
+	@Get('exist/:name')
+	async isExist(@Param('name') name: string, @Res() res: Response) {
+		const result =  await this.userService.isExist(name);
 
 		if (result) {
 			return res.json({
@@ -64,11 +64,9 @@ export class AuthController {
 	@UseGuards(TempJwtGuard)
 	@Get('get/otp/login')
 	async sendSignupOtp(@Headers() header: any) {
-		const token = header['authorization'].split(" ")[1];
-		const decodedToken = jwt.verify(token, process.env.TMP_SECRET);
-		const username = decodedToken['username'];
-		const user = await this.usersRepository.findOneBy({ username });
-		await this.authService.sendOtp(user.phone_number);
+		const name = await this.authService.decodeToken(header, process.env.TMP_SECRET);
+		const user = await this.userService.findOne(name);
+		await this.authService.sendOtp(user.phone);
 	}
 
 
@@ -76,13 +74,8 @@ export class AuthController {
 	@UseGuards(TempJwtGuard)
 	@Post('check/otp/login')
 	async checkLoginOtp(@Headers() header:any, @Request() req, @Body() body: LoginOtpDto, @Res() res: Response) {
-		const token = header['authorization'].split(" ")[1];
-		const decodedToken = jwt.verify(token, process.env.TMP_SECRET);
-		const username = decodedToken['username'];
-		const user = await this.usersRepository.findOneBy({ username });
-
 		try {
-			const result = await this.authService.checkOtp(body.otp, user.phone_number);
+			const result = await this.authService.checkOtp(body.otp, req.user.phone);
 			if (result.status === 'approved') {
 				res.status(200);
 				return res.json({
@@ -94,7 +87,7 @@ export class AuthController {
 			if (result.status === 'pending') {
 				return res.json({
 					status: "pending",
-					detail: "Invalid Token",
+					detail: "Invalid Otp",
 				});
 			}
 		} catch (error) {

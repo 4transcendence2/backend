@@ -20,9 +20,4 @@ export class ChatController {
 	) {}
 
 
-	@Get()
-	async test() {
-		const user = await this.userService.findOne('sorksoek2');
-		console.log(typeof(user.dm_list));
-	}
 }

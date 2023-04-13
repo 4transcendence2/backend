@@ -15,9 +15,10 @@ export class TempJwtStrategy extends PassportStrategy(Strategy, 'tmpJwt') {
 	}
 
 	async validate(payload: any) {
-		return {
-			unique_id: payload.sub,
-			username: payload.username,
-		}
+		return ({
+			id: payload.id,
+			name: payload.name,
+			phone: payload.phone,
+		});
 	}
 }

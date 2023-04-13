@@ -7,12 +7,11 @@ import * as bcrypt from 'bcrypt'
 @Injectable()
 export class TempJwtService {
 	constructor(
-		private userService: UserService,
 		private jwtService: JwtService,
 	) {}
 
 	async login(user: User) {
-		const payload = { username: user.username, sub:user.unique_id }
+		const payload = { name: user.name, id: user.id, phone: user.phone };
 		return {
 			status: 'approved',
 			accessToken: this.jwtService.sign(payload),
