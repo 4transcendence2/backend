@@ -649,6 +649,7 @@ data: {
 @ 채팅방 유저 목록 업데이트 이벤트
 socket.on('updateChatRoom', data)
 data: {
+	roomId: number,
 	userList: {
 		username: string,
 		owner: boolean,

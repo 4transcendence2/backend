@@ -27,12 +27,31 @@
 				});
 			};
 
-			function appointAdmin() {
+			function appointAdmin(roomId, username) {
 				socket.emit('appointAdmin', {
-					roomId: 23,
-					username: 'sorksoek22',
+					roomId: roomId,
+					username: username,
 				})
 			}
+			function kick(roomId, username) {
+				socket.emit('kick', {
+					roomId: roomId,
+					username: username,
+				})
+			}
+			function ban(roomId, username) {
+				socket.emit('ban', {
+					roomId: roomId,
+					username: username,
+				});
+			}
+			function mute(roomId, username) {
+				socket.emit('mute', {
+					roomId: roomId,
+					username: username,
+				});
+			}
+
 			socket.on('createChatRoomResult', data => {
 				console.log(data);
 			})
@@ -43,6 +62,16 @@
 
 			socket.on('exitChatRoomResult', data => {
 				console.log(data);
+			})
+
+			socket.on('kickResult', data => {
+				console.log('kick', data);
+			})
+			socket.on('banResult', data => {
+				console.log('ban', data);
+			})
+			socket.on('muteResult', data => {
+				console.log('mute', data);
 			})
 			// socket.on('addFriendResult', data => {
 			// 	console.log(data);
@@ -67,7 +96,42 @@
 
 			socket.on('updateChatRoom', data => {
 				console.log('chatRoom');
-				console.log(data);
+				const userList = document.getElementById('userList');
+				while (userList.firstChild) {
+					userList.removeChild(userList.firstChild);
+				}
+
+				data.userList.forEach(element => {
+					const box = document.createElement('div');
+					box.style.display = 'flex';
+
+					const name = document.createElement('p');
+					name.innerText = element.username;
+
+					const kickButton = document.createElement('button');
+					kickButton.addEventListener('click', () => {
+						kick(data.roomId, element.username);
+					})
+					kickButton.innerText = 'KICK';
+					
+					const banButton = document.createElement('button');
+					banButton.addEventListener('click', () => {
+						ban(data.roomId, element.username);
+					})
+					banButton.innerText = 'BAN';
+					
+					const muteButton = document.createElement('button');
+					muteButton.addEventListener('click', () => {
+						mute(data.roomId, element.username);
+					})
+					muteButton.innerText = 'MUTE';
+
+					box.appendChild(name);
+					box.appendChild(kickButton);
+					box.appendChild(banButton);
+					box.appendChild(muteButton);
+					userList.appendChild(box);
+				})
 			})
 
 			socket.on('updateChatRoomList', data => {
@@ -184,5 +248,6 @@
 			<div id="myChatRoomContainer"></div>
 			<div id="chatRoomContainer"></div>
 		</div>
+		<div id="userList"></div>
 	</body>
 </html>

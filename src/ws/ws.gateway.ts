@@ -155,6 +155,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 
+
 	/*
 		Block
 	*/
@@ -173,6 +174,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async addFriend(client: Socket, body: any) {
 		await this.userService.addFriend(client, body);
 	}
+
 
 
 
