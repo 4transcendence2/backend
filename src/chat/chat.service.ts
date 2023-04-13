@@ -245,9 +245,7 @@ export class ChatService {
 
 		for(let i = 0; i < room.user.length; ++i) {
 			if (room.user[i].status === UserStatus.LOGIN) {
-				(await this.wsService.findClient(room.user[i].name)).emit('updateChatRoom', {
-					userList: userList,
-				});
+				(await this.wsService.findClient(room.user[i].name)).emit('updateChatRoom', userList);
 			}
 		}
 	}
@@ -259,6 +257,7 @@ export class ChatService {
 			roomId: number,
 			owner: string,
 			status: string,
+			joining: number,
 		}[] = [];
 		for(let i = 0; i < user.chat.length; ++i) {
 			list.push({
@@ -266,6 +265,7 @@ export class ChatService {
 				roomId: user.chat[i].id,
 				owner: user.chat[i].owner.name,
 				status: user.chat[i].status,
+				joining: user.chat[i].user.length,
 			});
 		}
 		client.emit('updateMyChatRoomList', list);
@@ -279,6 +279,7 @@ export class ChatService {
 			title: string,
 			roomId: number,
 			owner: string,
+			joining: number,
 		}[] = [];
 		for (let i = 0; i < chatRooms.length; ++i) {
 			let room = chatRooms[i];
@@ -289,6 +290,7 @@ export class ChatService {
 				title: room.title,
 				roomId: room.id,
 				owner: room.owner.name,
+				joining: room.user.length,
 			})
 		}
 		client.emit('updateChatRoomList', list);

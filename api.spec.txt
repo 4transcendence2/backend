@@ -416,11 +416,11 @@ data: {
 ----------------------------------------------------------
 
 
-@ 퇴장 이벤트
+@ kick 이벤트
 
 socket.emit('kick', {
   "roomId": number,
-  "username": string (퇴장 시킬 유저네임)
+  "username": string (kick 시킬 유저네임)
 })
 
 
@@ -611,6 +611,7 @@ data: {
 	title: string,
 	roomId: number,
 	owner: string,
+	joining: number,
 } []
 
 
@@ -621,8 +622,11 @@ data: {
 
 socket.on('updateMyChatRoomList', data)
 data: {
+	status: string,
 	title: string,
 	roomId: number,
+	owner: string,
+	joining: number,
 } []
 
 
@@ -632,14 +636,12 @@ data: {
 @ 채팅방 유저 목록 업데이트 이벤트
 socket.on('updateChatRoom', data)
 data: {
-	userList: {
 		username: string,
 		owner: boolean,
 		admin: boolean,
 		login: boolean,
 		ban: boolean,
-	} []
-}
+} []
 
 
 

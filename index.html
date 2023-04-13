@@ -59,13 +59,14 @@
 				console.log(data);
 			})
 
+			socket.on('updateChatRoom', data => {
+				console.log('chatRoom');
+				console.log(data);
+			})
 
 			socket.on('updateChatRoomList', data => {
 				console.log('chatRoomList');
-				console.log(data);
-
-
-				
+				console.log(data);	
 			})
 
 			socket.on('updateMyChatRoomList', data => {
@@ -86,10 +87,14 @@
 					newButton.addEventListener('click', () => {
 						exit(element.roomId);
 					});
+					joinButton.addEventListener('click', () => {
+						join(element.roomId);
+					})
 					newButton.innerText = 'EXIT';
 					joinButton.innerText = 'JOIN';
 					box.appendChild(title);
 					box.appendChild(newButton);
+					box.appendChild(joinButton);
 					container.appendChild(box);
 				});
 			})

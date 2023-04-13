@@ -174,7 +174,6 @@ export class ExitChatRoomGuard implements CanActivate {
 export class ChatGuard implements CanActivate {
 	constructor(
 		private chatService: ChatService,
-		private wsService: WsService,
 	) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
@@ -215,6 +214,52 @@ export class ChatGuard implements CanActivate {
 			this.chatService.result('chatResult' ,client, 'warning', 'mute 당하셨습니다.');
 			return false;
 		}
+		return true;
+	}
+}
+
+@Injectable()
+export class KickGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('kickResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// roomId 프로퍼티 확인
+		if (body.roomId === undefined) {
+			this.chatService.result('kickResult', client, 'error', 'roomIid 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.chatService.result('kickResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 방인지 확인
+		if (!await this.chatService.isExist(body.roomId)) {
+			this.chatService.result('kickResult', client, 'error', '존재하지 않는 채팅방입니다.');
+			return false;
+		}
+
+		// 해당 방의 유저인지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client)) {
+			this.chatService.result('kickResult', client, 'error', '해당 채팅방의 유저가 아닙니다.');
+			return false;
+		}
+
+		// 권한 확인
+		
+
+
 		return true;
 	}
 }
