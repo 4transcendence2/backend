@@ -99,6 +99,9 @@ export class ChatService {
 			password: body.status === 'protected' ? body.password : null,
 			owner: user,
 			user: [user],
+			mute: [],
+			ban: [],
+			admin: []
 		});
 
 		this.result('joinChatRoomResult', client, 'approved');
