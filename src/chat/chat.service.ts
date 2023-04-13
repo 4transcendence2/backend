@@ -350,7 +350,6 @@ export class ChatService {
 		const banList: {
 			username: string
 		} [] = [];
-
 		for(let i = 0; i < room.user.length; ++i) {
 			userList.push({
 				username: room.user[i].name,
@@ -366,13 +365,12 @@ export class ChatService {
 			});
 		}
 
-
 		for(let i = 0; i < room.user.length; ++i) {
 			if (room.user[i].status === UserStatus.LOGIN) {
 				(await this.wsService.findClient(room.user[i].name)).emit('updateChatRoom', {
 					userList: userList,
 					banList: banList,
-				});
+				})
 			}
 		}
 	}

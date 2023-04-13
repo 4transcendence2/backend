@@ -75,7 +75,6 @@ export class WsService {
 		.then(async name => {
 			let index = users.findIndex(user => user.name === name);
 			if (index !== -1) users.splice(index, 1);
-			users.splice(users.findIndex(elem => elem.client === client), 1);
 			await this.userService.updateStatus(name, UserStatus.LOGOUT);
 			await this.chatService.leaveRooms(name, client);
 		})

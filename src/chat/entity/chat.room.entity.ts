@@ -38,7 +38,7 @@ export class ChatRoom {
 	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.user)
 	@JoinTable()
 	mute: User[];
-	
+
 	@ManyToMany(() => User)
 	@JoinTable()
 	ban: User[];
@@ -46,5 +46,5 @@ export class ChatRoom {
 	@OneToMany(() => BlockList, (blockList) => blockList.chat)
 	block: BlockList[];
 
-	
+
 }
