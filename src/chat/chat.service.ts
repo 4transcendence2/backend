@@ -110,8 +110,8 @@ export class ChatService {
 
 		client.join('room' + newRoom.id);
 		await this.chatRoomRepository.save(newRoom);
-		await this.updateMyChatRoomList(name, client);
 		const users = this.wsService.getLoginUsers();
+		await this.updateMyChatRoomList(name, client);
 		users.forEach(async elem => {
 			await this.updateChatRoomList(elem.name, elem.client);
 		});
@@ -138,8 +138,8 @@ export class ChatService {
 		await this.updateChatRoom(room);
 		this.wsService.getLoginUsers().forEach(elem => {
 			this.updateChatRoomList(elem.name, elem.client);
+			this.updateMyChatRoomList(user.name, client);
 		})
-		this.updateMyChatRoomList(user.name, client);
 	}
 
 	async exitChatRoom(client: Socket, body: any) {
