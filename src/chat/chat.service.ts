@@ -104,9 +104,7 @@ export class ChatService {
 			admin: []
 		});
 
-		this.result('joinChatRoomResult', client, 'approved');
-
-
+		this.result('createChatRoomResult', client, 'approved');
 		client.join('room' + newRoom.id);
 		await this.chatRoomRepository.save(newRoom);
 		const users = this.wsService.getLoginUsers();
