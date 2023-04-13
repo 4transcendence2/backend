@@ -499,11 +499,24 @@ data: {
 "status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
 
 
+----------------------------------------------------------
 
 
-// 구현중
-// mute 당했을 때, 이벤트
-socket.on('mute', data)
+@ 관리자 임명 이벤트
+
+socket.emit('appointAdmin', {
+	"roomId": number,
+	"username": string (관리자로 만들 유저네임)
+})
+
+socket.on('appointAdminResult', data)
+data: {
+	"status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
+	"detail": string
+}
+
+"status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
+
 
 
 ----------------------------------------------------------
@@ -636,12 +649,16 @@ data: {
 @ 채팅방 유저 목록 업데이트 이벤트
 socket.on('updateChatRoom', data)
 data: {
+	userList: {
 		username: string,
 		owner: boolean,
 		admin: boolean,
 		login: boolean,
-		ban: boolean,
-} []
+	} [],
+	banList: {
+		username: string,
+	} []
+}
 
 
 

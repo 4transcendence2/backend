@@ -137,30 +137,15 @@ export class UserService {
 		await this.usersRepository.save(user);
 	}
 
-	async exitChatRoom(username: string, room_id: number) {
-		const user = await this.findOne(username);
+	
 
-		// if (user.chat_room_list === null) return;
 
-		// let index = user.chat_room_list.findIndex(element => element === room_id);
-		// if (index === -1) return;
-		// user.chat_room_list.splice(index, 1);
 
+	async addFriend(client: Socket, body: any) {
+		const user = await this.findOne(await this.wsService.findName(client));
+		user.friend.push(await this.findOne(body.username));
 		await this.usersRepository.save(user);
-	}
-
-
-
-	async addFriend(fromUsername: string, toUsername: string) {
-		const from = await this.findOne(fromUsername);
-
-		// if (from.friend_list === null || from.friend_list.length === 0) {
-		// 	from.friend_list = [toUsername];
-		// } else {
-		// 	from.friend_list.push(toUsername);
-		// }
-
-		await this.usersRepository.save(from);
+		client.emit('addFriendResult', client, 'approved');
 	}
 
 	async addFriendResult(client: Socket, status: string, detail?: string) {
@@ -170,10 +155,8 @@ export class UserService {
 		})
 	}
 
-	// async isFriend(fromUsername: string, toUsername: string): Promise<boolean> {
-	async isFriend(fromUsername: string, toUsername: string) {
-		// const from = await this.findOne(fromUsername);
-		// if (from.friend_list === null || from.friend_list === undefined || from.friend_list.length === 0) return false;
-		// return from.friend_list.find(el => el === toUsername) !== undefined ? true : false;
+	async isFriend(from: string, to: string) {
+		const fromUser = await this.findOne(from);
+		return fromUser.friend.find(elem => elem.name === to) !== undefined ? true : false;
 	}
 }

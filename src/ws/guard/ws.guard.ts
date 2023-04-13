@@ -294,3 +294,347 @@ export class KickGuard implements CanActivate {
 		});
 	}
 }
+
+@Injectable()
+export class BanGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+		private userService: UserService,
+		private wsService: WsService,
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('banResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// roomId 프로퍼티 확인
+		if (body.roomId === undefined) {
+			this.chatService.result('banResult', client, 'error', 'roomIid 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.chatService.result('banResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 방인지 확인
+		if (!await this.chatService.isExist(body.roomId)) {
+			this.chatService.result('banResult', client, 'error', '존재하지 않는 채팅방입니다.');
+			return false;
+		}
+
+		// 해당 방의 유저인지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client)) {
+			this.chatService.result('banResult', client, 'error', '해당 채팅방의 유저가 아닙니다.');
+			return false;
+		}
+		
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.chatService.result('banResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+		
+		
+		// 상대방이 해당 채팅방에 존재하는지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
+			this.chatService.result('banResult', client, 'error', '해당 채팅방에 없는 대상입니다.');
+			return false;
+		}
+
+
+		// 권한 확인
+		if (!await this.chatService.isOwner(body.roomId, client) && !await this.chatService.isAdmin(body.roomId, client)) {
+			this.chatService.result('banResult', client, 'warning', '권한이 없습니다.');
+			return false;
+		}
+
+		return await this.userService.findOne(body.username).then(async user => {
+			// 대상이 소유자인지 확인
+			if (await this.chatService.isOwner(body.roomId, client, user.name)) {
+				this.chatService.result('banResult', client, 'warning', '소유자는 ban 할 수 없습니다');
+				return false;
+			}
+			
+			// 자기 자신을 밴 하는지 확인
+			if (await this.wsService.findName(client) === user.name) {
+				this.chatService.result('banResult', client, 'warning', '자기 자신은 ban 할 수 없습니다');
+				return false;
+			}
+			return true;
+		});
+	}
+}
+
+@Injectable()
+export class UnbanGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+		private userService: UserService,
+		private wsService: WsService,
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('unbanResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// roomId 프로퍼티 확인
+		if (body.roomId === undefined) {
+			this.chatService.result('unbanResult', client, 'error', 'roomIid 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.chatService.result('unbanResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 방인지 확인
+		if (!await this.chatService.isExist(body.roomId)) {
+			this.chatService.result('unbanResult', client, 'error', '존재하지 않는 채팅방입니다.');
+			return false;
+		}
+
+		// 해당 방의 유저인지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client)) {
+			this.chatService.result('unbanResult', client, 'error', '해당 채팅방의 유저가 아닙니다.');
+			return false;
+		}
+		
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.chatService.result('unbanResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+
+		// 권한 확인
+		if (!await this.chatService.isOwner(body.roomId, client) && !await this.chatService.isAdmin(body.roomId, client)) {
+			this.chatService.result('unbanResult', client, 'warning', '권한이 없습니다.');
+			return false;
+		}
+
+		// 밴 당한 대상인지 확인
+		if (!await this.chatService.isBan(body.roomId, client, body.username)) {
+			this.chatService.result('unbanResult', client, 'warning', '밴 당한 유저가 아닙니다.');
+			return false;
+		}
+
+		return true;
+	}
+}
+
+
+@Injectable()
+export class MuteGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+		private userService: UserService,
+		private wsService: WsService,
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('muteResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// roomId 프로퍼티 확인
+		if (body.roomId === undefined) {
+			this.chatService.result('muteResult', client, 'error', 'roomIid 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.chatService.result('muteResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 방인지 확인
+		if (!await this.chatService.isExist(body.roomId)) {
+			this.chatService.result('muteResult', client, 'error', '존재하지 않는 채팅방입니다.');
+			return false;
+		}
+
+		// 해당 방의 유저인지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client)) {
+			this.chatService.result('muteResult', client, 'error', '해당 채팅방의 유저가 아닙니다.');
+			return false;
+		}
+		
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.chatService.result('muteResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+		
+		
+		// 상대방이 해당 채팅방에 존재하는지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
+			this.chatService.result('muteResult', client, 'error', '해당 채팅방에 없는 대상입니다.');
+			return false;
+		}
+		
+		//이미 mute 당한 대상인지
+		if (await this.chatService.isMute(body.roomId, client, body.username)) {
+			this.chatService.result('muteResult', client, 'warning', '이미 mute된 유저입니다.');
+			return false;
+		}
+		
+
+		// 권한 확인
+		if (!await this.chatService.isOwner(body.roomId, client) && !await this.chatService.isAdmin(body.roomId, client)) {
+			this.chatService.result('muteResult', client, 'warning', '권한이 없습니다.');
+			return false;
+		}
+
+		return await this.userService.findOne(body.username).then(async user => {
+			// 대상이 소유자인지 확인
+			if (await this.chatService.isOwner(body.roomId, client, user.name)) {
+				this.chatService.result('muteResult', client, 'warning', '소유자는 mute 할 수 없습니다');
+				return false;
+			}
+			
+			// 자기 자신을 mute 하는지 확인
+			if (await this.wsService.findName(client) === user.name) {
+				this.chatService.result('muteResult', client, 'warning', '자기 자신은 mute 할 수 없습니다');
+				return false;
+			}
+			return true;
+		});
+	}
+}
+
+@Injectable()
+export class AppointAdminGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+		private userService: UserService,
+		private wsService: WsService,
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('muteResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// roomId 프로퍼티 확인
+		if (body.roomId === undefined) {
+			this.chatService.result('muteResult', client, 'error', 'roomIid 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.chatService.result('muteResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 방인지 확인
+		if (!await this.chatService.isExist(body.roomId)) {
+			this.chatService.result('muteResult', client, 'error', '존재하지 않는 채팅방입니다.');
+			return false;
+		}
+
+		// 해당 방의 유저인지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client)) {
+			this.chatService.result('muteResult', client, 'error', '해당 채팅방의 유저가 아닙니다.');
+			return false;
+		}
+		
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.chatService.result('muteResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+		
+		
+		// 상대방이 해당 채팅방에 존재하는지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
+			this.chatService.result('muteResult', client, 'error', '해당 채팅방에 없는 대상입니다.');
+			return false;
+		}
+		
+		// 권한 확인
+		if (!await this.chatService.isOwner(body.roomId, client) && !await this.chatService.isAdmin(body.roomId, client)) {
+			this.chatService.result('muteResult', client, 'warning', '권한이 없습니다.');
+			return false;
+		}
+		
+		// 소유자인지 확인
+		if (await this.chatService.isOwner(body.roomId, client, body.username)) {
+			this.chatService.result('muteResult', client, 'warning', '소유자를 관리자로 임명할 수 없습니다.');
+			return false;
+		}
+
+		//이미 admin인지 확인
+		if (await this.chatService.isAdmin(body.roomId, client, body.username)) {
+			this.chatService.result('muteResult', client, 'warning', '이미 관리자입니다.');
+			return false;
+		}
+
+		return true;
+	}
+}
+
+
+@Injectable()
+export class AddFriendGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+		private userService: UserService,
+		private wsService: WsService,
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('addFriendResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.chatService.result('addFriendResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.chatService.result('addFriendResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+		
+		// 자기 자신인지
+		if (await this.wsService.findName(client) === body.username) {
+			this.chatService.result('addFriendResult', client, 'error', '자기 자신은 친구추가를 할 수 없습니다.');
+			return false;
+		}
+
+		// 이미 친구인지 확인
+		if (await this.userService.isFriend(await this.wsService.findName(client), body.username)) {
+			this.chatService.result('addFriendResult', client, 'warning', '이미 친구입니다.');
+			return false;
+		}
+
+
+		return true;
+	}
+}
