@@ -123,16 +123,18 @@ export class ChatService {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 
-		room.user.push(user);
-		await this.chatRoomRepository.save(room);
-
-		this.result('joinChatRoomResult', client, 'approved');
-		client.join('room' + room.id);
-		client.to('room' + room.id).emit('chat', {
-			status: 'notice',
-			from: 'server',
-			content: `${user.name} 님이 입장하셨습니다.`,
-		});
+		if (room.user.find(elem => elem.id === user.id) === undefined) {
+			room.user.push(user);
+			await this.chatRoomRepository.save(room);
+	
+			this.result('joinChatRoomResult', client, 'approved');
+			client.join('room' + room.id);
+			client.to('room' + room.id).emit('chat', {
+				status: 'notice',
+				from: 'server',
+				content: `${user.name} 님이 입장하셨습니다.`,
+			});
+		}
 
 		await this.updateChatRoom(room);
 	}

@@ -8,8 +8,8 @@
 					Authorization: 'Bearer ' + token,
 				}
 			})
-			function join() {
-				socket.emit('joinChatRoom', { roomId: 34, data: 'hello' });
+			function join(id) {
+				socket.emit('joinChatRoom', { roomId: id });
 			};
 
 			function exit(id) {
@@ -79,12 +79,15 @@
 				data.forEach(element => {
 					const box = document.createElement('div');
 					const newButton = document.createElement('button');
+					const joinButton = document.createElement('button');
+
 					const title = document.createElement('h3');
 					title.innerText = element.title;
 					newButton.addEventListener('click', () => {
 						exit(element.roomId);
 					});
 					newButton.innerText = 'EXIT';
+					joinButton.innerText = 'JOIN';
 					box.appendChild(title);
 					box.appendChild(newButton);
 					container.appendChild(box);

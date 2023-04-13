@@ -97,11 +97,11 @@ export class JoinChatRoomGuard implements CanActivate {
 			return false;
 		}
 
-		// 해당 방의 유저인지 확인
-		if (await this.chatService.isExistUser(body.roomId, client)) {
-			this.chatService.result('joinChatRoomResult', client, 'error', '이미 참여중인 방입니다.');
-			return false;
-		}
+		// // 해당 방의 유저인지 확인
+		// if (await this.chatService.isExistUser(body.roomId, client)) {
+		// 	this.chatService.result('joinChatRoomResult', client, 'error', '이미 참여중인 방입니다.');
+		// 	return false;
+		// }
 
 
 		return await this.chatService.findOne(body.roomId).then(async room => {
