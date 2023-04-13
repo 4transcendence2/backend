@@ -292,7 +292,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JoinChatRoomGuard)
 	@SubscribeMessage('joinChatRoom')
 	async joinChatRoom(client: Socket, body: any) {
-		await this.joinChatRoom(client, body);
+		await this.chatService.joinChatRoom(client, body);
 	}
 	
 	/*
@@ -303,7 +303,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(ExitChatRoomGuard)
 	@SubscribeMessage('exitChatRoom')
 	async exitChatRoom(client: Socket, body: any) {
-
+		await this.chatService.exitChatRoom(client, body);
 	}
 
 	// 	await this.chatService.exitChatRoomResult(client, 'approved');

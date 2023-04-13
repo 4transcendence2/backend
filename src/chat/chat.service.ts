@@ -96,34 +96,9 @@ export class ChatService {
 
 
 	async joinChatRoom(client: Socket, body: any) {
+		
 		const room = await this.findOne(body.roomId);
-		const name = await this.wsService.findName(client);
-		const user = await this.userService.findOne(name);
-
-		// private 방인데, 참가하려고 하는지
-
-
-
-		// 비번방인데 password 프로퍼티가 있는지 확인
-		if (room.status === RoomStatus.PROTECTED && body.password === undefined) {
-			this.result('joinChatRoomResult', client, 'error', 'protected 방인데, password 프로퍼티가 없습니다.');
-			return;
-		}
-
-		// 비번방인데 비번을 확인
-		if (room.status === RoomStatus.PROTECTED) {
-			if (room.password !== body.password) {
-				this.result('joinChatRoomResult', client, 'warning', '비밀번호가 틀렸습니다.');
-				return;
-			}
-		}
-
-		// 밴 당한 유저인지 확인
-		if (await this.isBan(body.roomId, client)) {
-			this.result('joinChatRoomResult', client, 'warning', '밴 당하셨습니다..');
-			return;
-		}
-
+		const user = await this.userService.findOne(await this.wsService.findName(client));
 
 		room.user.push(user);
 		await this.chatRoomRepository.save(room);
@@ -144,20 +119,23 @@ export class ChatService {
 		const name = await this.wsService.findName(client);
 		const user = await this.userService.findOne(name);
 
-		client.leave('room' + body.roomId);
 
+		
+		
+		client.leave('room' + body.roomId);
+		
 		// 방에 남은 유저가 한 명인 경우.
 		if (room.user.length === 1) {
-			await this.chatRoomRepository.softRemove(room);
+			await this.chatRoomRepository.remove(room);
 			this.result('exitChatRoomResult', client, 'approved');
 			const users = this.wsService.getLoginUsers();
 			users.forEach(elem => {
 				this.updateChatRoomList(elem.name, elem.client);
 			});
-			this.updateMyChatRoomList(name, client);
+			await this.updateMyChatRoomList(name, client);
 			return;
 		}
-
+				
 		let index = room.user.findIndex(elem => elem.id === user.id);
 		room.user.splice(index, 1);
 
@@ -429,7 +407,6 @@ export class ChatService {
 				status: user.chat[i].status,
 			});
 		}
-
 		client.emit('updateMyChatRoomList', list);
 	}
 

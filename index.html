@@ -9,11 +9,11 @@
 				}
 			})
 			function join() {
-				socket.emit('joinChatRoom', { room_id: 107, data: 'hello' });
+				socket.emit('joinChatRoom', { roomId: 34, data: 'hello' });
 			};
 
-			function exit() {
-				socket.emit('exitChatRoom', { room_id: 107, data: 'hello' });
+			function exit(id) {
+				socket.emit('exitChatRoom', { roomId: id });
 			};
 
 			function addFriend() {
@@ -31,10 +31,13 @@
 				console.log(data);
 			})
 
-			// socket.on('joinChatRoomResult', data => {
-			// 	console.log(data);
-			// });
+			socket.on('joinChatRoomResult', data => {
+				console.log(data);
+			});
 
+			socket.on('exitChatRoomResult', data => {
+				console.log(data);
+			})
 			// socket.on('addFriendResult', data => {
 			// 	console.log(data);
 			// });
@@ -68,6 +71,24 @@
 			socket.on('updateMyChatRoomList', data => {
 				console.log('myChatRoomList');
 				console.log(data);
+				const container = document.getElementById('chatRoomContainer');
+				while (container.firstChild) {
+					container.removeChild(container.firstChild);
+				}
+
+				data.forEach(element => {
+					const box = document.createElement('div');
+					const newButton = document.createElement('button');
+					const title = document.createElement('h3');
+					title.innerText = element.title;
+					newButton.addEventListener('click', () => {
+						exit(element.roomId);
+					});
+					newButton.innerText = 'EXIT';
+					box.appendChild(title);
+					box.appendChild(newButton);
+					container.appendChild(box);
+				});
 			})
 
 			socket.on('updateDmList', data => {
@@ -114,5 +135,7 @@
 			<input type="submit" value="Upload" onclick="submitForm()">
 		</form>
 		<button value="CLICK" onclick="submitForm()">CLICK HERE</button>
+
+		<div id="chatRoomContainer"></div>
 	</body>
 </html>
