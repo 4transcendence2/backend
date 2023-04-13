@@ -12,7 +12,7 @@ import { UserService } from "src/user/user.service";
 import Dm from "src/chat/entity/chat.dm.entity";
 import { AuthService } from "src/auth/auth.service";
 import { TokenGuard } from "./guard/ws.token.guard";
-import { CreateChatRoomGuard, ExitChatRoomGuard, JoinChatRoomGuard, LoginGuard } from "./guard/ws.guard";
+import { ChatGuard, CreateChatRoomGuard, ExitChatRoomGuard, JoinChatRoomGuard, LoginGuard } from "./guard/ws.guard";
 require('dotenv').config();
 
 @WebSocketGateway({
@@ -306,67 +306,19 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.chatService.exitChatRoom(client, body);
 	}
 
-	// 	await this.chatService.exitChatRoomResult(client, 'approved');
-
-	// 	// 유저, 채팅방 데이터베이스 업데이트
-	// 	await this.chatService.removeUser(room_id, client, this.server);
-
-	// 	// 자신이 현재 joinning 중인 채팅방 목록 업데이트.
-	// 	await this.chatService.updateMyChatRoomList(client);
-	// }
-
-
-
-	// /*
-	// 	Chat
-	// */
-	// @SubscribeMessage('chat')
-	// async chat(client: Socket, body: any) {
-	// 	if (body === undefined) {
-	// 		await this.chatService.chatResult(client, 'error', '전달받은 바디 데이터가 없습니다.');
-	// 		return;
-	// 	}
-	// 	const username = await this.wsService.findUserByClientId(client.id);
-	// 	const room_id = body.roomId;
-	// 	const content = body.content;
+	/*
+		Chat
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(ChatGuard)
+	@SubscribeMessage('chat')
+	async chat(client: Socket, body: any) {
+		await this.chatService.chat(client, body);
+	}
 
 
-	// 	// 접속중인 유저의 요청인지 확인.
-	// 	if (!(await this.wsService.isLogin(client))) {
-	// 		await this.chatService.chatResult(client, 'error', '접속중인 유저가 아닙니다.');
-	// 		return;
-	// 	}
-
-	// 	// room_id 프로퍼티가 입력되었는지 확인
-	// 	if (room_id === undefined) {
-	// 		await this.chatService.chatResult(client, 'error', 'room_id 프로퍼티가 없습니다.');
-	// 		return;
-	// 	}
-
-	// 	// content 프로퍼티가 입력되었는지 확인
-	// 	if (content === undefined) {
-	// 		await this.chatService.chatResult(client, 'error', 'content 프로퍼티가 없습니다.');
-	// 		return;
-	// 	}
-
-	// 	// 존재하는 채팅방인지 확인
-	// 	if (!(await this.chatService.isExist(room_id))) {
-	// 		await this.chatService.chatResult(client, 'error', '존재하지 않는 채팅방입니다.')
-	// 		return;
-	// 	}
-
-	// 	// 대상이 방에 존재하는 유저인지 확인
-	// 	if (!(await this.chatService.isExistUser(room_id, client))) {
-	// 		await this.chatService.chatResult(client, 'error', '해당 방의 유저가 아닙니다.');
-	// 		return;
-	// 	}
-
-
-	// 	// 대상이 muted인지 확인
-	// 	if (await this.chatService.isMute(room_id, client)) {
-	// 		await this.chatService.chatResult(client, 'warning', 'Mute 당하셨습니다.');
-	// 		return;
-	// 	}
+		
 
 
 	// 	// 블락 확인해야함
