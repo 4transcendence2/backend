@@ -200,7 +200,7 @@ export class ChatService {
 				this.updateChatRoomList(elem.name, elem.client);
 			});
 			this.updateMyChatRoomList(user.name, client);
-			this,this.updateChatRoom(room);
+			this.updateChatRoom(room);
 		}
 		
 	}
@@ -226,6 +226,7 @@ export class ChatService {
 
 		await this.chatRoomRepository.save(room);
 		this.updateChatRoom(room);
+		
 	}
 
 	async isBan(id: number, client: Socket): Promise<boolean> {
