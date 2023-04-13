@@ -37,6 +37,18 @@ export class User {
 	@JoinTable()
 	chat: ChatRoom[];
 
+	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.admin)
+	@JoinTable()
+	admin: ChatRoom[];
+
+	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.ban)
+	@JoinTable()
+	ban: ChatRoom[];
+
+	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.mute)
+	@JoinTable()
+	mute: ChatRoom[];
+
 	@Column({
 		unique: true,
 	})

@@ -531,61 +531,61 @@ export class AppointAdminGuard implements CanActivate {
 
 		// body 데이터 확인
 		if (body === undefined) {
-			this.chatService.result('muteResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			this.chatService.result('appointAdminResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
 			return false;
 		}
 
 		// roomId 프로퍼티 확인
 		if (body.roomId === undefined) {
-			this.chatService.result('muteResult', client, 'error', 'roomIid 프로퍼티가 없습니다.');
+			this.chatService.result('appointAdminResult', client, 'error', 'roomIid 프로퍼티가 없습니다.');
 			return false;
 		}
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.chatService.result('muteResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.chatService.result('appointAdminResult', client, 'error' , 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 방인지 확인
 		if (!await this.chatService.isExist(body.roomId)) {
-			this.chatService.result('muteResult', client, 'error', '존재하지 않는 채팅방입니다.');
+			this.chatService.result('appointAdminResult', client, 'error', '존재하지 않는 채팅방입니다.');
 			return false;
 		}
 
 		// 해당 방의 유저인지 확인
 		if (!await this.chatService.isExistUser(body.roomId, client)) {
-			this.chatService.result('muteResult', client, 'error', '해당 채팅방의 유저가 아닙니다.');
+			this.chatService.result('appointAdminResult', client, 'error', '해당 채팅방의 유저가 아닙니다.');
 			return false;
 		}
 		
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
-			this.chatService.result('muteResult', client, 'error', '존재하지 않는 대상입니다.');
+			this.chatService.result('appointAdminResult', client, 'error', '존재하지 않는 대상입니다.');
 			return false;
 		}
 		
 		
 		// 상대방이 해당 채팅방에 존재하는지 확인
 		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
-			this.chatService.result('muteResult', client, 'error', '해당 채팅방에 없는 대상입니다.');
+			this.chatService.result('appointAdminResult', client, 'error', '해당 채팅방에 없는 대상입니다.');
 			return false;
 		}
 		
 		// 권한 확인
 		if (!await this.chatService.isOwner(body.roomId, client) && !await this.chatService.isAdmin(body.roomId, client)) {
-			this.chatService.result('muteResult', client, 'warning', '권한이 없습니다.');
+			this.chatService.result('appointAdminResult', client, 'warning', '권한이 없습니다.');
 			return false;
 		}
 		
 		// 소유자인지 확인
 		if (await this.chatService.isOwner(body.roomId, client, body.username)) {
-			this.chatService.result('muteResult', client, 'warning', '소유자를 관리자로 임명할 수 없습니다.');
+			this.chatService.result('appointAdminResult', client, 'warning', '소유자를 관리자로 임명할 수 없습니다.');
 			return false;
 		}
 
 		//이미 admin인지 확인
 		if (await this.chatService.isAdmin(body.roomId, client, body.username)) {
-			this.chatService.result('muteResult', client, 'warning', '이미 관리자입니다.');
+			this.chatService.result('appointAdminResult', client, 'warning', '이미 관리자입니다.');
 			return false;
 		}
 

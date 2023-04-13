@@ -29,11 +29,10 @@
 
 			function appointAdmin() {
 				socket.emit('appointAdmin', {
-					roomId: 3,
+					roomId: 23,
 					username: 'sorksoek22',
 				})
 			}
-
 			socket.on('createChatRoomResult', data => {
 				console.log(data);
 			})
