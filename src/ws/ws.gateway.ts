@@ -78,7 +78,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(CreateChatRoomGuard)
 	@SubscribeMessage('createChatRoom')
 	async createChatRoom(client: Socket, body: any) {
-		await this.chatService.createChatRoom(client, body);
+		await this.chatService.createChatRoom(this.server, client, body);
 	}
 
 
@@ -90,7 +90,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JoinChatRoomGuard)
 	@SubscribeMessage('joinChatRoom')
 	async joinChatRoom(client: Socket, body: any) {
-		await this.chatService.joinChatRoom(client, body);
+		await this.chatService.joinChatRoom(this.server, client, body);
 	}
 	
 	/*
@@ -101,7 +101,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(ExitChatRoomGuard)
 	@SubscribeMessage('exitChatRoom')
 	async exitChatRoom(client: Socket, body: any) {
-		await this.chatService.exitChatRoom(client, body);
+		await this.chatService.exitChatRoom(this.server, client, body);
 	}
 
 	/*
@@ -112,7 +112,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(ChatGuard)
 	@SubscribeMessage('chat')
 	async chat(client: Socket, body: any) {
-		await this.chatService.chat(client, body);
+		await this.chatService.chat(this.server, client, body);
 	}
 
 

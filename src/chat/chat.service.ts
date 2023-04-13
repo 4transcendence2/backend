@@ -90,7 +90,7 @@ export class ChatService {
 
 	/*---------------채팅방---------------*/
 	
-	async createChatRoom(client: Socket, body: any) {
+	async createChatRoom(server: Server, client: Socket, body: any) {
 		const name = await this.wsService.findName(client);
 		const user = await this.userService.findOne(name);
 
@@ -117,7 +117,7 @@ export class ChatService {
 		});
 	}
 
-	async joinChatRoom(client: Socket, body: any) {
+	async joinChatRoom(server: Server, client: Socket, body: any) {
 		
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
@@ -128,7 +128,7 @@ export class ChatService {
 	
 			this.result('joinChatRoomResult', client, 'approved');
 			client.join('room' + room.id);
-			client.to('room' + room.id).emit('chat', {
+			server.to('room' + room.id).emit('chat', {
 				status: 'notice',
 				from: 'server',
 				content: `${user.name} 님이 입장하셨습니다.`,
@@ -142,7 +142,7 @@ export class ChatService {
 		})
 	}
 
-	async exitChatRoom(client: Socket, body: any) {
+	async exitChatRoom(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 
@@ -163,7 +163,7 @@ export class ChatService {
 			let index = room.user.findIndex(elem => elem.id === user.id);
 			room.user.splice(index, 1);
 			
-			client.to('room' + room.id).emit('chat', {
+			server.to('room' + room.id).emit('chat', {
 				status: 'notice',
 				from: 'server',
 				content: `${user.name} 님이 퇴장하셨습니다.`
@@ -180,7 +180,7 @@ export class ChatService {
 					room.admin.splice(0, 1);
 				}
 				await this.chatRoomRepository.save(room);
-				client.to('room' + room.id).emit('chat', {
+				server.to('room' + room.id).emit('chat', {
 					status: 'notice',
 					from: 'server',
 					content: `${room.owner.name} 님이 새로운 소유자가 되었습니다.`
@@ -202,14 +202,13 @@ export class ChatService {
 			});
 			this.updateChatRoom(room);
 		}
-		
 	}
 
-	async chat(client: Socket, body: any) {
+	async chat(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 		this.result('chatResult', client, 'approved');
-		client.to('room' + room.id).emit('chat', {
+		server.to('room' + room.id).emit('chat', {
 			status: 'plain',
 			from: user.name,
 			content: body.content,
