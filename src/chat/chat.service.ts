@@ -118,11 +118,11 @@ export class ChatService {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 
+		this.result('joinChatRoomResult', client, 'approved');
 		if (room.user.find(elem => elem.id === user.id) === undefined) {
 			room.user.push(user);
 			await this.chatRoomRepository.save(room);
 	
-			this.result('joinChatRoomResult', client, 'approved');
 			client.join('room' + room.id);
 			server.to('room' + room.id).emit('chat', {
 				status: 'notice',
