@@ -31,8 +31,8 @@ export class ChatService {
 			relations: {
 				user: true,
 				owner: true,
-				ban: true,
-				mute: true,
+				// ban: true,
+				// mute: true,
 			}
 		})
 	}
@@ -98,10 +98,7 @@ export class ChatService {
 			title: body.title,
 			password: body.status === 'protected' ? body.password : null,
 			owner: user,
-			admin: [],
 			user: [user],
-			mute: [],
-			ban: [],
 		});
 
 		this.result('joinChatRoomResult', client, 'approved');
@@ -304,6 +301,7 @@ export class ChatService {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
 		this.result('appointAdminResult', client, 'approved');
+
 
 		room.admin.push(user);
 		await this.chatRoomRepository.save(room);

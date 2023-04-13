@@ -27,11 +27,12 @@
 				});
 			};
 
-			// function appointAdmin() {
-			// 	socket.emit('appointAdmin', {
-			// 		roomId: 
-			// 	})
-			// }
+			function appointAdmin() {
+				socket.emit('appointAdmin', {
+					roomId: 3,
+					username: 'sorksoek22',
+				})
+			}
 
 			socket.on('createChatRoomResult', data => {
 				console.log(data);
@@ -133,6 +134,10 @@
 				console.log('dmList');
 				console.log(data);
 			})
+			socket.on('appointAdminResult', data => {
+				console.log('appointAdmin');
+				console.log(data);
+			})
 
 
 
@@ -166,7 +171,7 @@
 		<button onclick="exit()">exitChatRoom</button>
 		<button onclick="addFriend()">addFriend</button>
 		<button onclick="createChatRoom()">createChatRoom</button>
-		<butoon onclick="appointAdmin()">appointAdmin</butoon>
+		<button onclick="appointAdmin()">appointAdmin</button>
 
 
 		<form action="http://localhost/user/avatar" id="myForm" method="Post" enctype="multipart/form-data">

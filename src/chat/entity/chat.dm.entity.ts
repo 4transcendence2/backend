@@ -5,8 +5,4 @@ import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "t
 export default class Dm {
 	@PrimaryGeneratedColumn()
 	id: number;
-
-	@ManyToMany(() => User)
-	@JoinTable()
-	user_list: User[];
 }

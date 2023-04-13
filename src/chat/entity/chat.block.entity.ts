@@ -6,8 +6,4 @@ import { User } from "src/user/entity/user.entity";
 export class BlockList {
 	@PrimaryGeneratedColumn()
 	id: number;
-
-
-	@ManyToOne(() => ChatRoom, (chatRoom) => chatRoom.block)
-	chat: ChatRoom;
 }

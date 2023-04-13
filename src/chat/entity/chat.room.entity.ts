@@ -31,20 +31,17 @@ export class ChatRoom {
 	@ManyToMany(() => User, (user) => user.chat)
 	user: User[];
 
-	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.user)
+	@ManyToMany(() => User)
 	@JoinTable()
 	admin: User[];
 
-	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.user)
+	@ManyToMany(() => User)
 	@JoinTable()
 	mute: User[];
 
 	@ManyToMany(() => User)
 	@JoinTable()
 	ban: User[];
-
-	@OneToMany(() => BlockList, (blockList) => blockList.chat)
-	block: BlockList[];
 
 
 }

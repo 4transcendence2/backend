@@ -151,7 +151,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(AppointAdminGuard)
 	@SubscribeMessage('appointAdmin')
 	async appointAdmin(client: Socket, body: any) {
-
+		await this.chatService.appointAdmin(this.server, client, body);
 	}
 
 
