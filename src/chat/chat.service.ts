@@ -138,7 +138,7 @@ export class ChatService {
 		await this.updateChatRoom(room);
 		this.wsService.getLoginUsers().forEach(elem => {
 			this.updateChatRoomList(elem.name, elem.client);
-			this.updateMyChatRoomList(user.name, client);
+			this.updateMyChatRoomList(elem.name, elem.client);
 		})
 	}
 
@@ -198,7 +198,7 @@ export class ChatService {
 			await this.chatRoomRepository.save(room);
 			this.wsService.getLoginUsers().forEach(elem => {
 				this.updateChatRoomList(elem.name, elem.client);
-				this.updateMyChatRoomList(user.name, client);
+				this.updateMyChatRoomList(elem.name, elem.client);
 			});
 			this.updateChatRoom(room);
 		}
