@@ -2,7 +2,7 @@
   <head>
 		<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
     <script>
-			const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyIiwiaWQiOjEsInBob25lIjoiMDEwMjExNDU1MzciLCJpYXQiOjE2ODEyODg2NzksImV4cCI6MTY4MTU0Nzg3OX0.8NWQHZTkwl0lQpjXca2jaogvjqcAuLy8dQwkOGN8N8g';
+			const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyMiIsImlkIjozLCJwaG9uZSI6IjAxMDIxMTQ1NTM3IiwiaWF0IjoxNjgxMzY0MDE3LCJleHAiOjE2ODE2MjMyMTd9.xLgLQHgHIQUwD0uriAylX6L0doO0KXhyakXcz6IOkDc';
 			const socket = io('ws://localhost', {
 				extraHeaders: {
 					Authorization: 'Bearer ' + token,
@@ -66,7 +66,7 @@
 
 			socket.on('updateChatRoomList', data => {
 				console.log('chatRoomList');
-				console.log(data);
+				console.log(data);	
 				const container = document.getElementById('chatRoomContainer');
 				while (container.firstChild) {
 					container.removeChild(container.firstChild);

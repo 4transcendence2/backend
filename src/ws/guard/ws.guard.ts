@@ -222,6 +222,8 @@ export class ChatGuard implements CanActivate {
 export class KickGuard implements CanActivate {
 	constructor(
 		private chatService: ChatService,
+		private userService: UserService,
+		private wsService: WsService,
 	) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
@@ -255,11 +257,40 @@ export class KickGuard implements CanActivate {
 			this.chatService.result('kickResult', client, 'error', '해당 채팅방의 유저가 아닙니다.');
 			return false;
 		}
+		
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.chatService.result('kickResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+		
+		
+		// 상대방이 해당 채팅방에 존재하는지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
+			this.chatService.result('kickResult', client, 'error', '해당 채팅방에 없는 대상입니다.');
+			return false;
+		}
+
 
 		// 권한 확인
-		
+		if (!await this.chatService.isOwner(body.roomId, client) && !await this.chatService.isAdmin(body.roomId, client)) {
+			this.chatService.result('kickResult', client, 'warning', '권한이 없습니다.');
+			return false;
+		}
 
-
-		return true;
+		return await this.userService.findOne(body.username).then(async user => {
+			// 대상이 소유자인지 확인
+			if (await this.chatService.isOwner(body.roomId, client, user.name)) {
+				this.chatService.result('kickResult', client, 'warning', '소유자는 kick 할 수 없습니다');
+				return false;
+			}
+			
+			// 자기 자신을 킥 하는지 확인
+			if (await this.wsService.findName(client) === user.name) {
+				this.chatService.result('kickResult', client, 'warning', '자기 자신은 kick 할 수 없습니다');
+				return false;
+			}
+			return true;
+		});
 	}
 }

@@ -39,6 +39,7 @@ export class UserService {
 				friend: true,
 				chat: {
 					owner: true,
+					user: true,
 				},
 			}
 		});

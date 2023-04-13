@@ -58,10 +58,9 @@ export class ChatService {
 		return await this.findOne(id) === null ? false : true;
 	}
 
-	async isExistUser(id: number, client: Socket): Promise<boolean> {
+	async isExistUser(id: number, client: Socket, name?: string): Promise<boolean> {
 		const room = await this.findOne(id);
-		const name = await this.wsService.findName(client);
-		const user = await this.userService.findOne(name);
+		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
 		return room.user.find(elem => elem.id === user.id) !== undefined ? true : false;
 	}
 
@@ -141,24 +140,24 @@ export class ChatService {
 
 	async exitChatRoom(client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
-		const name = await this.wsService.findName(client);
-		const user = await this.userService.findOne(name);
+		const user = await this.userService.findOne(await this.wsService.findName(client));
 
 
 		client.leave('room' + body.roomId);
+		this.result('exitChatRoomResult', client, 'approved');
 		
 		// 방에 남은 유저가 한 명인 경우.
 		if (room.user.length === 1) {
 			await this.chatRoomRepository.remove(room);
-			this.result('exitChatRoomResult', client, 'approved');
 			const users = this.wsService.getLoginUsers();
 			users.forEach(elem => {
 				this.updateChatRoomList(elem.name, elem.client);
 			});
-			await this.updateMyChatRoomList(name, client);
+			await this.updateMyChatRoomList(user.name, client);
 			return;
 		}
-				
+		
+		
 		let index = room.user.findIndex(elem => elem.id === user.id);
 		room.user.splice(index, 1);
 
@@ -191,6 +190,8 @@ export class ChatService {
 		}
 
 		// 나가는 유저가 관리자인 경우
+		// 관계형 데이터베이스에 의해 자동으로 admin 리스트에도 빠지는지 확인 필요
+		// ban, mute list 도 확인 필요
 		index = room.admin.findIndex(elem => elem.id === user.id);
 		if (index !== -1) {
 			room.admin.splice(index, 1);
@@ -203,6 +204,7 @@ export class ChatService {
 	async chat(client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
+		this.result('chatResult', client, 'approved');
 		client.to('room' + room.id).emit('chat', {
 			status: 'plain',
 			from: user.name,
@@ -210,18 +212,40 @@ export class ChatService {
 		});
 	}
 
+	async kick(client: Socket, body: any) {
+		const room = await this.findOne(body.roomId);
+		const user = await this.userService.findOne(body.username);
+		this.result('kickResult', client, 'approved');
+
+		let index = room.user.findIndex(elem => elem.id === user.id);
+		room.user.splice(index, 1);
+
+		await this.chatRoomRepository.save(room);
+		this.updateChatRoom(room);
+	}
+
 	async isBan(id: number, client: Socket): Promise<boolean> {
 		const room = await this.findOne(id);
-		const name = await this.wsService.findName(client);
-		const user = await this.userService.findOne(name);
+		const user = await this.userService.findOne(await this.wsService.findName(client));
 		return room.ban.find(elem => elem.id === user.id) !== undefined ? true : false;
 	}
 
 	async isMute(id: number, client: Socket): Promise<boolean> {
 		const room = await this.findOne(id);
-		const name = await this.wsService.findName(client);
-		const user = await this.userService.findOne(name);
+		const user = await this.userService.findOne(await this.wsService.findName(client));
 		return room.mute.find(elem => elem.id === user.id) !== undefined ? true : false;
+	}
+
+	async isOwner(id: number, client: Socket, name?: string): Promise<boolean> {
+		const room = await this.findOne(id);
+		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
+		return room.owner.id === user.id;
+	}
+
+	async isAdmin(id: number, client: Socket, name?: string): Promise<boolean> {
+		const room = await this.findOne(id);
+		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
+		return room.admin.find(elem => elem.id === user.id) !== undefined ? true : false;
 	}
 	
 	async updateChatRoom(room: ChatRoom) {
