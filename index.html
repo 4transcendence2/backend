@@ -77,7 +77,7 @@
 					const joinButton = document.createElement('button');
 	
 					const title = document.createElement('h3');
-					title.innerText = element.title;
+					title.innerText = element.title + element.roomId;
 					newButton.addEventListener('click', () => {
 						exit(element.roomId);
 					});
@@ -107,7 +107,7 @@
 					const joinButton = document.createElement('button');
 
 					const title = document.createElement('h3');
-					title.innerText = element.title;
+					title.innerText = element.title + element.roomId;
 					newButton.addEventListener('click', () => {
 						exit(element.roomId);
 					});

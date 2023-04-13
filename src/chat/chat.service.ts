@@ -136,6 +136,10 @@ export class ChatService {
 		}
 
 		await this.updateChatRoom(room);
+		this.wsService.getLoginUsers().forEach(elem => {
+			this.updateChatRoomList(elem.name, elem.client);
+		})
+		this.updateMyChatRoomList(user.name, client);
 	}
 
 	async exitChatRoom(client: Socket, body: any) {
@@ -145,7 +149,7 @@ export class ChatService {
 
 		client.leave('room' + body.roomId);
 		this.result('exitChatRoomResult', client, 'approved');
-		
+
 		// 방에 남은 유저가 한 명인 경우.
 		if (room.user.length === 1) {
 			await this.chatRoomRepository.remove(room);
@@ -154,51 +158,51 @@ export class ChatService {
 				this.updateChatRoomList(elem.name, elem.client);
 			});
 			await this.updateMyChatRoomList(user.name, client);
-			return;
-		}
-		
-		
-		let index = room.user.findIndex(elem => elem.id === user.id);
-		room.user.splice(index, 1);
+		} else {
 
-		client.to('room' + room.id).emit('chat', {
-			status: 'notice',
-			from: 'server',
-			content: `${user.name} 님이 퇴장하셨습니다.`
-		})
-
-		// 나가는 유저가 소유자인 경우
-		if (room.owner.id === user.id) {
+			let index = room.user.findIndex(elem => elem.id === user.id);
+			room.user.splice(index, 1);
 			
-			// admin이 없는 경우.
-			if (room.admin.length === 0) {
-				room.owner = room.user[0];
-			} else { //admin이 있는 경우.
-				room.owner = room.admin[0];
-				room.admin.splice(0, 1);
-			}
-
-			await this.chatRoomRepository.save(room);
-
 			client.to('room' + room.id).emit('chat', {
 				status: 'notice',
 				from: 'server',
-				content: `${room.owner.name} 님이 새로운 소유자가 되었습니다.`
+				content: `${user.name} 님이 퇴장하셨습니다.`
 			})
-			this.updateChatRoom(room);
-			return;
-		}
+			
+			// 나가는 유저가 소유자인 경우
+			if (room.owner.id === user.id) {
+				
+				// admin이 없는 경우.
+				if (room.admin.length === 0) {
+					room.owner = room.user[0];
+				} else { //admin이 있는 경우.
+					room.owner = room.admin[0];
+					room.admin.splice(0, 1);
+				}
+				await this.chatRoomRepository.save(room);
+				client.to('room' + room.id).emit('chat', {
+					status: 'notice',
+					from: 'server',
+					content: `${room.owner.name} 님이 새로운 소유자가 되었습니다.`
+				})
 
-		// 나가는 유저가 관리자인 경우
-		// 관계형 데이터베이스에 의해 자동으로 admin 리스트에도 빠지는지 확인 필요
-		// ban, mute list 도 확인 필요
-		index = room.admin.findIndex(elem => elem.id === user.id);
-		if (index !== -1) {
-			room.admin.splice(index, 1);
+			} else {
+				// 나가는 유저가 관리자인 경우
+				// 관계형 데이터베이스에 의해 자동으로 admin 리스트에도 빠지는지 확인 필요
+				// ban, mute list 도 확인 필요
+				index = room.admin.findIndex(elem => elem.id === user.id);
+				if (index !== -1) {
+					room.admin.splice(index, 1);
+				}
+			}
 			await this.chatRoomRepository.save(room);
-			this.updateChatRoom(room);
-			return;
+			this.wsService.getLoginUsers().forEach(elem => {
+				this.updateChatRoomList(elem.name, elem.client);
+			});
+			this.updateMyChatRoomList(user.name, client);
+			this,this.updateChatRoom(room);
 		}
+		
 	}
 
 	async chat(client: Socket, body: any) {

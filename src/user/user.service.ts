@@ -133,6 +133,10 @@ export class UserService {
 		return true;
 	}
 
+	async save(user: User) {
+		await this.usersRepository.save(user);
+	}
+
 	async exitChatRoom(username: string, room_id: number) {
 		const user = await this.findOne(username);
 
