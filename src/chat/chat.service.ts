@@ -104,9 +104,9 @@ export class ChatService {
 			admin: []
 		});
 
-		this.result('createChatRoomResult', client, 'approved', 'createChatRoom', newRoom.id);
-		client.join('room' + newRoom.id);
 		await this.chatRoomRepository.save(newRoom);
+		client.join('room' + newRoom.id);
+		this.result('createChatRoomResult', client, 'approved', 'createChatRoom', newRoom.id);
 		const users = this.wsService.getLoginUsers();
 		await this.updateMyChatRoomList(name, client);
 		users.forEach(async elem => {
@@ -434,7 +434,7 @@ export class ChatService {
 		client.emit(event, {
 			status: status,
 			detail: detail,
-			roomid: roomId,
+			roomId: roomId,
 		})
 	}
 }
