@@ -345,7 +345,8 @@ socket.emit('createChatRoom', {
 socket.on('createChatRoomResult', data)
 data: {
   "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
-  "detail": string
+  "detail": string,
+	"roomId": number
 }
 
 
@@ -362,7 +363,8 @@ socket.emit('joinChatRoom', {
 socket.on('joinChatRoomResult', data)
 data: {
   "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
-  "detail": string
+  "detail": string,
+	"roomId": number
 }
 
 "status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
@@ -381,7 +383,8 @@ socket.emit('exitChatRoom', {
 socket.on('exitChatRoomResult', data)
 data: {
   "status": "error" || "approved" ( error는 개발자에게 알림)
-  "detail": string
+  "detail": string,
+	"roomId": number
 }
 
 
@@ -428,7 +431,8 @@ socket.emit('kick', {
 socket.on('kickResult', data)
 data: {
   "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
-  "detail": string
+  "detail": string,
+	"roomId": number
 }
 
 "status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
@@ -451,7 +455,8 @@ socket.emit('ban', {
 socket.on('banResult', data)
 data: {
   "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
-  "detail": string
+  "detail": string,
+	"roomId": number
 }
 
 "status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
@@ -474,7 +479,8 @@ socket.emit('unban', {
 socket.on('unbanResult', data)
 data: {
   "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
-  "detail": string
+  "detail": string,
+	"roomId": number
 }
 
 "status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
@@ -494,7 +500,8 @@ socket.emit('mute, {
 socket.on('muteResult', data)
 data: {
   "status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
-  "detail": string
+  "detail": string,
+	"roomId": number
 }
 
 "status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
@@ -513,7 +520,8 @@ socket.emit('appointAdmin', {
 socket.on('appointAdminResult', data)
 data: {
 	"status": "error" || "warning" || "approved" ( error는 개발자 에게 알림, warning은 유저에게 알림)
-	"detail": string
+	"detail": string,
+	"roomId": number
 }
 
 "status"가 "warning"인 경우, "detail"의 내용을 그대로 유저에게 알려주면 됩니다.
