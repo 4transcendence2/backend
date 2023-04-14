@@ -405,6 +405,7 @@ data: {
 // 채팅방에 채팅이 발생했을 때 이벤트
 socket.on('chat', data)
 data: {
+	"roomId": number,
   "status": "plain" || "notice" (plain은 일반 채팅, notice는 입장, 퇴장 알림 등등)
   "from": string,
   "content": string,

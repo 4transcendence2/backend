@@ -126,6 +126,7 @@ export class ChatService {
 	
 			client.join('room' + room.id);
 			server.to('room' + room.id).emit('chat', {
+				roomId: room.id,
 				status: 'notice',
 				from: 'server',
 				content: `${user.name} 님이 입장하셨습니다.`,
@@ -161,6 +162,7 @@ export class ChatService {
 			room.user.splice(index, 1);
 			
 			server.to('room' + room.id).emit('chat', {
+				roomId: room.id,
 				status: 'notice',
 				from: 'server',
 				content: `${user.name} 님이 퇴장하셨습니다.`
@@ -178,6 +180,7 @@ export class ChatService {
 				}
 				await this.chatRoomRepository.save(room);
 				server.to('room' + room.id).emit('chat', {
+					roomId: room.id,
 					status: 'notice',
 					from: 'server',
 					content: `${room.owner.name} 님이 새로운 소유자가 되었습니다.`
@@ -198,6 +201,7 @@ export class ChatService {
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 		this.result('chatResult', client, 'approved');
 		server.to('room' + room.id).emit('chat', {
+			roomId: room.id,
 			status: 'plain',
 			from: user.name,
 			content: body.content,
@@ -218,6 +222,7 @@ export class ChatService {
 		}
 
 		server.to('room' + room.id).emit('chat', {
+			roomId: room.id,
 			status: 'notice',
 			from: 'server',
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 kick 하셨습니다.`,
@@ -247,6 +252,7 @@ export class ChatService {
 		}
 	
 		server.to('room' + room.id).emit('chat', {
+			roomId: room.id,
 			status: 'notice',
 			from: 'server',
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 ban 하셨습니다.`,
@@ -268,6 +274,7 @@ export class ChatService {
 		room.ban.splice(room.ban.findIndex(elem => elem.id === user.id), 1);
 	
 		server.to('room' + room.id).emit('chat', {
+			roomId: room.id,
 			status: 'notice',
 			from: 'server',
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 unban 하셨습니다.`,
@@ -285,6 +292,7 @@ export class ChatService {
 		room.mute.push(user);
 
 		server.to('room' + room.id).emit('chat', {
+			roomId: room.id,
 			status: 'notice',
 			from: 'server',
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 mute 하셨습니다.`,
@@ -308,6 +316,7 @@ export class ChatService {
 		await this.chatRoomRepository.save(room);
 
 		server.to('room' + room.id).emit('chat', {
+			roomId: room.id,
 			status: 'notice',
 			from: 'server',
 			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 관리자로 임명하셨습니다.`
