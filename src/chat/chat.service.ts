@@ -104,7 +104,7 @@ export class ChatService {
 			admin: []
 		});
 
-		this.result('createChatRoomResult', client, 'approved', undefined, newRoom.id);
+		this.result('createChatRoomResult', client, 'approved', 'createChatRoom', newRoom.id);
 		client.join('room' + newRoom.id);
 		await this.chatRoomRepository.save(newRoom);
 		const users = this.wsService.getLoginUsers();
@@ -119,7 +119,7 @@ export class ChatService {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 
-		this.result('joinChatRoomResult', client, 'approved', undefined, room.id);
+		this.result('joinChatRoomResult', client, 'approved', 'joinChatROom', room.id);
 		if (room.user.find(elem => elem.id === user.id) === undefined) {
 			room.user.push(user);
 			await this.chatRoomRepository.save(room);
@@ -146,7 +146,7 @@ export class ChatService {
 
 
 		client.leave('room' + body.roomId);
-		this.result('exitChatRoomResult', client, 'approved', undefined, room.id);
+		this.result('exitChatRoomResult', client, 'approved', 'exitChatRoom', room.id);
 
 		// 방에 남은 유저가 한 명인 경우.
 		if (room.user.length === 1) {
@@ -199,7 +199,7 @@ export class ChatService {
 	async chat(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
-		this.result('chatResult', client, 'approved', undefined, room.id);
+		this.result('chatResult', client, 'approved', 'chat', room.id);
 		server.to('room' + room.id).emit('chat', {
 			roomId: room.id,
 			status: 'plain',
@@ -211,7 +211,7 @@ export class ChatService {
 	async kick(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
-		this.result('kickResult', client, 'approved', undefined, room.id);
+		this.result('kickResult', client, 'approved', 'kick', room.id);
 
 		let index = room.user.findIndex(elem => elem.id === user.id);
 		room.user.splice(index, 1);
@@ -239,7 +239,7 @@ export class ChatService {
 	async ban(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
-		this.result('banResult', client, 'approved', undefined, room.id);
+		this.result('banResult', client, 'approved', 'ban', room.id);
 	
 		let index = room.user.findIndex(elem => elem.id === user.id);
 		room.user.splice(index, 1);
@@ -269,7 +269,7 @@ export class ChatService {
 	async unban(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
-		this.result('unbanResult', client, 'approved', undefined, room.id);
+		this.result('unbanResult', client, 'approved', 'unban', room.id);
 
 		room.ban.splice(room.ban.findIndex(elem => elem.id === user.id), 1);
 	
@@ -287,7 +287,7 @@ export class ChatService {
 	async mute(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
-		this.result('muteResult', client, 'approved', undefined, room.id);
+		this.result('muteResult', client, 'approved', 'mute', room.id);
 	
 		room.mute.push(user);
 
@@ -309,7 +309,7 @@ export class ChatService {
 	async appointAdmin(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
-		this.result('appointAdminResult', client, 'approved', undefined, room.id);
+		this.result('appointAdminResult', client, 'approved', 'appointAdmin', room.id);
 
 
 		room.admin.push(user);
