@@ -79,6 +79,7 @@ export class WsService {
 		if (body.type === Type.CHAT_ROOM) {
 			client.join('chatRoom' + body.roomId);
 			this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
+			this.chatService.sendHistory(client, body);
 		}
 
 		// gameRoom

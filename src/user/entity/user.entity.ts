@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne,
 import { UserStatus } from "../user.status";
 import { ChatRoom } from "src/chat/entity/chat.room.entity";
 import { ChatRoomUser } from "src/chat/entity/chat.room.user.entity";
+import { ChatHistory } from "src/chat/entity/chat.history.entity";
 
 @Entity('user')
 export class User {
@@ -35,6 +36,9 @@ export class User {
 
 	@OneToMany(() => ChatRoomUser, (chatRoomUser) => chatRoomUser.user)
 	chat: ChatRoomUser[];
+
+	@OneToMany(() => ChatHistory, (chatHistory) => chatHistory.user)
+	chat_history: ChatHistory[];
 
 	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.ban)
 	@JoinTable()

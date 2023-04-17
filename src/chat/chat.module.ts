@@ -11,13 +11,14 @@ import { UserModule } from 'src/user/user.module';
 import { WsModule } from 'src/ws/ws.module';
 import Dm from './entity/chat.dm.entity';
 import { ChatRoomUser } from './entity/chat.room.user.entity';
+import { ChatHistory } from './entity/chat.history.entity';
 
 @Module({
 	imports: [
 		AuthModule,
 		forwardRef(() => UserModule),
 		forwardRef(() => WsModule),
-		TypeOrmModule.forFeature([ChatRoom, User, Dm, ChatRoomUser]),
+		TypeOrmModule.forFeature([ChatRoom, User, Dm, ChatRoomUser, ChatHistory]),
 	],
 	providers: [ ChatService, JwtService, Repository ],
 	controllers: [ ChatController ],

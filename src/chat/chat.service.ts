@@ -9,6 +9,7 @@ import { RoomStatus } from './chat.room.status';
 import { UserStatus } from 'src/user/user.status';
 import { User } from 'src/user/entity/user.entity';
 import { ChatRoomUser } from './entity/chat.room.user.entity';
+import { ChatHistory } from './entity/chat.history.entity';
 
 
 @Injectable()
@@ -19,6 +20,9 @@ export class ChatService {
 
 		@InjectRepository(ChatRoomUser)
 		private chatRoomUserRepository: Repository<ChatRoomUser>,
+		
+		@InjectRepository(ChatHistory)
+		private chatHistoryRepository: Repository<ChatHistory>,
 
 		// @InjectRepository(Dm)
 		// private dmRepository: Repository<Dm>,
@@ -211,9 +215,54 @@ export class ChatService {
 		}
 	}
 
+
+	async sendHistory(client: Socket, body: any) {
+		const room = await this.findOne(body.roomId);
+		const user = await this.userService.findOne(await this.wsService.findName(client));
+		const roomUser = await this.findRoomUser(user, room);
+		const joinTime = roomUser.time;
+
+		const histories = await this.chatHistoryRepository.find({
+			where: {
+				room: room,
+			},
+			relations: {
+				user: true,
+			},
+			order: {
+				time: 'ASC'
+			}
+		});
+		if (histories === null) return;
+
+		let list: {
+			from: string,
+			content: string,
+		}[] = [];
+		for (const history of histories) {
+			if (history.time < joinTime) break;
+			list.push({
+				from: history.user.name,
+				content: history.content,
+			})
+		}
+		client.emit('message', {
+			type: 'history',
+			list: list,
+		});
+	}
+
 	async chat(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
+		
+		const newHistory = this.chatHistoryRepository.create({
+			user: user,
+			room: room,
+			content: body.content,
+			time: new Date(Date.now()),
+		})
+		await this.chatHistoryRepository.save(newHistory);
 		this.result('chatResult', client, 'approved', 'chat', room.id);
 		server.to('room' + room.id).emit('message', {
 			type: 'chat',
@@ -516,4 +565,5 @@ export class ChatService {
 			roomId: roomId,
 		})
 	}
+
 }
