@@ -133,7 +133,7 @@ export class ChatService {
 		});
 		this.chatRoomUserRepository.save(newChatRoomUser);
 	
-		server.to('room' + room.id).emit('message', {
+		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
 			status: 'notice',
@@ -167,7 +167,7 @@ export class ChatService {
 				this.updateChatRoomList(elemName, await this.wsService.findClient(elemName));
 			}
 		} else {
-			server.to('room' + room.id).emit('message', {
+			server.to('chatRoom' + room.id).emit('message', {
 				type: 'chat',
 				roomId: room.id,
 				status: 'notice',
@@ -196,7 +196,7 @@ export class ChatService {
 				}
 
 				await this.chatRoomRepository.save(room);
-				server.to('room' + room.id).emit('message', {
+				server.to('chatRoom' + room.id).emit('message', {
 					type: 'chat',
 					roomId: room.id,
 					status: 'notice',
@@ -264,7 +264,7 @@ export class ChatService {
 		})
 		await this.chatHistoryRepository.save(newHistory);
 		this.result('chatResult', client, 'approved', 'chat', room.id);
-		server.to('room' + room.id).emit('message', {
+		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
 			status: 'plain',
@@ -287,7 +287,7 @@ export class ChatService {
 			socket.leave('room' + room.id);
 		}
 
-		server.to('room' + room.id).emit('message', {
+		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
 			status: 'notice',
@@ -321,7 +321,7 @@ export class ChatService {
 	
 		
 	
-		client.to('room' + room.id).emit('message', {
+		client.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
 			status: 'notice',
@@ -360,7 +360,7 @@ export class ChatService {
 
 		room.ban.splice(room.ban.findIndex(elem => elem.id === user.id), 1);
 	
-		server.to('room' + room.id).emit('message', {
+		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
 			status: 'notice',
@@ -385,7 +385,7 @@ export class ChatService {
 		const roomUser = await this.findRoomUser(user, room);
 		roomUser.muted = true;
 
-		server.to('room' + room.id).emit('message', {
+		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
 			status: 'notice',
@@ -434,7 +434,7 @@ export class ChatService {
 		room.users.find(elem => elem.user.id === user.id).admin = true;
 		await this.chatRoomRepository.save(room);
 
-		server.to('room' + room.id).emit('message', {
+		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
 			status: 'notice',

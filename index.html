@@ -17,7 +17,11 @@
 		};
 
 		socket.emit('subscribe', {
-			type: 'chatRoomList'
+			type: 'chatRoomList',
+		})
+		socket.emit('subscribe', {
+			type: 'chatRoom',
+			roomId: 20,
 		})
 
 		socket.on('subscribeResult', data => {
@@ -85,21 +89,11 @@
 		socket.on('muteResult', data => {
 			console.log('mute', data);
 		})
-		// socket.on('addFriendResult', data => {
-		// 	console.log(data);
-		// });
-
-		// socket.on('chat', (data) => {
-		// 	console.log(data);
-		// })
 
 		socket.on('error', (error) => {
 			console.log(error);
 		})
 
-		// socket.on('notice', data => {
-		// 	console.log(data);
-		// })
 
 		socket.on('message', data => {
 			const type = data.type;
@@ -140,6 +134,19 @@
 					const box = document.createElement('div');
 					const newButton = document.createElement('button');
 					const joinButton = document.createElement('button');
+					const chatBox = document.createElement('input');
+
+					chatBox.type = "text";
+					chatBox.placeholder = "chat here";
+
+					chatBox.addEventListener('keydown', (e) => {
+						if (e.key === 'Enter') {
+							socket.emit('chat', {
+								roomId: element.roomId,
+								content: chatBox.value,
+							})
+						}
+					})
 
 					const title = document.createElement('h3');
 					title.innerText = element.title + element.roomId;
@@ -154,6 +161,7 @@
 					box.appendChild(title);
 					box.appendChild(newButton);
 					box.appendChild(joinButton);
+					box.appendChild(chatBox);
 					container.appendChild(box);
 				});
 			}
@@ -196,20 +204,17 @@
 					userList.appendChild(box);
 				})
 			}
-		})
-		socket.on('updateFriend', data => {
-			console.log('friend');
-			console.log(data);
-		})
 
-		socket.on('updateChatRoom', data => {
+			if (type === 'chat') {
+				console.log(data.from, data.content);
+			}
 
+			if (type === 'history') {
+				console.log(data);
+			}
 		})
+		
 
-		socket.on('updateDmList', data => {
-			console.log('dmList');
-			console.log(data);
-		})
 		socket.on('appointAdminResult', data => {
 			console.log('appointAdmin');
 			console.log(data);
