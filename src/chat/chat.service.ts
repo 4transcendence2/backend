@@ -264,30 +264,43 @@ export class ChatService {
 		const user = await this.userService.findOne(body.username);
 		this.result('banResult', client, 'approved', 'ban', room.id);
 	
-		let index = room.users.findIndex(elem => elem.id === user.id);
-		room.users.splice(index, 1);
+		const roomUser = await this.findRoomUser(user, room);
+		await this.chatRoomUserRepository.remove(roomUser);
+
 		room.ban.push(user);
 		await this.chatRoomRepository.save(room);
 	
-		const socket = await this.wsService.findClient(user.name);
-		if (socket !== undefined) {
-			socket.leave('room' + room.id);
-		}
+		
 	
-		server.to('room' + room.id).emit('message', {
+		client.to('room' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
 			status: 'notice',
 			from: 'server',
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 ban 하셨습니다.`,
 		})
-	
-
+		
+		
+		
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
-			let elemClient = await this.wsService.findClient(undefined, elem.id);
-			this.updateChatRoom(elemClient, room);
+			if (user.name === await this.wsService.findName(undefined, elem.id)) {
+				let socket = await this.wsService.findClient(user.name);
+				if (socket !== undefined) {
+					socket.emit('message', {
+						type: 'ban',
+						roomId: room.id,
+						from: await this.wsService.findName(client),
+					})
+					socket.leave('chatRoom' + room.id);
+				}
+			} else {
+				let elemClient = await this.wsService.findClient(undefined, elem.id);
+				this.updateChatRoom(elemClient, room);
+			}
 		}
+
+
 
 	}
 	
@@ -307,7 +320,7 @@ export class ChatService {
 		})
 	
 		await this.chatRoomRepository.save(room);
-		
+
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
@@ -330,11 +343,21 @@ export class ChatService {
 			from: 'server',
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 mute 하셨습니다.`,
 		})
-	
+
 		await this.chatRoomUserRepository.save(roomUser);
 
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
+			if (user.name === await this.wsService.findName(undefined, elem.id)) {
+				const socket = await this.wsService.findClient(body.username);
+				if (socket !== undefined) {
+					socket.emit('message', {
+						type: 'mute',
+						roomId: room.id,
+						from: await this.wsService.findName(client),
+					})
+				}
+			}
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
 			this.updateChatRoom(elemClient, room);
 		}
@@ -349,6 +372,8 @@ export class ChatService {
 				this.updateChatRoom(elemClient, room);
 			}
 		}, 20000);
+
+		
 	}
 
 	async appointAdmin(server: Server, client: Socket, body: any) {
@@ -378,7 +403,8 @@ export class ChatService {
 	async isMute(id: number, client: Socket, name?: string): Promise<boolean> {
 		const room = await this.findOne(id);
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
-		return room.users.find(elem => elem.id === user.id).muted;
+		const roomUser = await this.findRoomUser(user, room);
+		return roomUser.muted;
 	}
 
 	async isOwner(id: number, client: Socket, name?: string): Promise<boolean> {
@@ -390,7 +416,8 @@ export class ChatService {
 	async isAdmin(id: number, client: Socket, name?: string): Promise<boolean> {
 		const room = await this.findOne(id);
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
-		return room.users.find(elem => elem.id === user.id).admin;
+		const roomUser = await this.findRoomUser(user, room);
+		return roomUser.admin;
 	}
 	
 	async updateChatRoom(client: Socket, room: ChatRoom) {
