@@ -5,9 +5,10 @@ import { ChatRoom } from './entity/chat.room.entity';
 import { WsService } from 'src/ws/ws.service';
 import { Socket, Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
-import Dm from './entity/chat.dm.entity';
 import { RoomStatus } from './chat.room.status';
 import { UserStatus } from 'src/user/user.status';
+import { User } from 'src/user/entity/user.entity';
+import { ChatRoomUser } from './entity/chat.room.user.entity';
 
 
 @Injectable()
@@ -16,8 +17,11 @@ export class ChatService {
 		@InjectRepository(ChatRoom)
 		private chatRoomRepository: Repository<ChatRoom>,
 
-		@InjectRepository(Dm)
-		private dmRepository: Repository<Dm>,
+		@InjectRepository(ChatRoomUser)
+		private chatRoomUserRepository: Repository<ChatRoomUser>,
+
+		// @InjectRepository(Dm)
+		// private dmRepository: Repository<Dm>,
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
@@ -29,10 +33,11 @@ export class ChatService {
 	async findAll(): Promise<ChatRoom []> {
 		return await this.chatRoomRepository.find({
 			relations: {
-				user: true,
+				users: {
+					user: true,
+				},
 				owner: true,
 				ban: true,
-				mute: true,
 			}
 		})
 	}
@@ -43,11 +48,20 @@ export class ChatService {
 				id: id,
 			},
 			relations: {
-				user: true,
-				admin: true,
-				mute: true,
-				ban: true,
+				users: {
+					user: true,
+				},
 				owner: true,
+				ban: true,
+			}
+		})
+	}
+
+	async findRoomUser(user: User, room: ChatRoom): Promise<ChatRoomUser> {
+		return await this.chatRoomUserRepository.findOne({
+			where: {
+				user: user,
+				room: room,
 			}
 		})
 	}
@@ -60,27 +74,7 @@ export class ChatService {
 	async isExistUser(id: number, client: Socket, name?: string): Promise<boolean> {
 		const room = await this.findOne(id);
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
-		return room.user.find(elem => elem.id === user.id) !== undefined ? true : false;
-	}
-
-	async joinRooms(name: string, client: Socket) {
-		const user = await this.userService.findOne(name);
-
-		for(let i = 0; i < user.chat.length; ++i) {
-			client.join('room' + user.chat[i].id);
-		}
-
-		// dm join
-	}
-
-	async leaveRooms(name: string, client: Socket) {
-		const user = await this.userService.findOne(name);
-
-		for(let i = 0; i < user.chat.length; ++i) {
-			client.leave('room' + user.chat[i].id);
-		}
-
-		// dm leave
+		return this.findRoomUser(user, room) !== null ? true : false;
 	}
 
 
@@ -98,20 +92,29 @@ export class ChatService {
 			title: body.title,
 			password: body.status === 'protected' ? body.password : null,
 			owner: user,
-			user: [user],
-			mute: [],
+			users: [],
 			ban: [],
-			admin: []
 		});
-
+		
 		await this.chatRoomRepository.save(newRoom);
-		client.join('room' + newRoom.id);
+
+		const newChatRoomUser = this.chatRoomUserRepository.create({
+			room: newRoom,
+			user: user,
+			time: new Date(Date.now()),
+		})
+		await this.chatRoomUserRepository.save(newChatRoomUser);
+
 		this.result('createChatRoomResult', client, 'approved', 'createChatRoom', newRoom.id);
-		const users = this.wsService.getLoginUsers();
-		await this.updateMyChatRoomList(name, client);
-		users.forEach(async elem => {
-			await this.updateChatRoomList(elem.name, elem.client);
-		});
+
+		const clients = await server.in('chatRoomList').fetchSockets();
+		for	(const elem of clients) {
+			if (elem.id === client.id) this.updateMyChatRoomList(name, client);
+			else {
+				let elemName = await this.wsService.findName(undefined, elem.id);
+				this.updateChatRoomList(elemName, await this.wsService.findClient(elemName));
+			}
+		}
 	}
 
 	async joinChatRoom(server: Server, client: Socket, body: any) {
@@ -120,47 +123,45 @@ export class ChatService {
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 
 		this.result('joinChatRoomResult', client, 'approved', 'joinChatROom', room.id);
-		if (room.user.find(elem => elem.id === user.id) === undefined) {
-			room.user.push(user);
-			await this.chatRoomRepository.save(room);
+		const newChatRoomUser = this.chatRoomUserRepository.create({
+			user: user,
+			room: room,
+		});
+		this.chatRoomUserRepository.save(newChatRoomUser);
 	
-			client.join('room' + room.id);
-			server.to('room' + room.id).emit('chat', {
-				roomId: room.id,
-				status: 'notice',
-				from: 'server',
-				content: `${user.name} 님이 입장하셨습니다.`,
-			});
-		}
+		server.to('room' + room.id).emit('chat', {
+			roomId: room.id,
+			status: 'notice',
+			from: 'server',
+			content: `${user.name} 님이 입장하셨습니다.`,
+		});
 
-		await this.updateChatRoom(room);
-		this.wsService.getLoginUsers().forEach(elem => {
-			this.updateChatRoomList(elem.name, elem.client);
-			this.updateMyChatRoomList(elem.name, elem.client);
-		})
+		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoom(elemClient, room);
+		}
 	}
 
 	async exitChatRoom(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
+		const chatRoomUser = await this.findRoomUser(user, room);
 
-
-		client.leave('room' + body.roomId);
+		if (!room || !chatRoomUser) return;
 		this.result('exitChatRoomResult', client, 'approved', 'exitChatRoom', room.id);
 
-		// 방에 남은 유저가 한 명인 경우.
-		if (room.user.length === 1) {
-			await this.chatRoomRepository.remove(room);
-			const users = this.wsService.getLoginUsers();
-			users.forEach(elem => {
-				this.updateChatRoomList(elem.name, elem.client);
-			});
-			await this.updateMyChatRoomList(user.name, client);
-		} else {
+		await this.chatRoomUserRepository.remove(chatRoomUser);
 
-			let index = room.user.findIndex(elem => elem.id === user.id);
-			room.user.splice(index, 1);
-			
+		// 방에 남은 유저가 한 명인 경우.
+		if (room.users.length === 1) {
+			await this.chatRoomRepository.remove(room);
+			const clients = await server.in('chatRoom' + room.id).fetchSockets();
+			for (const elem of clients) {
+				let elemName = await this.wsService.findName(undefined, elem.id);
+				this.updateChatRoomList(elemName, await this.wsService.findClient(elemName));
+			}
+		} else {
 			server.to('room' + room.id).emit('chat', {
 				roomId: room.id,
 				status: 'notice',
@@ -170,16 +171,27 @@ export class ChatService {
 			
 			// 나가는 유저가 소유자인 경우
 			if (room.owner.id === user.id) {
-				
+
 				// admin이 없는 경우.
-				if (room.admin.length === 0) {
-					room.owner = room.user[0];
-				} else { //admin이 있는 경우.
-					room.owner = room.admin[0];
-					room.admin.splice(0, 1);
+				if (room.users.findIndex(elem => elem.admin === true) === undefined) {
+					room.owner = room.users[0].user;
+				} else {
+					await this.chatRoomUserRepository.find({
+						where: {
+							admin: true,
+						},
+						order: {
+							time: 'ASC',
+						}
+					}).then(roomUsers => {
+						roomUsers[0].admin = false;
+						room.owner = roomUsers[0].user;
+					})
 				}
+
 				await this.chatRoomRepository.save(room);
-				server.to('room' + room.id).emit('chat', {
+				server.to('room' + room.id).emit('message', {
+					type: 'chat',
 					roomId: room.id,
 					status: 'notice',
 					from: 'server',
@@ -188,11 +200,12 @@ export class ChatService {
 			}
 
 			await this.chatRoomRepository.save(room);
-			this.wsService.getLoginUsers().forEach(elem => {
-				this.updateChatRoomList(elem.name, elem.client);
-				this.updateMyChatRoomList(elem.name, elem.client);
-			});
-			this.updateChatRoom(room);
+
+			const clients = await server.in('chatRoom' + room.id).fetchSockets();
+			for (const elem of clients) {
+				let elemClient = await this.wsService.findClient(undefined, elem.id);
+				this.updateChatRoom(elemClient, room);
+			}
 		}
 	}
 
@@ -213,8 +226,9 @@ export class ChatService {
 		const user = await this.userService.findOne(body.username);
 		this.result('kickResult', client, 'approved', 'kick', room.id);
 
-		let index = room.user.findIndex(elem => elem.id === user.id);
-		room.user.splice(index, 1);
+		let index = room.users.findIndex(elem => elem.id === user.id);
+		room.users.splice(index, 1);
+		await this.chatRoomRepository.save(room);
 
 		const socket = await this.wsService.findClient(user.name);
 		if (socket !== undefined) {
@@ -228,12 +242,17 @@ export class ChatService {
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 kick 하셨습니다.`,
 		})
 
-		await this.chatRoomRepository.save(room);
-		this.updateChatRoom(room);
-		this.wsService.getLoginUsers().forEach(elem => {
-			this.updateChatRoomList(elem.name, elem.client);
-			this.updateMyChatRoomList(elem.name, elem.client);
-		});
+		// 킥 당한사람한테 이벤트 날려야함
+
+
+
+		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoom(elemClient, room);
+		}
+
+
 	}
 	
 	async ban(server: Server, client: Socket, body: any) {
@@ -241,10 +260,10 @@ export class ChatService {
 		const user = await this.userService.findOne(body.username);
 		this.result('banResult', client, 'approved', 'ban', room.id);
 	
-		let index = room.user.findIndex(elem => elem.id === user.id);
-		room.user.splice(index, 1);
-
+		let index = room.users.findIndex(elem => elem.id === user.id);
+		room.users.splice(index, 1);
 		room.ban.push(user);
+		await this.chatRoomRepository.save(room);
 	
 		const socket = await this.wsService.findClient(user.name);
 		if (socket !== undefined) {
@@ -258,12 +277,13 @@ export class ChatService {
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 ban 하셨습니다.`,
 		})
 	
-		await this.chatRoomRepository.save(room);
-		this.updateChatRoom(room);
-		this.wsService.getLoginUsers().forEach(elem => {
-			this.updateChatRoomList(elem.name, elem.client);
-			this.updateMyChatRoomList(elem.name, elem.client);
-		});
+
+		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoom(elemClient, room);
+		}
+
 	}
 	
 	async unban(server: Server, client: Socket, body: any) {
@@ -281,7 +301,12 @@ export class ChatService {
 		})
 	
 		await this.chatRoomRepository.save(room);
-		this.updateChatRoom(room);
+		
+		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoom(elemClient, room);
+		}
 	}
 
 	async mute(server: Server, client: Socket, body: any) {
@@ -289,7 +314,8 @@ export class ChatService {
 		const user = await this.userService.findOne(body.username);
 		this.result('muteResult', client, 'approved', 'mute', room.id);
 	
-		room.mute.push(user);
+		const roomUser = await this.findRoomUser(user, room);
+		roomUser.muted = true;
 
 		server.to('room' + room.id).emit('chat', {
 			roomId: room.id,
@@ -298,12 +324,24 @@ export class ChatService {
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 mute 하셨습니다.`,
 		})
 	
-		await this.chatRoomRepository.save(room);
+		await this.chatRoomUserRepository.save(roomUser);
+
+		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoom(elemClient, room);
+		}
+
 		setTimeout(async () => {
-			const tmpRoom = await this.findOne(body.roomId);
-			tmpRoom.mute.splice(tmpRoom.mute.findIndex(elem => elem.id === user.id), 1);
-			await this.chatRoomRepository.save(tmpRoom);
-		}, 10000);
+			roomUser.muted = false;
+			await this.chatRoomUserRepository.save(roomUser);
+
+			const clients = await server.in('chatRoom' + room.id).fetchSockets();
+			for (const elem of clients) {
+				let elemClient = await this.wsService.findClient(undefined, elem.id);
+				this.updateChatRoom(elemClient, room);
+			}
+		}, 20000);
 	}
 
 	async appointAdmin(server: Server, client: Socket, body: any) {
@@ -312,7 +350,7 @@ export class ChatService {
 		this.result('appointAdminResult', client, 'approved', 'appointAdmin', room.id);
 
 
-		room.admin.push(user);
+		room.users.find(elem => elem.user.id === user.id).admin = true;
 		await this.chatRoomRepository.save(room);
 
 		server.to('room' + room.id).emit('chat', {
@@ -332,7 +370,7 @@ export class ChatService {
 	async isMute(id: number, client: Socket, name?: string): Promise<boolean> {
 		const room = await this.findOne(id);
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
-		return room.mute.find(elem => elem.id === user.id) !== undefined ? true : false;
+		return room.users.find(elem => elem.id === user.id).muted;
 	}
 
 	async isOwner(id: number, client: Socket, name?: string): Promise<boolean> {
@@ -344,26 +382,28 @@ export class ChatService {
 	async isAdmin(id: number, client: Socket, name?: string): Promise<boolean> {
 		const room = await this.findOne(id);
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
-		return room.admin.find(elem => elem.id === user.id) !== undefined ? true : false;
+		return room.users.find(elem => elem.id === user.id).admin;
 	}
 	
-	async updateChatRoom(room: ChatRoom) {
+	async updateChatRoom(client: Socket, room: ChatRoom) {
 		const userList: {
 			username: string,
 			owner: boolean,
 			admin: boolean,
+			muted: boolean
 			login: boolean,
 		} [] = [];
 
 		const banList: {
 			username: string
 		} [] = [];
-		for(let i = 0; i < room.user.length; ++i) {
+		for(let i = 0; i < room.users.length; ++i) {
 			userList.push({
-				username: room.user[i].name,
-				owner: room.owner.id === room.user[i].id ? true : false,
-				admin: room.admin.find(elem => elem.id === room.user[i].id) !== undefined ? true : false,
-				login: room.user[i].status === UserStatus.LOGIN ? true : false,
+				username: room.users[i].user.name,
+				owner: room.owner.id === room.users[i].user.id ? true : false,
+				admin: room.users.find(elem => elem.id === room.users[i].id).admin,
+				muted: room.users.find(elem => elem.id === room.users[i].id).muted,
+				login: room.users[i].user.status === UserStatus.LOGIN ? true : false,
 			})
 		}
 
@@ -373,15 +413,12 @@ export class ChatService {
 			});
 		}
 
-		for(let i = 0; i < room.user.length; ++i) {
-			if (room.user[i].status === UserStatus.LOGIN) {
-				(await this.wsService.findClient(room.user[i].name)).emit('updateChatRoom', {
-					roomId: room.id,
-					userList: userList,
-					banList: banList,
-				})
-			}
-		}
+		client.emit('message', {
+			type: 'room',
+			roomId: room.id,
+			userList: userList,
+			banList: banList,
+		});
 	}
 
 	async updateMyChatRoomList(name: string, client: Socket) {
@@ -395,14 +432,17 @@ export class ChatService {
 		}[] = [];
 		for(let i = 0; i < user.chat.length; ++i) {
 			list.push({
-				title: user.chat[i].title,
-				roomId: user.chat[i].id,
-				owner: user.chat[i].owner.name,
-				status: user.chat[i].status,
-				joining: user.chat[i].user.length,
+				title: user.chat[i].room.title,
+				roomId: user.chat[i].room.id,
+				owner: user.chat[i].room.owner.name,
+				status: user.chat[i].room.status,
+				joining: user.chat[i].room.users.length,
 			});
 		}
-		client.emit('updateMyChatRoomList', list);
+		client.emit('message', {
+			type: 'myRoom',
+			list: list,
+		});
 	}
 
 	async updateChatRoomList(name: string, client: Socket) {
@@ -418,16 +458,19 @@ export class ChatService {
 		for (let i = 0; i < chatRooms.length; ++i) {
 			let room = chatRooms[i];
 			if (room.status === RoomStatus.PRIVATE) continue;
-			if (room.user.find(elem => elem.id === user.id) !== undefined) continue;
+			if (room.users.find(elem => elem.user.id === user.id) !== undefined) continue;
 			list.push({
 				status: room.status,
 				title: room.title,
 				roomId: room.id,
 				owner: room.owner.name,
-				joining: room.user.length,
+				joining: room.users.length,
 			})
 		}
-		client.emit('updateChatRoomList', list);
+		client.emit('message', {
+			type: 'otherRoom',
+			list: list,
+		});
 	}
 
 	result(event: string, client: Socket, status: string, detail?: string, roomId?: number) {

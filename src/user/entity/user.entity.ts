@@ -1,15 +1,16 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserStatus } from "../user.status";
 import { ChatRoom } from "src/chat/entity/chat.room.entity";
+import { ChatRoomUser } from "src/chat/entity/chat.room.user.entity";
 
-@Entity('users')
+@Entity('user')
 export class User {
 	@PrimaryGeneratedColumn()
 	id: number;
 
 	@Column({
 		enum: UserStatus,
-		default: 'logout',
+		default: UserStatus.LOGOUT,
 	})
 	status: string;
 
@@ -32,22 +33,15 @@ export class User {
 	@JoinTable()
 	friend: User[];
 
-
-	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.user)
-	@JoinTable()
-	chat: ChatRoom[];
-
-	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.admin)
-	@JoinTable()
-	admin: ChatRoom[];
+	@OneToMany(() => ChatRoomUser, (chatRoomUser) => chatRoomUser.user)
+	chat: ChatRoomUser[];
 
 	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.ban)
 	@JoinTable()
 	ban: ChatRoom[];
 
-	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.mute)
-	@JoinTable()
-	mute: ChatRoom[];
+	@OneToMany(() => ChatRoom, (chatRoom) => chatRoom.owner)
+	owner: ChatRoom[];
 
 	@Column({
 		unique: true,

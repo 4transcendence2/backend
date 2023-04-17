@@ -1,4 +1,4 @@
-import { Headers, Inject, Injectable, forwardRef, } from '@nestjs/common';
+import { Inject, Injectable, forwardRef, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/user.create.dto';
@@ -7,9 +7,7 @@ import { Socket } from 'socket.io';
 const bcrypt = require('bcrypt');
 import { join } from 'path';
 import { AuthService } from 'src/auth/auth.service';
-import { UserStatus } from './user.status';
 import { WsService } from 'src/ws/ws.service';
-import { ChatRoom } from 'src/chat/entity/chat.room.entity';
 const fs = require('fs');
 
 @Injectable()
@@ -18,13 +16,10 @@ export class UserService {
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 
-		@Inject(forwardRef(() => AuthService))
-		private authService: AuthService,
-
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
-	) { }
+	) {}
 
 	async findAll(): Promise<User[]> {
 		return await this.usersRepository.find();
@@ -38,12 +33,15 @@ export class UserService {
 			relations: {
 				friend: true,
 				chat: {
-					owner: true,
-					user: true,
+					room: {
+						owner: true,
+						users: true,
+					}
 				},
 			}
 		});
 	}
+
 
 
 	async createUser(userInfo: CreateUserDto) {

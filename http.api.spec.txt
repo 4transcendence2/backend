@@ -1,0 +1,310 @@
+@	PROTOCOL:	HTTP
+@	PORT		:	81
+
+----------------------------------------------------------
+
+
+@	METHOD:	POST
+@	URI		:	/auth/login
+@ DESC	: 1차 로그인 요청
+
+@ 요청시
+@ Body data - json
+{
+  "username": string,	(필수)
+  "password": string	(필수)
+}
+
+
+@ 반환값 (성공시)
+@ StatusCode 201
+{
+  "status": "approved",
+  "accessToken": {tooken value} (2차 로그인 핸드폰 인증 번호 요청시 필요한 토큰. 무분별한 인증 요청 방지를 위함)
+}
+
+
+@ 반환값 (실패시)
+@ StatusCode 401
+{
+  "statusCode": 401,
+  "message": "Unauthorized"
+}
+
+
+----------------------------------------------------------
+
+
+@	METHOD: GET
+@	URI		:	/auth/get/otp/login
+@ DESC	:	2차 로그인 핸드폰 인증 번호 요청
+
+
+@ 요청시
+@ Header data
+Authorization: Bearer {token value} (1차 로그인 요청 성공시 반환 받은 token value, 띄어쓰기까지 정확하게 보내야 함.)
+
+
+@ 토큰이 없는경우
+@ statusCode 401, Unauthorized
+
+
+----------------------------------------------------------
+
+
+@ METHOD:	POST
+@	URI		:	/auth/check/otp/login
+@	DESC	:	2차 로그인 핸드폰 인증 번호 확인
+
+@요청시
+@ Body data - json
+{
+  "otp": string
+}
+
+
+@ 반환값 (성공시)
+@ StatusCode 200
+{
+  "status": "approved",
+  "accessToken": {tooken value} (소켓 연결할 때 같이 전달해줘야 연결이 됩니다. 이후 모든 http 요청에도 사용해야합니다.)
+}
+
+
+@ 반환값 (실패시) 인증번호 요청 없이 바로 check 요청한 경우
+@ StatusCode 404
+{
+  "status": "error"
+  "detail": "Invalid Check Request"
+}
+
+@ 반환값 (실패시) 인즌벙호는 요청했지만 인증번호가 잘못 된 경우
+@ StatusCode 401
+{
+  "status": "pending"
+  "detail": "Invalid Token"
+}
+
+
+----------------------------------------------------------
+
+
+@ METHOD:	GET
+@	URI		:	/auth/exist/:username
+@	DESC	:	아이디 중복확인
+
+@ 반환값
+{
+	"status": true (존재합니다) || false(없습니다)
+}
+
+
+
+----------------------------------------------------------
+
+
+@ METHOD:	POST
+@	URI		:	/auth/get/otp/signup
+@	DESC	:	회원가입 핸드폰 인증 번호 요청
+
+@	요청시
+@ Body data - json
+{
+  "phonenumber": string
+}
+
+
+@ 반환값 (프로퍼티에 문제가 있는경우)
+{
+	"statusCode": 400,
+	"message": [
+		"phonenumber should not be empty",
+		"phonenumber must be a string"
+	],
+	"error": "Bad Request"
+}
+
+
+@ 반환값 ( 성공시 )
+@ StatusCode 201
+
+
+----------------------------------------------------------
+
+
+@	METHOD:	POST
+@	URI		:	/auth/check/otp/signup
+@	DESC	:	회원가입 핸드폰 인증 번호 확인
+
+@	요청시
+@	Body data - json
+{
+  "phonenumber": string
+  "otp": string
+}
+
+@ 반환값 (성공시)
+@ StatusCode 200
+{
+  "status": "approved",
+  "accessToken": {tooken value} (/user/create 요청시 함께 넣어줘야 할 토큰)
+}
+
+
+@ 반환값 (실패시) 인증번호 요청 없이 바로 check 요청한 경우
+@ StatusCode 404
+{
+  "status": "error"
+  "detail": "Invalid Check Request"
+}
+
+@ 반환값 (실패시) 인즌벙호는 요청했지만 인증번호가 잘못 된 경우
+@ StatusCode 401
+{
+  "status": "pending"
+  "detail": "Invalid Token"
+}
+
+----------------------------------------------------------
+
+
+@	METHOD:	POST
+@	URI		:	/user/create
+@	DESC	:	유저 생성 요청
+
+@	요청시
+@	Body data - json
+{
+  "username": string,	(아이디)
+  "password": string,	(비밀번호)
+  "phonenumber": string, (폰번호)
+}
+
+@	반환값 (성공시)
+{
+  "status":	"approved",
+  "detail": "User is created"
+}
+
+@	반환값 (실패시, username 중복, nickname 중복, 토큰이 없는 경우, 요청시 프로퍼티가 잘못된 경우)
+{
+  "status": "error",
+  "detail": {상황에 따른 에러 내용}
+}
+
+
+----------------------------------------------------------
+
+
+@	METHOD:	GET
+@	URI		:	/user/profile/:username
+@	DESC	:	username의 프로필
+
+@ 반환값 (성공시)
+{
+	"username": "sorksoek2",
+	"status": "logout",
+	"rating": 1000,
+	"win": 0,
+	"lose": 0,
+	"relation": "myself" || "friend" || "others"
+	"gameHistory": [
+		{
+			"uniqueId": 1
+			"red": "user1",
+			"blue": "sorksoek2",
+			"redScore": 11,
+			"blueScore": 9,
+			"winner": "user1",
+			"type": "rank"
+		},
+		{
+			"uniqueId": 2
+			"red": "sorksoek2",
+			"blue": "eleel",
+			"redScore": 2,
+			"blueScore": 11,
+			"winner": "elee1",
+			"type": "arcade"
+		},
+		{
+			"uniqueId": 3
+			"red": "sorksoek2",
+			"blue": "damon",
+			"redScore": 11,
+			"blueScore": 4,
+			"winner": "sorksoek2,
+			"type": "normal"
+		}
+	]
+}
+
+@	반환값 (실패시, 토큰이 없는 경우)
+@ Statuscode: 401
+{
+  "status": "error",
+  "detail":	"Unauthorized"
+}
+
+@	반환값 (실패시, 없는 유저인 경우)
+@ Statuscode: 404
+{
+	"status": "error",
+	"detail": "존재하지 않는 유저입니다."
+}
+
+
+----------------------------------------------------------
+
+
+@	METHOD:	GET
+@	URI		:	/user/avatar/:username
+@	DESC	:	username의 아바타 이미지 요청
+
+@	반환값 (실패시, 토큰이 없는 경우)
+@ StatusCode: 401
+{
+  "status": "error,
+  "detail":	"Unauthorized"
+}
+
+@	반환값 (실패시, 없는 유저인 경우)
+@ StatusCode: 404
+{
+	"status": "error",
+	"detail": "존재하지 않는 유저입니다."
+}
+
+
+----------------------------------------------------------
+
+@	METHOD:	POST
+@	URI		:	/user/avatar
+@	DESC	:	해당 유저의 아바파를 변경
+
+
+!--------!
+20000byte 미만,
+input 태그의 name value가 꼭 "avatar" 이어야 합니다.
+png file만 업로드 됩니다.
+!--------!
+
+// 예시
+const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfaWQiOjUyLCJ1c2VybmFtZSI6InNvcmtzb2VrMiIsImlhdCI6MTY4MDQ5MjAzOSwiZXhwIjoxNjgwNjY0ODM5fQ.Mu63apzXx2zsTUKA31IvpU_s2JfrsWKXQwyYxBT4J4U";
+const file = (document.getElementById('image')).files[0];
+const formData = new FormData();
+formData.append('avatar', file);   // formData로 데이터 전송하는 경우, 첫 번째 인자에 주목해주세요.
+fetch('http://localhost/user/avatar', {
+	method: 'POST',
+	body: formData,
+	headers: {
+		'Authorization': token,
+	}
+}).then(res => {
+	console.log(res);
+}).catch(err => {
+	console.log(err);
+})
+
+
+----------------------------------------------------------

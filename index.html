@@ -1,107 +1,170 @@
 <html>
-  <head>
-		<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
-    <script>
-			const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyIiwiaWQiOjEsInBob25lIjoiMDEwMjExNDU1MzciLCJpYXQiOjE2ODEyODg2NzksImV4cCI6MTY4MTU0Nzg3OX0.8NWQHZTkwl0lQpjXca2jaogvjqcAuLy8dQwkOGN8N8g';
-			const socket = io('ws://localhost', {
-				extraHeaders: {
-					Authorization: 'Bearer ' + token,
-				}
-			})
-			function join(id) {
-				socket.emit('joinChatRoom', { roomId: id });
-			};
 
-			function exit(id) {
-				socket.emit('exitChatRoom', { roomId: id });
-			};
-
-			function addFriend() {
-				socket.emit('addFriend', { username: 'sorksoek22222'});
-			};
-
-			function createChatRoom() {
-				socket.emit('createChatRoom', {
-					status: "public",
-					title: "hello my name is seojin"
-				});
-			};
-
-			function appointAdmin(roomId, username) {
-				socket.emit('appointAdmin', {
-					roomId: roomId,
-					username: username,
-				})
+<head>
+	<script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+		integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+		crossorigin="anonymous"></script>
+	<script>
+		const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyIiwiaWQiOjIsInBob25lIjoiMDEwMjExNDU1MzciLCJpYXQiOjE2ODE3MjE3NDUsImV4cCI6MTY4MTk4MDk0NX0.fOcbaouV6kKudybskXBjXXdRmUaZ-Pdnw-NumD7W4-g';
+		const socket = io('ws://localhost', {
+			extraHeaders: {
+				Authorization: 'Bearer ' + token,
 			}
-			function kick(roomId, username) {
-				socket.emit('kick', {
-					roomId: roomId,
-					username: username,
-				})
-			}
-			function ban(roomId, username) {
-				socket.emit('ban', {
-					roomId: roomId,
-					username: username,
-				});
-			}
-			function mute(roomId, username) {
-				socket.emit('mute', {
-					roomId: roomId,
-					username: username,
-				});
-			}
+		})
 
-			socket.on('createChatRoomResult', data => {
-				console.log(data);
-			})
+		function join(id) {
+			socket.emit('joinChatRoom', { roomId: id });
+		};
 
-			socket.on('joinChatRoomResult', data => {
-				console.log(data);
+		socket.emit('subscribe', {
+			type: 'chatRoomList'
+		})
+
+		socket.on('subscribeResult', data => {
+			console.log(data);
+		})
+
+		function exit(id) {
+			socket.emit('exitChatRoom', { roomId: id });
+		};
+
+		function addFriend() {
+			socket.emit('addFriend', { username: 'sorksoek22222' });
+		};
+
+		function createChatRoom() {
+			socket.emit('createChatRoom', {
+				status: "public",
+				title: "hello my name is seojin"
 			});
+		};
 
-			socket.on('exitChatRoomResult', data => {
-				console.log(data);
+		function appointAdmin(roomId, username) {
+			socket.emit('appointAdmin', {
+				roomId: roomId,
+				username: username,
 			})
-
-			socket.on('kickResult', data => {
-				console.log('kick', data);
+		}
+		function kick(roomId, username) {
+			socket.emit('kick', {
+				roomId: roomId,
+				username: username,
 			})
-			socket.on('banResult', data => {
-				console.log('ban', data);
-			})
-			socket.on('muteResult', data => {
-				console.log('mute', data);
-			})
-			// socket.on('addFriendResult', data => {
-			// 	console.log(data);
-			// });
+		}
+		function ban(roomId, username) {
+			socket.emit('ban', {
+				roomId: roomId,
+				username: username,
+			});
+		}
+		function mute(roomId, username) {
+			socket.emit('mute', {
+				roomId: roomId,
+				username: username,
+			});
+		}
 
-			// socket.on('chat', (data) => {
-			// 	console.log(data);
-			// })
+		socket.on('createChatRoomResult', data => {
+			console.log(data);
+		})
 
-			socket.on('error', (error) => {
-				console.log(error);
-			})
+		socket.on('joinChatRoomResult', data => {
+			console.log(data);
+		});
 
-			// socket.on('notice', data => {
-			// 	console.log(data);
-			// })
+		socket.on('exitChatRoomResult', data => {
+			console.log(data);
+		})
 
-			socket.on('updateFriend', data => {
-				console.log('friend');
-				console.log(data);
-			})
+		socket.on('kickResult', data => {
+			console.log('kick', data);
+		})
+		socket.on('banResult', data => {
+			console.log('ban', data);
+		})
+		socket.on('muteResult', data => {
+			console.log('mute', data);
+		})
+		// socket.on('addFriendResult', data => {
+		// 	console.log(data);
+		// });
 
-			socket.on('updateChatRoom', data => {
-				console.log('chatRoom');
+		// socket.on('chat', (data) => {
+		// 	console.log(data);
+		// })
+
+		socket.on('error', (error) => {
+			console.log(error);
+		})
+
+		// socket.on('notice', data => {
+		// 	console.log(data);
+		// })
+
+		socket.on('message', data => {
+			const type = data.type;
+			if (type === 'otherRoom') {
+				const container = document.getElementById('chatRoomContainer');
+				while (container.firstChild) {
+					container.removeChild(container.firstChild);
+				}
+				data.list.forEach(element => {
+					const box = document.createElement('div');
+					const newButton = document.createElement('button');
+					const joinButton = document.createElement('button');
+
+					const title = document.createElement('h3');
+					title.innerText = element.title + element.roomId;
+					newButton.addEventListener('click', () => {
+						exit(element.roomId);
+					});
+					joinButton.addEventListener('click', () => {
+						join(element.roomId);
+					})
+					newButton.innerText = 'EXIT';
+					joinButton.innerText = 'JOIN';
+					box.appendChild(title);
+					box.appendChild(newButton);
+					box.appendChild(joinButton);
+					container.appendChild(box);
+				});
+			}
+
+			if (type === 'myRoom') {
+				const container = document.getElementById('myChatRoomContainer');
+				while (container.firstChild) {
+					container.removeChild(container.firstChild);
+				}
+
+				data.list.forEach(element => {
+					const box = document.createElement('div');
+					const newButton = document.createElement('button');
+					const joinButton = document.createElement('button');
+
+					const title = document.createElement('h3');
+					title.innerText = element.title + element.roomId;
+					newButton.addEventListener('click', () => {
+						exit(element.roomId);
+					});
+					joinButton.addEventListener('click', () => {
+						join(element.roomId);
+					})
+					newButton.innerText = 'EXIT';
+					joinButton.innerText = 'JOIN';
+					box.appendChild(title);
+					box.appendChild(newButton);
+					box.appendChild(joinButton);
+					container.appendChild(box);
+				});
+			}
+
+			if (type === 'friend') {
 				const userList = document.getElementById('userList');
 				while (userList.firstChild) {
 					userList.removeChild(userList.firstChild);
 				}
 
-				data.userList.forEach(element => {
+				data.list.forEach(element => {
 					const box = document.createElement('div');
 					box.style.display = 'flex';
 
@@ -113,13 +176,13 @@
 						kick(data.roomId, element.username);
 					})
 					kickButton.innerText = 'KICK';
-					
+
 					const banButton = document.createElement('button');
 					banButton.addEventListener('click', () => {
 						ban(data.roomId, element.username);
 					})
 					banButton.innerText = 'BAN';
-					
+
 					const muteButton = document.createElement('button');
 					muteButton.addEventListener('click', () => {
 						mute(data.roomId, element.username);
@@ -132,122 +195,73 @@
 					box.appendChild(muteButton);
 					userList.appendChild(box);
 				})
-			})
-
-			socket.on('updateChatRoomList', data => {
-				console.log('chatRoomList');
-				console.log(data);
-				const container = document.getElementById('chatRoomContainer');
-				while (container.firstChild) {
-					container.removeChild(container.firstChild);
-				}
-				data.forEach(element => {
-					const box = document.createElement('div');
-					const newButton = document.createElement('button');
-					const joinButton = document.createElement('button');
-	
-					const title = document.createElement('h3');
-					title.innerText = element.title + element.roomId;
-					newButton.addEventListener('click', () => {
-						exit(element.roomId);
-					});
-					joinButton.addEventListener('click', () => {
-						join(element.roomId);
-					})
-					newButton.innerText = 'EXIT';
-					joinButton.innerText = 'JOIN';
-					box.appendChild(title);
-					box.appendChild(newButton);
-					box.appendChild(joinButton);
-					container.appendChild(box);
-				});
-			})
-
-			socket.on('updateMyChatRoomList', data => {
-				console.log('myChatRoomList');
-				console.log(data);
-				const container = document.getElementById('myChatRoomContainer');
-				while (container.firstChild) {
-					container.removeChild(container.firstChild);
-				}
-
-				data.forEach(element => {
-					const box = document.createElement('div');
-					const newButton = document.createElement('button');
-					const joinButton = document.createElement('button');
-
-					const title = document.createElement('h3');
-					title.innerText = element.title + element.roomId;
-					newButton.addEventListener('click', () => {
-						exit(element.roomId);
-					});
-					joinButton.addEventListener('click', () => {
-						join(element.roomId);
-					})
-					newButton.innerText = 'EXIT';
-					joinButton.innerText = 'JOIN';
-					box.appendChild(title);
-					box.appendChild(newButton);
-					box.appendChild(joinButton);
-					container.appendChild(box);
-				});
-			})
-
-			socket.on('updateDmList', data => {
-				console.log('dmList');
-				console.log(data);
-			})
-			socket.on('appointAdminResult', data => {
-				console.log('appointAdmin');
-				console.log(data);
-			})
-
-
-
-			async function submitForm() {
-				req.open('POST', 'http://localhost/user/avatar', true);
-				req.setRequestHeader('Authorization', token);
-				req.setRequestHeader('Content-Type', 'multipart/form-data');
-				
-				const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfaWQiOjUyLCJ1c2VybmFtZSI6InNvcmtzb2VrMiIsImlhdCI6MTY4MDQ5MjAzOSwiZXhwIjoxNjgwNjY0ODM5fQ.Mu63apzXx2zsTUKA31IvpU_s2JfrsWKXQwyYxBT4J4U";
-				const file = (document.getElementById('image')).files[0];
-				const formData = new FormData();
-				formData.append('avatar', file);
-				fetch('http://localhost/user/avatar', {
-					method: 'POST',
-					body: formData,
-					headers: {
-						'Authorization': token,
-					}
-				}).then(res => {
-					console.log(res);
-				}).catch(err => {
-					console.log(err);
-				})
 			}
+		})
+		socket.on('updateFriend', data => {
+			console.log('friend');
+			console.log(data);
+		})
 
-    </script>
-  </head>
+		socket.on('updateChatRoom', data => {
 
-  <body>
-		<button onclick="join()">joinChatRoom</button>
-		<button onclick="exit()">exitChatRoom</button>
-		<button onclick="addFriend()">addFriend</button>
-		<button onclick="createChatRoom()">createChatRoom</button>
-		<button onclick="appointAdmin()">appointAdmin</button>
+		})
+
+		socket.on('updateDmList', data => {
+			console.log('dmList');
+			console.log(data);
+		})
+		socket.on('appointAdminResult', data => {
+			console.log('appointAdmin');
+			console.log(data);
+		})
 
 
-		<form action="http://localhost/user/avatar" id="myForm" method="Post" enctype="multipart/form-data">
-			<label for="image">Select a PNG image to upload:</label><br>
-			<input id="image" type="file" id="image" name="image"><br><br>
-			<input type="submit" value="Upload" onclick="submitForm()">
-		</form>
-		<button value="CLICK" onclick="submitForm()">CLICK HERE</button>
 
-		<div id="continaer" style="display: flex;">
-			<div id="myChatRoomContainer"></div>
-			<div id="chatRoomContainer"></div>
-		</div>
-		<div id="userList"></div>
-	</body>
+		async function submitForm() {
+			req.open('POST', 'http://localhost/user/avatar', true);
+			req.setRequestHeader('Authorization', token);
+			req.setRequestHeader('Content-Type', 'multipart/form-data');
+
+			const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfaWQiOjUyLCJ1c2VybmFtZSI6InNvcmtzb2VrMiIsImlhdCI6MTY4MDQ5MjAzOSwiZXhwIjoxNjgwNjY0ODM5fQ.Mu63apzXx2zsTUKA31IvpU_s2JfrsWKXQwyYxBT4J4U";
+			const file = (document.getElementById('image')).files[0];
+			const formData = new FormData();
+			formData.append('avatar', file);
+			fetch('http://localhost/user/avatar', {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'Authorization': token,
+				}
+			}).then(res => {
+				console.log(res);
+			}).catch(err => {
+				console.log(err);
+			})
+		}
+
+	</script>
+</head>
+
+<body>
+	<button onclick="join()">joinChatRoom</button>
+	<button onclick="exit()">exitChatRoom</button>
+	<button onclick="addFriend()">addFriend</button>
+	<button onclick="createChatRoom()">createChatRoom</button>
+	<button onclick="appointAdmin()">appointAdmin</button>
+
+
+	<form action="http://localhost/user/avatar" id="myForm" method="Post" enctype="multipart/form-data">
+		<label for="image">Select a PNG image to upload:</label><br>
+		<input id="image" type="file" id="image" name="image"><br><br>
+		<input type="submit" value="Upload" onclick="submitForm()">
+	</form>
+	<button value="CLICK" onclick="submitForm()">CLICK HERE</button>
+
+	<div id="continaer" style="display: flex;">
+		<div id="myChatRoomContainer"></div>
+		<div id="chatRoomContainer"></div>
+	</div>
+	<div id="userList"></div>
+</body>
+
 </html>

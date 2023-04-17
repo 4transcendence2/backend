@@ -1,10 +1,11 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, Inject, Injectable, forwardRef } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { AuthService } from "src/auth/auth.service";
 
 @Injectable()
 export class TokenGuard implements CanActivate {
 	constructor(
+		@Inject(forwardRef(()  => AuthService))
 		private authService:AuthService,
 	) {}
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {

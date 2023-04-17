@@ -1,18 +1,17 @@
-import { Injectable, forwardRef, Inject, UseGuards } from '@nestjs/common';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { ChatRoom } from 'src/chat/entity/chat-room.entity';
-// import { User } from 'src/user/entity/user.entity';
-// import { Repository } from 'typeorm';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
 import { ChatService } from 'src/chat/chat.service';
 import { AuthService } from 'src/auth/auth.service';
 import { UserStatus } from 'src/user/user.status';
-import { TokenGuard } from './guard/ws.token.guard';
+import { ConnectedSocket } from '@nestjs/websockets';
+import { Type } from './ws.type';
+import { WsGateWay } from './ws.gateway';
 
 interface login {
 	name: string,
 	client: Socket,
+	id: string,
 }
 
 const users: login[] = [];
@@ -21,12 +20,6 @@ const users: login[] = [];
 export class WsService {
 
 	constructor(
-		// @InjectRepository(ChatRoom)
-		// private chatRoomRepository: Repository<ChatRoom>,
-
-		// @InjectRepository(User)
-		// private usersRepository: Repository<User>,
-
 		@Inject(forwardRef(() => UserService))
 		private userService: UserService,
 
@@ -35,9 +28,13 @@ export class WsService {
 
 		@Inject(forwardRef(() => ChatService))
 		private chatService: ChatService,
+
+		@Inject(forwardRef(() => WsGateWay))
+		private wsGateWay: WsGateWay,
+
 	) {}
 
-	async login(client: Socket) {
+	async login(@ConnectedSocket() client: Socket) {
 		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
 		.then(async name => {
 			if (await this.isLogin(client)) {
@@ -51,16 +48,10 @@ export class WsService {
 			users.push({
 				name: name,
 				client: client,
+				id: client.id,
 			});
 
 			await this.userService.updateStatus(name, UserStatus.LOGIN);
-			await this.updateFriend(name, client);
-			await this.chatService.joinRooms(name, client);
-			await this.chatService.updateMyChatRoomList(name, client);
-			await this.chatService.updateChatRoomList(name, client);
-			//DM 룸 업데이트 필요
-			//게임 룸 업데이트 필요
-			
 
 		})
 		.catch(err => {
@@ -70,32 +61,82 @@ export class WsService {
 
 	}
 
-	async logout(client: Socket) {
+	async logout(@ConnectedSocket() client: Socket) {
 		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
 		.then(async name => {
 			let index = users.findIndex(user => user.name === name);
 			if (index !== -1) users.splice(index, 1);
 			await this.userService.updateStatus(name, UserStatus.LOGOUT);
-			await this.chatService.leaveRooms(name, client);
 		})
 		.catch(err => {
 			client.emit('error', err);
 		})
 	}
 	
-	async findName(client: Socket): Promise<string> {
-		const login = users.find(user => user.client === client);
+	async subscribe(@ConnectedSocket() client: Socket, body: any) {
+
+		// chatRoom
+		if (body.type === Type.CHAT_ROOM) {
+			client.join('chatRoom' + body.roomId);
+			this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
+		}
+
+		// gameRoom
+		if (body.type === Type.CHAT_ROOM) {
+			client.join('gameRoom' + body.roomId);
+			//게임룸 업데이트
+		}
+
+		// DM
+		if (body.type === Type.DM) {
+			//
+		}
+
+		// chatRoomList
+		if (body.type === Type.CHAT_ROOM_LIST) {
+			client.join('chatRoomList');
+			const name = await this.findName(client);
+			this.chatService.updateMyChatRoomList(name, client);
+			this.chatService.updateChatRoomList(name, client);
+		}
+
+		// gameRoomList
+		if (body.type === Type.GAME_ROOM_LIST) {
+		}
+
+		// dmList
+		if (body.type === Type.DM_LIST) {
+
+		}
+
+		// friendList
+		if (body.type === Type.FRIEND_LIST) {
+
+		}
+
+
+
+
+
+
+
+
+	}
+
+
+	async findName(@ConnectedSocket() client: Socket, id?: string): Promise<string> {
+		const login = id === undefined ? users.find(user => user.client === client) : users.find(user => user.id === id);
 		if (login === undefined) return undefined;
 		return login.name;
 	}
 
-	async findClient(name: string): Promise<Socket> {
-		const login = users.find(user => user.name === name);
+	async findClient(name: string, id?: string): Promise<Socket> {
+		const login = id === undefined ? users.find(user => user.name === name) : users.find(user => user.id === id);
 		if (login === undefined) return undefined;
 		return login.client;
 	}
 
-	async isLogin(client: Socket, name?: string): Promise<boolean> {
+	async isLogin(@ConnectedSocket() client: Socket, name?: string): Promise<boolean> {
 		if (client !== undefined) {
 			const res = await this.findName(client);
 			if (res === undefined) return false;
@@ -109,7 +150,7 @@ export class WsService {
 		}
 	}
 
-	async updateFriend(name: string, client: Socket) {
+	async updateFriend(name: string, @ConnectedSocket() client: Socket) {
 		const user = await this.userService.findOne(name);
 		const friendList: {
 			username: string,
@@ -121,11 +162,15 @@ export class WsService {
 				status: user.friend[i].status,
 			})
 		}
-		client.emit('updateFriend', friendList);
+		client.emit('message', {
+			type: 'friend',
+			list: friendList
+		});
 	}
 
 	async updateYourFriend(name: string) {
 		const friend = await this.userService.findOne(name);
+
 		users.forEach(async elem => {
 			const user = await this.userService.findOne(elem.name);
 			if (user.friend.find(f => f === friend) !== undefined) {
@@ -139,6 +184,12 @@ export class WsService {
 	}
 
 
-
+	result(event: string, @ConnectedSocket() client: Socket, status: string, detail?: string, type?: string) {
+		client.emit(event, {
+			type: type,
+			status: status,
+			detail: detail,
+		})
+	}
 
 }
