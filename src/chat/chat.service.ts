@@ -10,6 +10,7 @@ import { UserStatus } from 'src/user/user.status';
 import { User } from 'src/user/entity/user.entity';
 import { ChatRoomUser } from './entity/chat.room.user.entity';
 import { ChatHistory } from './entity/chat.history.entity';
+import { Block } from './entity/chat.block.entity';
 
 
 @Injectable()
@@ -24,8 +25,8 @@ export class ChatService {
 		@InjectRepository(ChatHistory)
 		private chatHistoryRepository: Repository<ChatHistory>,
 
-		// @InjectRepository(Dm)
-		// private dmRepository: Repository<Dm>,
+		@InjectRepository(Block)
+		private blockRepository: Repository<Block>,
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
@@ -58,6 +59,10 @@ export class ChatService {
 				history: true,
 				owner: true,
 				ban: true,
+				block: {
+					from: true,
+					to: true,
+				}
 			}
 		})
 	}
@@ -269,13 +274,21 @@ export class ChatService {
 		})
 		await this.chatHistoryRepository.save(newHistory);
 		this.result('chatResult', client, 'approved', 'chat', room.id);
-		server.to('chatRoom' + room.id).emit('message', {
-			type: 'chat',
-			roomId: room.id,
-			status: 'plain',
-			from: user.name,
-			content: body.content,
-		});
+		
+		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+
+			if (await this.isBlock(room.id, elemClient, user.name)) continue;
+
+			elemClient.emit('message', {
+				type: 'chat',
+				roomId: room.id,
+				status: 'plain',
+				from: user.name,
+				content: body.content,
+			})
+		}
 	}
 
 	async kick(server: Server, client: Socket, body: any) {
@@ -430,6 +443,67 @@ export class ChatService {
 		
 	}
 
+	async block(server: Server, client: Socket, body: any) {
+		const room = await this.findOne(body.roomId);
+		const from = await this.userService.findOne(await this.wsService.findName(client));
+		const to = await this.userService.findOne(body.roomId);
+
+
+		client.emit('blockResult', {
+			status: 'approved',
+			roomId: room.id,
+		});
+
+
+		const newBlock = this.blockRepository.create({
+			room: room,
+			from: from,
+			to: to,
+		});
+		await this.blockRepository.save(newBlock);
+
+		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		for (const elem of clients) {
+			if (elem.id === client.id) {
+				let elemName = await this.wsService.findName(undefined, elem.id);
+				this.updateBlockList(room.id, elemName, client);
+				break;
+			}
+		}
+	}
+
+	async unBlock(server: Server, client: Socket, body: any) {
+		const room = await this.findOne(body.roomId);
+		const from = await this.userService.findOne(await this.wsService.findName(client));
+		const to = await this.userService.findOne(body.username);
+
+		
+		const block = await this.blockRepository.findOne({
+			where: {
+				room: room,
+				from: from,
+				to: to,
+			}
+		})
+		if (block === null) return;
+
+		client.emit('unblockResult', {
+			status: 'approved',
+			roomId: room.id,
+		});
+
+		await this.blockRepository.remove(block);
+		
+		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		for (const elem of clients) {
+			if (elem.id === client.id) {
+				let elemName = await this.wsService.findName(undefined, elem.id);
+				this.updateBlockList(room.id, elemName, client);
+				break;
+			}
+		}
+	}
+
 	async invite(server: Server, client: Socket, body: any) {
 		const user = await this.userService.findOne(body.username);
 		const room = await this.findOne(body.roomId);
@@ -528,6 +602,21 @@ export class ChatService {
 		return roomUser.admin;
 	}
 	
+	async isBlock(id: number, client: Socket, name?: string): Promise<boolean> {
+		const room = await this.findOne(id);
+		const from = await this.userService.findOne(await this.wsService.findName(client));
+		const to = await this.userService.findOne(name);
+
+		const block = await this.blockRepository.findOne({
+			where: {
+				room: room,
+				from: from,
+				to: to,
+			}
+		});
+		return block !== null ? true : false;
+	}
+
 	async updateChatRoom(client: Socket, room: ChatRoom) {
 		const userList: {
 			username: string,
@@ -613,6 +702,36 @@ export class ChatService {
 		}
 		client.emit('message', {
 			type: 'otherRoom',
+			list: list,
+		});
+	}
+
+	async updateBlockList(id: number, name: string, client: Socket) {
+		const user = await this.userService.findOne(name);
+		const blockList = await this.blockRepository.find({
+			where: {
+				room: {
+					id: id
+				},
+				from: user,
+			},
+			relations: {
+				to: true,
+			}
+		});
+
+		let list: {
+			username :string,
+		} [] = [];
+
+		for (let i = 0; i < blockList.length; ++i) {
+			list.push({
+				username: blockList[i].to.name,
+			})
+		};
+
+		client.emit('message', {
+			type: 'block',
 			list: list,
 		});
 	}

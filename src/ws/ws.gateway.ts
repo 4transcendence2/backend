@@ -5,7 +5,7 @@ import { ChatService } from "src/chat/chat.service";
 import { Inject, UseGuards, forwardRef } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { TokenGuard } from "./guard/ws.token.guard";
-import { AddFriendGuard, AppointAdminGuard, BanGuard, ChatGuard, CreateChatRoomGuard, DmGuard, ExitChatRoomGuard, InviteChatGuard, JoinChatRoomGuard, KickGuard, LoginGuard, MuteGuard, SubscribeGuard, UnbanGuard } from "./guard/ws.guard";
+import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, ChatGuard, CreateChatRoomGuard, DmGuard, ExitChatRoomGuard, InviteChatGuard, JoinChatRoomGuard, KickGuard, LoginGuard, MuteGuard, SubscribeGuard, UnbanGuard, UnblockGuard } from "./guard/ws.guard";
 import { DmService } from "src/dm/dm.service";
 require('dotenv').config();
 
@@ -179,22 +179,37 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	/*
 		Block
 	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(BlockGuard)
 	@SubscribeMessage('block')
-	async blockUser(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		
+	async block(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.chatService.block(this.server, client, body);
+	}
+
+
+
+	/*
+		Unblock
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(UnblockGuard)
+	@SubscribeMessage('unblock')
+	async unblock(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.chatService.unBlock(this.server, client, body);
 	}
 
 
 	/*
 		AddFriend
 	*/
-
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
 	@UseGuards(AddFriendGuard)
 	@SubscribeMessage('addFriend')
 	async addFriend(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.userService.addFriend(client, body);
+		await this.userService.addFriend(this.server, client, body);
 	}
 
 

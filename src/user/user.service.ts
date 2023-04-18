@@ -3,10 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/user.create.dto';
 import { User } from './entity/user.entity';
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 const bcrypt = require('bcrypt');
 import { join } from 'path';
-import { AuthService } from 'src/auth/auth.service';
 import { WsService } from 'src/ws/ws.service';
 const fs = require('fs');
 
@@ -142,11 +141,20 @@ export class UserService {
 
 
 
-	async addFriend(client: Socket, body: any) {
+	async addFriend(server: Server, client: Socket, body: any) {
 		const user = await this.findOne(await this.wsService.findName(client));
 		user.friend.push(await this.findOne(body.username));
 		await this.usersRepository.save(user);
 		client.emit('addFriendResult', client, 'approved');
+
+		const clients = await server.in('friendList').fetchSockets();
+		for (const elem of clients) {
+			if (elem.id === client.id) {
+				let elemName = await this.wsService.findName(undefined, elem.id);
+				this.wsService.updateFriend(elemName, client);
+				break;
+			}
+		}
 	}
 
 	async addFriendResult(client: Socket, status: string, detail?: string) {

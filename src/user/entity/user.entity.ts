@@ -5,6 +5,7 @@ import { ChatRoomUser } from "src/chat/entity/chat.room.user.entity";
 import { ChatHistory } from "src/chat/entity/chat.history.entity";
 import { Dm } from "src/dm/entity/dm.entity";
 import { DmHistory } from "src/dm/entity/dm.history";
+import { Block } from "src/chat/entity/chat.block.entity";
 
 @Entity('user')
 export class User {
@@ -51,6 +52,13 @@ export class User {
 	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.ban)
 	@JoinTable()
 	ban: ChatRoom[];
+
+	@OneToMany(() => Block, (block) => block.from)
+	block: Block[];
+
+	@OneToMany(() => Block, (block) => block.to)
+	blocked: Block[];
+
 
 	@OneToMany(() => ChatRoom, (chatRoom) => chatRoom.owner)
 	owner: ChatRoom[];

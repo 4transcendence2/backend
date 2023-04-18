@@ -84,6 +84,7 @@ export class WsService {
 		if (body.type === Type.CHAT_ROOM) {
 			client.join('chatRoom' + body.roomId);
 			this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
+			this.chatService.updateBlockList(body.roomId, await this.findName(client), client);
 			this.chatService.sendHistory(client, body);
 		}
 
@@ -123,6 +124,7 @@ export class WsService {
 		// friendList
 		if (body.type === Type.FRIEND_LIST) {
 			client.join('friendList');
+			this.updateFriend(name, client);
 		}
 
 
@@ -161,7 +163,7 @@ export class WsService {
 		}
 	}
 
-	async updateFriend(name: string, @ConnectedSocket() client: Socket) {
+	async updateFriend(name: string, client: Socket) {
 		const user = await this.userService.findOne(name);
 		const friendList: {
 			username: string,
@@ -180,14 +182,16 @@ export class WsService {
 	}
 
 	async updateYourFriend(name: string) {
-		const friend = await this.userService.findOne(name);
+		const clients = await this.wsGateWay.server.in('friendList').fetchSockets();
+		
+		for(const elem of clients) {
+			let elemName = await this.findName(undefined, elem.id);
+			let elemClient = await this.findClient(undefined, elem.id);
 
-		users.forEach(async elem => {
-			const user = await this.userService.findOne(elem.name);
-			if (user.friend.find(f => f === friend) !== undefined) {
-				this.updateFriend(user.name, await this.findClient(user.name));
+			if (await this.userService.isFriend(elemName, name))  {
+				this.updateFriend(elemName, elemClient);
 			}
-		})
+		}
 	}
 
 	getLoginUsers(): login[] {

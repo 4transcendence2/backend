@@ -83,6 +83,10 @@ export class DmService {
 		}
 	}
 
+	async exit(server: Server, client: Socket, body: any) {
+		
+	}
+
 	async updateDmList(name: string, client: Socket) {
 		const user = await this.userService.findOne(name);
 		const list: {
@@ -122,5 +126,7 @@ export class DmService {
 			list: list,
 		});
 	}
+
+	
 }
 
