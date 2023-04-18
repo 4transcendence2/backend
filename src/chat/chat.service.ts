@@ -430,6 +430,59 @@ export class ChatService {
 		
 	}
 
+	async invite(server: Server, client: Socket, body: any) {
+		const user = await this.userService.findOne(body.username);
+		const room = await this.findOne(body.roomId);
+
+		this.result('joinChatRoomResult', client, 'approved', 'joinChatROom', room.id);
+		const newChatRoomUser = this.chatRoomUserRepository.create({
+			user: user,
+			room: room,
+			time: new Date(Date.now()),
+		});
+		this.chatRoomUserRepository.save(newChatRoomUser);
+
+		server.to('chatRoom' + room.id).emit('message', {
+			type: 'chat',
+			roomId: room.id,
+			status: 'notice',
+			from: 'server',
+			content: `${user.name} 님이 초대되었습니다.`,
+		});
+
+		let clients = await server.in('chatRoom' + room.id).fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoom(elemClient, room);
+		}
+
+		clients = await server.in('chatInvitation').fetchSockets();
+		for (const elem of clients) {
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+
+			if (elemName === user.name) {
+				elemClient.emit('message', {
+					type: 'chatInvitation',
+					roomId: room.id,
+					from: await this.wsService.findName(client),
+				})
+				break;
+			}
+		}
+
+		clients = await server.in('chatRoomList').fetchSockets();
+		for (const elem of clients) {
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			if (elemName === user.name) {
+				this.updateMyChatRoomList(elemName, elemClient);
+				this.updateMyChatRoomList(elemName, elemClient);
+				break;
+			}
+		}
+	}
+
 	async appointAdmin(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);

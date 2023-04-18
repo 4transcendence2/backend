@@ -5,7 +5,7 @@ import { ChatService } from "src/chat/chat.service";
 import { Inject, UseGuards, forwardRef } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { TokenGuard } from "./guard/ws.token.guard";
-import { AddFriendGuard, AppointAdminGuard, BanGuard, ChatGuard, CreateChatRoomGuard, ExitChatRoomGuard, JoinChatRoomGuard, KickGuard, LoginGuard, MuteGuard, SubscribeGuard, UnbanGuard } from "./guard/ws.guard";
+import { AddFriendGuard, AppointAdminGuard, BanGuard, ChatGuard, CreateChatRoomGuard, ExitChatRoomGuard, InviteChatGuard, JoinChatRoomGuard, KickGuard, LoginGuard, MuteGuard, SubscribeGuard, UnbanGuard } from "./guard/ws.guard";
 require('dotenv').config();
 
 @WebSocketGateway({
@@ -147,6 +147,22 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async mute(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		await this.chatService.mute(this.server, client, body);
 	}
+
+
+	/*
+		Invite Chat Rroom
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(InviteChatGuard)
+	@SubscribeMessage('InviteChat')
+	async inviteChat(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.chatService.invite(this.server, client, body);
+	}
+
+	/*
+		Block
+	*/
 
 
 	@UseGuards(TokenGuard)

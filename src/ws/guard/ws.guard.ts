@@ -107,6 +107,13 @@ export class JoinChatRoomGuard implements CanActivate {
 
 
 		return await this.chatService.findOne(body.roomId).then(async room => {
+
+			// private룸인 경우
+			if (room.status === RoomStatus.PRIVATE) {
+				this.chatService.result('joinChatRoomResult', client, 'error', 'private 룸에는 초대받은 대상만 들어갈 수 있습니다.');
+				return false;
+			}
+
 			// 비번방인데 password 프로퍼티가 있는지 확인
 			if (room.status === RoomStatus.PROTECTED && body.password === undefined) {
 				this.chatService.result('joinChatRoomResult', client, 'error', 'protected 방인데, password 프로퍼티가 없습니다.');
@@ -128,7 +135,6 @@ export class JoinChatRoomGuard implements CanActivate {
 			}
 			
 			// private 방인데, 참가하려고 하는지
-			// 추가해야함
 
 			return true;
 		});
@@ -775,6 +781,69 @@ export class UnsubscribeGuard implements CanActivate {
 		}
 
 		this.wsService.result('unsubscribeResult', client, 'approved', undefined, body.type);
+		return true;
+	}
+}
+
+
+@Injectable()
+export class InviteChatGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+
+		@Inject(forwardRef(() => UserService))
+		private userService: UserService,
+
+		@Inject(forwardRef(() => WsService))
+		private wsService: WsService,
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('inviteChatResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// roomId 프로퍼티 확인
+		if (body.roomId === undefined) {
+			this.chatService.result('inviteChatResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.chatService.result('inviteChatResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 방인지 확인
+		if (!await this.chatService.isExist(body.roomId)) {
+			this.chatService.result('inviteChatResult', client, 'error', '존재하지 않는 채팅방입니다.');
+			return false;
+		}
+
+		// 해당 방의 유저인지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client)) {
+			this.chatService.result('inviteChatResult', client, 'error', '해당 채팅방의 유저가 아닙니다.');
+			return false;
+		}
+		
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.chatService.result('inviteChatResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+		
+		
+		// 상대방이 해당 채팅방에 존재하는지 확인
+		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
+			this.chatService.result('inviteChatResult', client, 'error', '해당 채팅방에 없는 대상입니다.');
+			return false;
+		}
+		
+
 		return true;
 	}
 }
