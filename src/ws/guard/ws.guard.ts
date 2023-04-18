@@ -731,8 +731,14 @@ export class SubscribeGuard implements CanActivate {
 export class UnsubscribeGuard implements CanActivate {
 
 	constructor(
+
 		private chatService:ChatService,
+
+		@Inject(forwardRef(() => UserService))
 		private userService:UserService,
+		
+		
+		@Inject(forwardRef(() => WsService))
 		private wsService:WsService,
 	) {}
 	
@@ -775,6 +781,9 @@ export class UnsubscribeGuard implements CanActivate {
 			this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
 			return false;
 		}
+
+		// dm id 유효성 검사
+		// game room id 유효성 검사
 
 		// username 유효성 검사
 		if (body.type === Type.DM && !(await this.userService.isExist(body.username))) {
