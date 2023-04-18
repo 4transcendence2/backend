@@ -3,6 +3,7 @@ import { UserStatus } from "../user.status";
 import { ChatRoom } from "src/chat/entity/chat.room.entity";
 import { ChatRoomUser } from "src/chat/entity/chat.room.user.entity";
 import { ChatHistory } from "src/chat/entity/chat.history.entity";
+import Dm from "src/chat/entity/chat.dm.entity";
 
 @Entity('user')
 export class User {
@@ -36,6 +37,9 @@ export class User {
 
 	@OneToMany(() => ChatRoomUser, (chatRoomUser) => chatRoomUser.user)
 	chat: ChatRoomUser[];
+
+	@OneToMany(() => Dm, (dm) => dm)
+	dm: Dm[];
 
 	@OneToMany(() => ChatHistory, (chatHistory) => chatHistory.user)
 	chat_history: ChatHistory[];

@@ -55,6 +55,7 @@ export class ChatService {
 				users: {
 					user: true,
 				},
+				history: true,
 				owner: true,
 				ban: true,
 			}
@@ -150,7 +151,7 @@ export class ChatService {
 	}
 
 	async exitChatRoom(server: Server, client: Socket, body: any) {
-		const room = await this.findOne(body.roomId);
+		let room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 		const chatRoomUser = await this.findRoomUser(user, room);
 
@@ -161,6 +162,7 @@ export class ChatService {
 
 		// 방에 남은 유저가 한 명인 경우.
 		if (room.users.length === 1) {
+			await this.chatHistoryRepository.remove(room.history);
 			await this.chatRoomRepository.remove(room);
 			const clients = await server.in('chatRoomList').fetchSockets();
 			for (const elem of clients) {
@@ -180,7 +182,8 @@ export class ChatService {
 			if (room.owner.id === user.id) {
 
 				// admin이 없는 경우.
-				if (room.users.findIndex(elem => elem.admin === true) === undefined) {
+				if (room.users.find(elem => elem.admin === true) === undefined) {
+					room = await this.findOne(body.roomId);
 					room.owner = room.users[0].user;
 				} else {
 					await this.chatRoomUserRepository.find({

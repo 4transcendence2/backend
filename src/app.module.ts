@@ -10,6 +10,7 @@ import { SignupJwtModule } from './auth/signup_jwt/signupJwt.module';
 import { join } from 'path'
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
+import { DmModule } from './dm/dm.module';
 require('dotenv').config();
 
 
@@ -39,7 +40,8 @@ require('dotenv').config();
 		GameModule,
 		MulterModule.register({
 			dest: join(__dirname, '..', 'public', 'avatar')
-		})
+		}),
+		DmModule
 	],
 	controllers: [],
 	providers: [],
