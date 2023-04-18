@@ -433,11 +433,12 @@ export class ChatService {
 	async appointAdmin(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
+		const roomUser = await this.findRoomUser(user, room);
 		this.result('appointAdminResult', client, 'approved', 'appointAdmin', room.id);
 
 
-		room.users.find(elem => elem.user.id === user.id).admin = true;
-		await this.chatRoomRepository.save(room);
+		roomUser.admin = true;
+		await this.chatRoomUserRepository.save(roomUser);
 
 		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
