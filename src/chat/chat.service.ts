@@ -133,7 +133,7 @@ export class ChatService {
 			time: new Date(Date.now()),
 		});
 		this.chatRoomUserRepository.save(newChatRoomUser);
-	
+
 		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
@@ -221,6 +221,7 @@ export class ChatService {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 		const roomUser = await this.findRoomUser(user, room);
+		if (roomUser === null) return;
 		const joinTime = roomUser.time;
 
 		const histories = await this.chatHistoryRepository.find({
