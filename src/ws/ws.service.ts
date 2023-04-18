@@ -127,12 +127,48 @@ export class WsService {
 			this.updateFriend(name, client);
 		}
 
-
-		
-
+	}
 
 
+	async unsubscribe(@ConnectedSocket() client: Socket, body: any) {
+		const name = await this.findName(client);
 
+		// chatRoom
+		if (body.type === Type.CHAT_ROOM) {
+			client.leave('chatRoom' + body.roomId);
+		}
+
+		// gameRoom
+		if (body.type === Type.CHAT_ROOM) {
+			client.leave('gameRoom' + body.roomId);
+		}
+
+		// DM
+		if (body.type === Type.DM) {
+			const user1 = await this.userService.findOne(await this.findName(client));
+			const user2 = await this.userService.findOne(body.username);
+			const dm = await this.dmService.findOne(user1, user2);
+			client.leave('dm' + dm.id);
+		}
+
+		// chatRoomList
+		if (body.type === Type.CHAT_ROOM_LIST) {
+			client.leave('chatRoomList');
+		}
+
+		// gameRoomList
+		if (body.type === Type.GAME_ROOM_LIST) {
+		}
+
+		// dmList
+		if (body.type === Type.DM_LIST) {
+			client.leave('dmList');
+		}
+
+		// friendList
+		if (body.type === Type.FRIEND_LIST) {
+			client.leave('friendList');
+		}
 
 	}
 

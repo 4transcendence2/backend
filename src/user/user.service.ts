@@ -157,13 +157,6 @@ export class UserService {
 		}
 	}
 
-	async addFriendResult(client: Socket, status: string, detail?: string) {
-		client.emit('addFriendResult', {
-			status: status,
-			detail: detail,
-		})
-	}
-
 	async isFriend(from: string, to: string) {
 		const fromUser = await this.findOne(from);
 		return fromUser.friend.find(elem => elem.name === to) !== undefined ? true : false;

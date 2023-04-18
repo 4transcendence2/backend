@@ -713,6 +713,9 @@ export class SubscribeGuard implements CanActivate {
 			return false;
 		}
 
+		// dm id 유효성 검사
+		// game room id 유효성 검사
+
 		// username 유효성 검사
 		if (body.type === Type.DM && !(await this.userService.isExist(body.username))) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 username입니다.', body.type);
