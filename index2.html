@@ -50,6 +50,11 @@
 			type: 'chatRoomList'
 		})
 
+		socket.emit('subscribe', {
+			type: 'dm',
+			username: 'sorksoek2',
+		})
+
 		socket.on('message', data => {
 			const type = data.type;
 			if (type === 'otherRoom') {

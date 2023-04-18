@@ -65,7 +65,7 @@ export class DmService {
 		})
 		await this.dmHistoryRepository.save(newHistory);
 
-		let clients = await server.in(user1.name + user2.name).fetchSockets();
+		let clients = await server.in('dm' + dm.id).fetchSockets();
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
 			elemClient.emit('message', {
