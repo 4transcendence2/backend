@@ -26,15 +26,19 @@ export class DmService {
 	) {}
 
 	async findOne(user1: User, user2: User): Promise<Dm> {
-		
+		let list1 = [user1, user2];
+		let list2 = [user2, user1];
+
 		return await this.dmRepository.findOne({
 			relations: {
-				user1: true,
-				user2: true,
+				user: true,
+				history: {
+					user: true,
+				}
 			},
 			where: [
-				{ user1: user1, user2: user2 },
-				{ user1: user2, user2: user1 },
+				{ user: list1 },
+				{ user: list2 },
 			],
 		});
 	}
@@ -48,8 +52,7 @@ export class DmService {
 		let dm = await this.findOne(user1, user2);
 		if (dm === null) {
 			dm = this.dmRepository.create({
-				user1: user1,
-				user2: user2,
+				user: [user1, user2]
 			})
 			await this.dmRepository.save(dm);
 		}
@@ -87,12 +90,35 @@ export class DmService {
 		} [] = [];
 		for (let i = 0; i < user.dm.length; ++i) {
 			list.push({
-				username: user.dm[i].user1.name === user.name ? user.dm[i].user2.name : user.name,
+				username: user.dm[i].user[0].name === user.name ? user.dm[i].user[1].name : user.name,
 			});
 		}
 
 		client.emit('message', {
 			type: 'dmList',
+			list: list,
+		});
+	}
+
+	async sendHistory(client: Socket, body: any) {
+		const user1 = await this.userService.findOne(await this.wsService.findName(client));
+		const user2 = await this.userService.findOne(body.username);
+		const dm = await this.findOne(user1, user2);
+		const histories = dm.history;
+
+		let list: {
+			from: string,
+			content: string,
+		} [] = [];
+
+		for(const history of histories) {
+			list.push({
+				from: history.user.name,
+				content: history.content,
+			})
+		}
+		client.emit('message', {
+			type: 'history',
 			list: list,
 		});
 	}

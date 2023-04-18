@@ -78,6 +78,7 @@ export class WsService {
 	}
 	
 	async subscribe(@ConnectedSocket() client: Socket, body: any) {
+		const name = await this.findName(client);
 
 		// chatRoom
 		if (body.type === Type.CHAT_ROOM) {
@@ -96,19 +97,20 @@ export class WsService {
 		if (body.type === Type.DM) {
 			const user1 = await this.userService.findOne(await this.findName(client));
 			const user2 = await this.userService.findOne(body.username);
-
 			const dm = await this.dmService.findOne(user1, user2);
 			if (dm === null) {
 				client.join(user1.name + user2.name);
 			} else {
-				client.join(dm.user1.name + dm.user2.name);
+				client.join(dm.user[0].name + dm.user[1].name);
 			}
+
+
+			this.dmService.sendHistory(client, body);
 		}
 
 		// chatRoomList
 		if (body.type === Type.CHAT_ROOM_LIST) {
 			client.join('chatRoomList');
-			const name = await this.findName(client);
 			this.chatService.updateMyChatRoomList(name, client);
 			this.chatService.updateChatRoomList(name, client);
 		}
@@ -120,6 +122,7 @@ export class WsService {
 		// dmList
 		if (body.type === Type.DM_LIST) {
 			client.join('dmList');
+			this.dmService.updateDmList(name, client);
 		}
 
 		// friendList

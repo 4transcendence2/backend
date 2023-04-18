@@ -23,6 +23,13 @@
 			type: 'chatRoom',
 			roomId: 21,
 		})
+		socket.emit('subscribe', {
+			type: 'dm',
+			username: 'sorksoek22',
+		})
+		socket.emit('subscribe', {
+			type: 'dmList',
+		})
 
 		socket.on('subscribeResult', data => {
 			console.log(data);
@@ -51,6 +58,15 @@
 				})
 			}
 		}
+
+		socket.on('subscribe', {
+			type: 'dm',
+			username: 'sorksoek22'
+		})
+
+		socket.on('subscribe', {
+			type: 'dmList',
+		})
 
 		function appointAdmin(roomId, username) {
 			socket.emit('appointAdmin', {
@@ -219,6 +235,10 @@
 			}
 
 			if (type === 'history') {
+				console.log(data);
+			}
+		
+			if (type === 'dmList') {
 				console.log(data);
 			}
 		})

@@ -39,8 +39,7 @@ export class UserService {
 					}
 				},
 				dm: {
-					user1: true,
-					user2: true,
+					user: true,
 				}
 			}
 		});

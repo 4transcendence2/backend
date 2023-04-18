@@ -39,8 +39,7 @@ export class User {
 	@OneToMany(() => ChatRoomUser, (chatRoomUser) => chatRoomUser.user)
 	chat: ChatRoomUser[];
 
-	@OneToMany(() => Dm, (dm) => dm.user1)
-	@OneToMany(() => Dm, (dm) => dm.user2)
+	@ManyToMany(() => Dm, (dm) => dm.user)
 	dm: Dm[];
 
 	@OneToMany(() => ChatHistory, (chatHistory) => chatHistory.user)
