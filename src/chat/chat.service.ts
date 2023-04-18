@@ -78,7 +78,7 @@ export class ChatService {
 	async isExistUser(id: number, client: Socket, name?: string): Promise<boolean> {
 		const room = await this.findOne(id);
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
-		return this.findRoomUser(user, room) !== null ? true : false;
+		return await this.findRoomUser(user, room) !== null ? true : false;
 	}
 
 
@@ -130,6 +130,7 @@ export class ChatService {
 		const newChatRoomUser = this.chatRoomUserRepository.create({
 			user: user,
 			room: room,
+			time: new Date(Date.now()),
 		});
 		this.chatRoomUserRepository.save(newChatRoomUser);
 	
