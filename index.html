@@ -43,6 +43,15 @@
 			});
 		};
 
+		function dm() {
+			if (event.key === 'Enter') {
+				socket.emit('dm', {
+					username: 'sorksoek22',
+					content: '밥묵자 뭐하노',
+				})
+			}
+		}
+
 		function appointAdmin(roomId, username) {
 			socket.emit('appointAdmin', {
 				roomId: roomId,
@@ -244,6 +253,7 @@
 			})
 		}
 
+		
 	</script>
 </head>
 
@@ -267,6 +277,10 @@
 		<div id="chatRoomContainer"></div>
 	</div>
 	<div id="userList"></div>
+
+	<div>
+		<input onkeydown="dm()" id='dm' type="text">
+	</div>
 </body>
 
 </html>

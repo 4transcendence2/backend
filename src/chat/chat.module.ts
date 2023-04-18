@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { UserModule } from 'src/user/user.module';
 import { WsModule } from 'src/ws/ws.module';
-import Dm from './entity/chat.dm.entity';
+import { Dm } from 'src/dm/entity/dm.entity';
 import { ChatRoomUser } from './entity/chat.room.user.entity';
 import { ChatHistory } from './entity/chat.history.entity';
 

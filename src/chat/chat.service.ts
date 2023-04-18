@@ -447,7 +447,7 @@ export class ChatService {
 			roomId: room.id,
 			status: 'notice',
 			from: 'server',
-			content: `${user.name} 님이 초대되었습니다.`,
+			content: `${user.name} 님이 초대 되었습니다.`,
 		});
 
 		let clients = await server.in('chatRoom' + room.id).fetchSockets();

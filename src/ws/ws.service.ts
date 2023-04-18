@@ -7,6 +7,7 @@ import { UserStatus } from 'src/user/user.status';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { Type } from './ws.type';
 import { WsGateWay } from './ws.gateway';
+import { DmService } from 'src/dm/dm.service';
 
 interface login {
 	name: string,
@@ -28,6 +29,9 @@ export class WsService {
 
 		@Inject(forwardRef(() => ChatService))
 		private chatService: ChatService,
+
+		@Inject(forwardRef(() => DmService))
+		private dmService: DmService,
 
 		@Inject(forwardRef(() => WsGateWay))
 		private wsGateWay: WsGateWay,
@@ -90,7 +94,15 @@ export class WsService {
 
 		// DM
 		if (body.type === Type.DM) {
-			//
+			const user1 = await this.userService.findOne(await this.findName(client));
+			const user2 = await this.userService.findOne(body.username);
+
+			const dm = await this.dmService.findOne(user1, user2);
+			if (dm === null) {
+				client.join(user1.name + user2.name);
+			} else {
+				client.join(dm.user1.name + dm.user2.name);
+			}
 		}
 
 		// chatRoomList
@@ -107,12 +119,12 @@ export class WsService {
 
 		// dmList
 		if (body.type === Type.DM_LIST) {
-
+			client.join('dmList');
 		}
 
 		// friendList
 		if (body.type === Type.FRIEND_LIST) {
-
+			client.join('friendList');
 		}
 
 

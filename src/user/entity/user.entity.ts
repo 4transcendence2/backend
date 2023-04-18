@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserStatus } from "../user.status";
 import { ChatRoom } from "src/chat/entity/chat.room.entity";
 import { ChatRoomUser } from "src/chat/entity/chat.room.user.entity";
 import { ChatHistory } from "src/chat/entity/chat.history.entity";
-import Dm from "src/chat/entity/chat.dm.entity";
+import { Dm } from "src/dm/entity/dm.entity";
+import { DmHistory } from "src/dm/entity/dm.history";
 
 @Entity('user')
 export class User {
@@ -38,11 +39,15 @@ export class User {
 	@OneToMany(() => ChatRoomUser, (chatRoomUser) => chatRoomUser.user)
 	chat: ChatRoomUser[];
 
-	@OneToMany(() => Dm, (dm) => dm)
+	@OneToMany(() => Dm, (dm) => dm.user1)
+	@OneToMany(() => Dm, (dm) => dm.user2)
 	dm: Dm[];
 
 	@OneToMany(() => ChatHistory, (chatHistory) => chatHistory.user)
 	chat_history: ChatHistory[];
+
+	@OneToMany(() => DmHistory, (dmHistory) => dmHistory.user)
+	dm_history: DmHistory[];
 
 	@ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.ban)
 	@JoinTable()

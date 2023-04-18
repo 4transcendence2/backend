@@ -5,7 +5,8 @@ import { ChatService } from "src/chat/chat.service";
 import { Inject, UseGuards, forwardRef } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { TokenGuard } from "./guard/ws.token.guard";
-import { AddFriendGuard, AppointAdminGuard, BanGuard, ChatGuard, CreateChatRoomGuard, ExitChatRoomGuard, InviteChatGuard, JoinChatRoomGuard, KickGuard, LoginGuard, MuteGuard, SubscribeGuard, UnbanGuard } from "./guard/ws.guard";
+import { AddFriendGuard, AppointAdminGuard, BanGuard, ChatGuard, CreateChatRoomGuard, DmGuard, ExitChatRoomGuard, InviteChatGuard, JoinChatRoomGuard, KickGuard, LoginGuard, MuteGuard, SubscribeGuard, UnbanGuard } from "./guard/ws.guard";
+import { DmService } from "src/dm/dm.service";
 require('dotenv').config();
 
 @WebSocketGateway({
@@ -21,6 +22,9 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 		@Inject(forwardRef(() => UserService))
 		private userService: UserService,
+
+		@Inject(forwardRef(() => DmService))
+		private dmService: DmService,
 
 	) {}
 
@@ -161,10 +165,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	/*
-		Block
+		Appoint Admin
 	*/
-
-
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
 	@UseGuards(AppointAdminGuard)
@@ -172,7 +174,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async appointAdmin(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		await this.chatService.appointAdmin(this.server, client, body);
 	}
-
 
 
 	/*
@@ -184,7 +185,9 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 
-
+	/*
+		AddFriend
+	*/
 
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
@@ -193,6 +196,24 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async addFriend(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		await this.userService.addFriend(client, body);
 	}
+
+
+	
+	/*
+		Dm
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(DmGuard)
+	@SubscribeMessage('dm')
+	async dm(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.dmService.dm(this.server, client ,body);
+	}
+
+
+
+
+
 
 
 

@@ -794,8 +794,6 @@ export class InviteChatGuard implements CanActivate {
 		@Inject(forwardRef(() => UserService))
 		private userService: UserService,
 
-		@Inject(forwardRef(() => WsService))
-		private wsService: WsService,
 	) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
@@ -844,6 +842,41 @@ export class InviteChatGuard implements CanActivate {
 		}
 		
 
+		return true;
+	}
+}
+
+
+@Injectable()
+export class DmGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+
+		@Inject(forwardRef(() => UserService))
+		private userService: UserService,
+
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('inviteChatResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.chatService.result('inviteChatResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.chatService.result('inviteChatResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+		
 		return true;
 	}
 }

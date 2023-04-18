@@ -38,6 +38,10 @@ export class UserService {
 						users: true,
 					}
 				},
+				dm: {
+					user1: true,
+					user2: true,
+				}
 			}
 		});
 	}

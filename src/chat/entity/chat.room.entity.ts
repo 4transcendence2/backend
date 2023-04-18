@@ -3,6 +3,7 @@ import { RoomStatus } from "../chat.room.status";
 import { User } from "src/user/entity/user.entity";
 import { ChatRoomUser } from "./chat.room.user.entity";
 import { ChatHistory } from "./chat.history.entity";
+import { DmHistory } from "src/dm/entity/dm.history";
 
 
 @Entity('chat_room')
