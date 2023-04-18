@@ -162,7 +162,7 @@ export class ChatService {
 		// 방에 남은 유저가 한 명인 경우.
 		if (room.users.length === 1) {
 			await this.chatRoomRepository.remove(room);
-			const clients = await server.in('chatRoom' + room.id).fetchSockets();
+			const clients = await server.in('chatRoomList').fetchSockets();
 			for (const elem of clients) {
 				let elemName = await this.wsService.findName(undefined, elem.id);
 				this.updateChatRoomList(elemName, await this.wsService.findClient(elemName));
