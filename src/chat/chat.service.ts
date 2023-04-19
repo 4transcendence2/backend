@@ -149,6 +149,7 @@ export class ChatService {
 		});
 
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
 			this.updateChatRoom(elemClient, room);
@@ -217,10 +218,12 @@ export class ChatService {
 			await this.chatRoomRepository.save(room);
 
 			const clients = await server.in('chatRoom' + room.id).fetchSockets();
+
 			for (const elem of clients) {
 				let elemClient = await this.wsService.findClient(undefined, elem.id);
 				this.updateChatRoom(elemClient, room);
 			}
+
 		}
 	}
 

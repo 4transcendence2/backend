@@ -63,7 +63,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(UnsubscribeGuard)
 	@SubscribeMessage('subscribe')
 	async unsubscribe(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.wsService.unsubscribe(client, body);
+		// await this.wsService.unsubscribe(client, body);
 	}
 
 

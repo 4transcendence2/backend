@@ -21,7 +21,7 @@
 		})
 		socket.emit('subscribe', {
 			type: 'chatRoom',
-			roomId: 21,
+			roomId: 23,
 		})
 		socket.emit('subscribe', {
 			type: 'dm',
@@ -232,6 +232,10 @@
 
 			if (type === 'chat') {
 				console.log(data.from, data.content);
+			}
+
+			if (type === 'chatRoom') {
+				console.log(data);
 			}
 
 			if (type === 'history') {
