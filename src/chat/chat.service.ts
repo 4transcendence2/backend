@@ -128,7 +128,7 @@ export class ChatService {
 	}
 
 	async joinChatRoom(server: Server, client: Socket, body: any) {
-		
+
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 
@@ -148,11 +148,19 @@ export class ChatService {
 			content: `${user.name} 님이 입장하셨습니다.`,
 		});
 
-		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		let clients = await server.in('chatRoom' + room.id).fetchSockets();
 
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
 			this.updateChatRoom(elemClient, room);
+		}
+
+		clients = await server.in('chatRoomList').fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			this.updateChatRoomList(elemName, elemClient);
+			this.updateMyChatRoomList(elemName, elemClient);
 		}
 	}
 
@@ -217,13 +225,19 @@ export class ChatService {
 
 			await this.chatRoomRepository.save(room);
 
-			const clients = await server.in('chatRoom' + room.id).fetchSockets();
-
+			let clients = await server.in('chatRoom' + room.id).fetchSockets();
 			for (const elem of clients) {
 				let elemClient = await this.wsService.findClient(undefined, elem.id);
 				this.updateChatRoom(elemClient, room);
 			}
 
+			clients = await server.in('chatRoomList').fetchSockets();
+			for (const elem of clients) {
+				let elemClient = await this.wsService.findClient(undefined, elem.id);
+				let elemName = await this.wsService.findName(undefined, elem.id);
+				this.updateChatRoomList(elemName, elemClient);
+				this.updateMyChatRoomList(elemName, elemClient);
+			}
 		}
 	}
 
@@ -543,7 +557,7 @@ export class ChatService {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
 			if (elemName === user.name) {
 				this.updateMyChatRoomList(elemName, elemClient);
-				this.updateMyChatRoomList(elemName, elemClient);
+				this.updateChatRoomList(elemName, elemClient);
 				break;
 			}
 		}
