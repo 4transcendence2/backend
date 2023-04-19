@@ -294,36 +294,34 @@ export class ChatService {
 	async kick(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
+		const chatRoomUser = await this.findRoomUser(user, room);
+		await this.chatRoomUserRepository.remove(chatRoomUser);
+
 		this.result('kickResult', client, 'approved', 'kick', room.id);
-
-		let index = room.users.findIndex(elem => elem.id === user.id);
-		room.users.splice(index, 1);
-		await this.chatRoomRepository.save(room);
-
-		const socket = await this.wsService.findClient(user.name);
-		if (socket !== undefined) {
-			socket.leave('room' + room.id);
-		}
-
-		server.to('chatRoom' + room.id).emit('message', {
-			type: 'chat',
-			roomId: room.id,
-			status: 'notice',
-			from: 'server',
-			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 kick 하셨습니다.`,
-		})
-
-		// 킥 당한사람한테 이벤트 날려야함
-
-
 
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
-			this.updateChatRoom(elemClient, room);
+			let elemName = await this.wsService.findName(undefined, elem.id);
+
+			if (elemName === user.name) {
+				elemClient.emit('message', {
+					type: 'kick',
+					roomId: room.id,
+					from: await this.wsService.findName(client),
+				})
+				elemClient.leave('chatRoom' + room.id);
+			} else {
+				elemClient.emit('message', {
+					type: 'chat',
+					roomId: room.id,
+					status: 'notice',
+					from: 'server',
+					content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 kick 하셨습니다.`,
+				})
+				this.updateChatRoom(elemClient, room);
+			}
 		}
-
-
 	}
 	
 	async ban(server: Server, client: Socket, body: any) {
@@ -336,39 +334,30 @@ export class ChatService {
 
 		room.ban.push(user);
 		await this.chatRoomRepository.save(room);
-	
-		
-	
-		client.to('chatRoom' + room.id).emit('message', {
-			type: 'chat',
-			roomId: room.id,
-			status: 'notice',
-			from: 'server',
-			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 ban 하셨습니다.`,
-		})
-		
-		
-		
+
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
-			if (user.name === await this.wsService.findName(undefined, elem.id)) {
-				let socket = await this.wsService.findClient(user.name);
-				if (socket !== undefined) {
-					socket.emit('message', {
-						type: 'ban',
-						roomId: room.id,
-						from: await this.wsService.findName(client),
-					})
-					socket.leave('chatRoom' + room.id);
-				}
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+
+			if (elemName === user.name) {
+				elemClient.emit('message', {
+					type: 'ban',
+					roomId: room.id,
+					from: await this.wsService.findName(client),
+				})
+				elemClient.leave('chatRoom' + room.id);
 			} else {
-				let elemClient = await this.wsService.findClient(undefined, elem.id);
+				elemClient.emit('message', {
+					type: 'chat',
+					roomId: room.id,
+					status: 'notice',
+					from: 'server',
+					content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 ban 하셨습니다.`,
+				})
 				this.updateChatRoom(elemClient, room);
 			}
 		}
-
-
-
 	}
 	
 	async unban(server: Server, client: Socket, body: any) {
