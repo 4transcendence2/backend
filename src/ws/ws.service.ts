@@ -57,9 +57,10 @@ export class WsService {
 
 			await this.userService.updateStatus(name, UserStatus.LOGIN);
 			const user = await this.userService.findOne(name);
+			console.log(user);
 
 			for (const room of user.chat) {
-				let clients = await this.wsGateWay.server.in('chatRoom' + room.id).fetchSockets();
+				let clients = await this.wsGateWay.server.in('chatRoom' + room.room.id).fetchSockets();
 				for(const elem of clients) {
 					let elemName = await this.findName(undefined, elem.id);
 					let elemClient = await this.findClient(undefined, elem.id);
@@ -85,7 +86,7 @@ export class WsService {
 			const user = await this.userService.findOne(name);
 
 			for (const room of user.chat) {
-				let clients = await this.wsGateWay.server.in('chatRoom' + room.id).fetchSockets();
+				let clients = await this.wsGateWay.server.in('chatRoom' + room.room.id).fetchSockets();
 				for(const elem of clients) {
 					let elemName = await this.findName(undefined, elem.id);
 					let elemClient = await this.findClient(undefined, elem.id);
