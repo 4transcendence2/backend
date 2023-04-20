@@ -15,6 +15,6 @@ export class DupLoginGuard implements CanActivate {
 		if (await this.wsService.isLogin(undefined, req.body.username)) {
 			throw new HttpException({ status: 'error', detail: 'Duplication Login' }, 409);
 		}
-		return false;
+		return true;
 	}
 }

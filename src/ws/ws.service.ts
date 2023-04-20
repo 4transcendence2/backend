@@ -41,20 +41,15 @@ export class WsService {
 	async login(@ConnectedSocket() client: Socket) {
 		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
 		.then(async name => {
+			if (await this.isLogin(undefined, name)) {
+				client.emit('error', {
+					status: 'error',
+					detail: '이미 접속중인 유저입니다.',
+				});
 
-			// const res = await this.isLogin(client);
-
-			// if ((await this.isLogin(client))) {
-
-			// 	console.log('dup login');
-
-			// 	client.emit('error', {
-			// 		status: 'error',
-			// 		detail: '이미 접속중인 유저입니다.',
-			// 	})
-			// 	client.disconnect();
-			// 	return;
-			// }
+				client.disconnect();
+				return;
+			}
 
 			users.push({
 				name: name,
@@ -85,6 +80,10 @@ export class WsService {
 	async logout(@ConnectedSocket() client: Socket) {
 		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
 		.then(async name => {
+			const tmpClient = await this.findClient(name);
+			if (tmpClient !== client) return;
+
+
 			await this.userService.updateStatus(name, UserStatus.LOGOUT);
 			const user = await this.userService.findOne(name);
 
@@ -231,8 +230,12 @@ export class WsService {
 
 
 		if (name !== undefined) {
+
 			const res = await this.findClient(name);
-			if (res === undefined) return false;
+
+			if (res === undefined) {
+				return false;
+			}
 			return true;
 		}
 	}

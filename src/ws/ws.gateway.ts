@@ -67,7 +67,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 
-
 	/*
 		Create Chat Room Event
 	*/
@@ -76,6 +75,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(CreateChatRoomGuard)
 	@SubscribeMessage('createChatRoom')
 	async createChatRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		console.log('123');
 		await this.chatService.createChatRoom(this.server, client, body);
 	}
 
