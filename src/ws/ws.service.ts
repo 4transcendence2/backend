@@ -81,6 +81,18 @@ export class WsService {
 			let index = users.findIndex(user => user.name === name);
 			if (index !== -1) users.splice(index, 1);
 			await this.userService.updateStatus(name, UserStatus.LOGOUT);
+
+			const user = await this.userService.findOne(name);
+
+			for (const room of user.chat) {
+				let clients = await this.wsGateWay.server.in('chatRoom' + room.id).fetchSockets();
+				for(const elem of clients) {
+					let elemName = await this.findName(undefined, elem.id);
+					let elemClient = await this.findClient(undefined, elem.id);
+					this.chatService.updateChatRoom(elemClient, room.room);
+				}
+			}
+
 		})
 		.catch(err => {
 			client.emit('error', err);
