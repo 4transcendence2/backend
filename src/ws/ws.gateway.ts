@@ -5,8 +5,9 @@ import { ChatService } from "src/chat/chat.service";
 import { Inject, UseGuards, forwardRef, Request } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { TokenGuard } from "./guard/ws.token.guard";
-import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, ChatGuard, CreateChatRoomGuard, DmGuard, ExitChatRoomGuard, InviteChatGuard, JoinChatRoomGuard, KickGuard, LoginGuard, MuteGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
+import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChatGuard, CreateChatRoomGuard, DmGuard, ExitChatRoomGuard, ExitGameRoomGuard, InviteChatGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, SearchGameGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
 import { DmService } from "src/dm/dm.service";
+import { GameService } from "src/game/game.service";
 require('dotenv').config();
 
 @WebSocketGateway({
@@ -26,7 +27,13 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		@Inject(forwardRef(() => DmService))
 		private dmService: DmService,
 
-	) {}
+		@Inject(forwardRef(() => GameService))
+		private gameService: GameService,
+
+	) {
+		// 매치 
+		// this.gameService.match();
+	}
 
 	@WebSocketServer()
 	server: Server
@@ -234,7 +241,54 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 
 
+	/*
+		SearchGame
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(SearchGameGuard)
+	@SubscribeMessage('searchGame')
+	async searchGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.gameService.enrollQueue(client, body);
+	}
+	
+	/*
+		CancleSearch
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(CancleSearchGuard)
+	@SubscribeMessage('cancleSearch')
+	async cancleSearch(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.gameService.cancleQueue(client, body);
+	}
 
+	/*
+		JoinGameRoom
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(JoinGameRoomGuard)
+	@SubscribeMessage('joinGameRoom')
+	async joinGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.joinGameRoom(client, body);
+	}
+
+	/*
+		exitGameROom
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(ExitGameRoomGuard)
+	@SubscribeMessage('exitGameRoom')
+	async exitGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.exitGameRoom(client, body);
+	}
+
+	/*
+		inviteGame
+	*/
+	
 
 
 

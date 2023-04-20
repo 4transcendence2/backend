@@ -6,6 +6,9 @@ import { ChatService } from "src/chat/chat.service";
 import { UserService } from "src/user/user.service";
 import { RoomStatus } from "src/chat/chat.room.status";
 import { Type } from "../ws.type";
+import { Rule } from "src/game/game.rule";
+import { GameService } from "src/game/game.service";
+import { DmService } from "src/dm/dm.service";
 
 @Injectable()
 export class LoginGuard implements CanActivate {
@@ -665,13 +668,20 @@ export class AddFriendGuard implements CanActivate {
 export class SubscribeGuard implements CanActivate {
 
 	constructor(
-		private chatService:ChatService,
+		private chatService: ChatService,
+
+
+		@Inject(forwardRef(() => DmService))
+		private dmService: DmService,
 
 		@Inject(forwardRef(() => UserService))
-		private userService:UserService,
+		private userService: UserService,
 
 		@Inject(forwardRef(() => WsService))
-		private wsService:WsService,
+		private wsService: WsService,
+
+		@Inject(forwardRef(() =>  GameService))
+		private gameService: GameService,
 	) {}
 	
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -708,20 +718,35 @@ export class SubscribeGuard implements CanActivate {
 			return false;
 		}
 
-		// 채팅 roomId 유효성 검사
-		if (body.type === Type.CHAT_ROOM && !(await this.chatService.isExist(body.roomId))) {
-			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
-			return false;
-		}
-
-		// dm id 유효성 검사
-		// game room id 유효성 검사
-
 		// username 유효성 검사
 		if (body.type === Type.DM && !(await this.userService.isExist(body.username))) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 username입니다.', body.type);
 			return false;
 		}
+
+		// 채팅 roomId 유효성 검사
+		if (body.type === Type.CHAT_ROOM && !(await this.chatService.isExist(body.roomId))) {
+			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
+			return false;
+		}
+		
+		// dm id 유효성 검사
+		if (body.type=== Type.DM) {
+			let user1 = await this.userService.findOne(await this.wsService.findName(client));
+			let user2 = await this.userService.findOne(body.username);
+			
+			if (!await this.dmService.isExist(user1, user2)) {
+				return false;
+			}
+		}
+		
+		// game id 유효성 검사
+		if (body.Type === Type.GAME_ROOM && !(await this.gameService.isExist(body.roomId))) {
+			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
+			return false;
+		}
+
+		
 
 		this.wsService.result('subscribeResult', client, 'approved', undefined, body.type);
 		return true;
@@ -999,6 +1024,7 @@ export class UnblockGuard implements CanActivate {
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
 			this.chatService.result('blockResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			return false;
 		}
 
 		// 존재하는 방인지 확인
@@ -1040,5 +1066,185 @@ export class UnblockGuard implements CanActivate {
 			}
 			return true;
 		});
+	}
+}
+
+
+@Injectable()
+export class SearchGameGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('searchGameResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// rule 프로퍼티 확인
+		if (body.rule === undefined) {
+			this.chatService.result('searchGameResult', client, 'error', 'rule 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// rule 유효성 확인
+		if (!Object.values(Rule).includes(body.type)) {
+			this.chatService.result('searchGameResult', client, 'error', '올바른 rule이 아닙니다. rank, normal, arcade 셋 중 하나를 입력해주세요.');
+			return false;
+		}
+
+		return true;
+	}
+}
+
+@Injectable()
+export class CancleSearchGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+
+		@Inject(forwardRef(() => GameService))
+		private gameSerivce: GameService,
+
+		@Inject(forwardRef(() => WsService))
+		private wsService: WsService,
+
+
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('cancleSearchResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// rule 프로퍼티 확인
+		if (body.rule === undefined) {
+			this.chatService.result('cancleSearchResult', client, 'error', 'rule 프로퍼티가 없습니다.');
+			return false;
+		}
+		
+		// rule 유효성 확인
+		if (!Object.values(Rule).includes(body.type)) {
+			this.chatService.result('cancleSearchResult', client, 'error', '올바른 rule이 아닙니다. rank, normal, arcade 셋 중 하나를 입력해주세요.');
+			return false;
+		}
+		
+		// 해당 큐에 등록이 된 유저인지 확인
+		let name = await this.wsService.findName(client);
+		
+		if (body.rule === Rule.RANK) {
+			if (this.gameSerivce.rank.find(elem => elem.name === name) === undefined) {
+				this.chatService.result('cancleSearchResult', client, 'error', 'rank 큐에 등록된 유저가 아닙니다.');
+				return false;
+			}
+		}
+		
+		if (body.rule === Rule.NORMAL) {
+			if (this.gameSerivce.normal.find(elem => elem.name === name) === undefined) {
+				this.chatService.result('cancleSearchResult', client, 'error', 'normal 큐에 등록된 유저가 아닙니다.');
+				return false;
+			}
+		}
+		
+		if (body.rule === Rule.ARCADE) {
+			if (this.gameSerivce.arcade.find(elem => elem.name === name) === undefined) {
+				this.chatService.result('cancleSearchResult', client, 'error', 'arcade 큐에 등록된 유저가 아닙니다.');
+				return false;
+			}
+		}
+
+		return true;
+	}
+}
+
+
+
+@Injectable()
+export class JoinGameRoomGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+
+		@Inject(forwardRef(() => GameService))
+		private gameSerivce: GameService,
+
+
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('joinGameRoomResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// roomId 데이터 확인
+		if (body.roomId === undefined) {
+			this.chatService.result('joinGameRoomResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// 유효한 게임방인지 확인
+		if (!await this.gameSerivce.isExist(body.roomId)) {
+			this.chatService.result('joinGameRoomResult', client, 'error', '존재하지 않는 방입니다.');
+			return false;
+		}
+		
+		// 이미 해당 방에 참여중인 유저인지
+		if (await this.gameSerivce.isExistUser(body.roomId, client)) {
+			this.chatService.result('joinGameRoomResult', client, 'error', '이미 참여중입니다.');
+			return false;
+		}
+
+		return true;
+	}
+}
+@Injectable()
+export class ExitGameRoomGuard implements CanActivate {
+	constructor(
+		private chatService: ChatService,
+
+		@Inject(forwardRef(() => GameService))
+		private gameSerivce: GameService,
+
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.chatService.result('exitGameRoomResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// roomId 데이터 확인
+		if (body.roomId === undefined) {
+			this.chatService.result('exitGameRoomResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// 유효한 게임방인지 확인
+		if (!await this.gameSerivce.isExist(body.roomId)) {
+			this.chatService.result('exitGameRoomResult', client, 'error', '존재하지 않는 방입니다.');
+			return false;
+		}
+		
+		// 해당 방의 유저인지 확인
+		if (!await this.gameSerivce.isExistUser(body.roomId, client)) {
+			this.chatService.result('exitGameRoomResult', client, 'error', '해당 방의 유저가 아닙니다.');
+			return false;
+		}
+
+		return true;
 	}
 }

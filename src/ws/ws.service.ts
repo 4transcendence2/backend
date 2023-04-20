@@ -8,6 +8,7 @@ import { ConnectedSocket } from '@nestjs/websockets';
 import { Type } from './ws.type';
 import { WsGateWay } from './ws.gateway';
 import { DmService } from 'src/dm/dm.service';
+import { GameService } from 'src/game/game.service';
 
 interface login {
 	name: string,
@@ -32,6 +33,9 @@ export class WsService {
 
 		@Inject(forwardRef(() => DmService))
 		private dmService: DmService,
+
+		@Inject(forwardRef(() => GameService))
+		private gameService: GameService,
 
 		@Inject(forwardRef(() => WsGateWay))
 		private wsGateWay: WsGateWay,
@@ -120,8 +124,8 @@ export class WsService {
 
 		// gameRoom
 		if (body.type === Type.CHAT_ROOM) {
-			client.join('gameRoom' + body.roomId);
-			//게임룸 업데이트
+			const game = await this.gameService.findOne(body.roomId);
+			client.join('gameRoom' + game.id);
 		}
 
 
@@ -136,6 +140,8 @@ export class WsService {
 		}
 
 
+
+
 		// chatRoomList
 		if (body.type === Type.CHAT_ROOM_LIST) {
 			client.join('chatRoomList');
@@ -145,6 +151,8 @@ export class WsService {
 
 		// gameRoomList
 		if (body.type === Type.GAME_ROOM_LIST) {
+			client.join('gameRoomList');
+			this.gameService.updateGameRoomList(client);
 		}
 
 		// dmList

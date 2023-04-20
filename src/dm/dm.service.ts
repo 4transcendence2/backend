@@ -43,6 +43,10 @@ export class DmService {
 		});
 	}
 
+	async isExist(user1: User, user2: User): Promise<boolean> {
+		return await this.findOne(user1, user2) !== null ? true : false;
+	}
+
 	async dm(server: Server, client: Socket, body: any) {
 		const user1 = await this.userService.findOne(await this.wsService.findName(client));
 		const user2 = await this.userService.findOne(body.username);
