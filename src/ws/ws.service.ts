@@ -61,11 +61,11 @@ export class WsService {
 			for (const room of user.chat) {
 				let clients = await this.wsGateWay.server.in('chatRoom' + room.room.id).fetchSockets();
 				for(const elem of clients) {
-					let elemName = await this.findName(undefined, elem.id);
 					let elemClient = await this.findClient(undefined, elem.id);
 					this.chatService.updateChatRoom(elemClient, room.room);
 				}
 			}
+
 
 		})
 		.catch(err => {
@@ -83,7 +83,6 @@ export class WsService {
 			for (const room of user.chat) {
 				let clients = await this.wsGateWay.server.in('chatRoom' + room.room.id).fetchSockets();
 				for(const elem of clients) {
-					let elemName = await this.findName(undefined, elem.id);
 					let elemClient = await this.findClient(undefined, elem.id);
 					this.chatService.updateChatRoom(elemClient, room.room);
 				}
@@ -106,9 +105,9 @@ export class WsService {
 		// chatRoom
 		if (body.type === Type.CHAT_ROOM) {
 			client.join('chatRoom' + body.roomId);
-			this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
-			this.chatService.updateBlockList(body.roomId, await this.findName(client), client);
-			this.chatService.sendHistory(client, body);
+			// this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
+			// this.chatService.updateBlockList(body.roomId, await this.findName(client), client);
+			// this.chatService.sendHistory(client, body);
 		}
 
 		// gameRoom

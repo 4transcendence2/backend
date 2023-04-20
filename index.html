@@ -16,20 +16,20 @@
 			socket.emit('joinChatRoom', { roomId: id });
 		};
 
-		socket.emit('subscribe', {
-			type: 'chatRoomList',
-		})
+		// socket.emit('subscribe', {
+		// 	type: 'chatRoomList',
+		// })
 		socket.emit('subscribe', {
 			type: 'chatRoom',
 			roomId: 23,
 		})
-		socket.emit('subscribe', {
-			type: 'dm',
-			username: 'sorksoek22',
-		})
-		socket.emit('subscribe', {
-			type: 'dmList',
-		})
+		// socket.emit('subscribe', {
+		// 	type: 'dm',
+		// 	username: 'sorksoek22',
+		// })
+		// socket.emit('subscribe', {
+		// 	type: 'dmList',
+		// })
 
 		socket.on('subscribeResult', data => {
 			console.log(data);

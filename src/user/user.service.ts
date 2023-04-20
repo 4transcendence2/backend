@@ -34,8 +34,12 @@ export class UserService {
 				chat: {
 					room: {
 						owner: true,
-						users: true,
-					}
+						users: {
+							user: true,
+						},
+						ban: true,
+					},
+					user: true,
 				},
 				dm: {
 					user: true,
