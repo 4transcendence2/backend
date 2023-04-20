@@ -57,7 +57,6 @@ export class WsService {
 
 			await this.userService.updateStatus(name, UserStatus.LOGIN);
 			const user = await this.userService.findOne(name);
-			console.log(user);
 
 			for (const room of user.chat) {
 				let clients = await this.wsGateWay.server.in('chatRoom' + room.room.id).fetchSockets();
@@ -79,10 +78,6 @@ export class WsService {
 	async logout(@ConnectedSocket() client: Socket) {
 		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
 		.then(async name => {
-			let index = users.findIndex(user => user.name === name);
-			if (index !== -1) users.splice(index, 1);
-			await this.userService.updateStatus(name, UserStatus.LOGOUT);
-
 			const user = await this.userService.findOne(name);
 
 			for (const room of user.chat) {
@@ -93,6 +88,11 @@ export class WsService {
 					this.chatService.updateChatRoom(elemClient, room.room);
 				}
 			}
+
+			let index = users.findIndex(user => user.name === name);
+			if (index !== -1) users.splice(index, 1);
+			await this.userService.updateStatus(name, UserStatus.LOGOUT);
+
 
 		})
 		.catch(err => {
