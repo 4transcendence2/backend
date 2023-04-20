@@ -78,6 +78,7 @@ export class WsService {
 	async logout(@ConnectedSocket() client: Socket) {
 		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
 		.then(async name => {
+			await this.userService.updateStatus(name, UserStatus.LOGOUT);
 			const user = await this.userService.findOne(name);
 
 			for (const room of user.chat) {
@@ -90,7 +91,6 @@ export class WsService {
 
 			let index = users.findIndex(user => user.name === name);
 			if (index !== -1) users.splice(index, 1);
-			await this.userService.updateStatus(name, UserStatus.LOGOUT);
 
 
 		})
@@ -102,6 +102,7 @@ export class WsService {
 	async subscribe(@ConnectedSocket() client: Socket, body: any) {
 		const name = await this.findName(client);
 
+
 		// chatRoom
 		if (body.type === Type.CHAT_ROOM) {
 			client.join('chatRoom' + body.roomId);
@@ -110,13 +111,14 @@ export class WsService {
 			this.chatService.sendHistory(client, body);
 		}
 
+
 		// gameRoom
 		if (body.type === Type.CHAT_ROOM) {
 			client.join('gameRoom' + body.roomId);
 			//게임룸 업데이트
 		}
 
-		
+
 		// DM
 		if (body.type === Type.DM) {
 			// const user1 = await this.userService.findOne(await this.findName(client));
@@ -126,6 +128,7 @@ export class WsService {
 
 			// this.dmService.sendHistory(client, body);
 		}
+
 
 		// chatRoomList
 		if (body.type === Type.CHAT_ROOM_LIST) {

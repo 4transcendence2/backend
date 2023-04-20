@@ -127,6 +127,13 @@ export class ChatService {
 		}
 	}
 
+
+
+
+
+
+
+	
 	async joinChatRoom(server: Server, client: Socket, body: any) {
 
 		let room = await this.findOne(body.roomId);
@@ -165,6 +172,11 @@ export class ChatService {
 			this.updateMyChatRoomList(elemName, elemClient);
 		}
 	}
+
+
+
+
+
 
 	async exitChatRoom(server: Server, client: Socket, body: any) {
 		let room = await this.findOne(body.roomId);
