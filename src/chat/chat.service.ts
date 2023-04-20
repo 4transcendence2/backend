@@ -129,7 +129,7 @@ export class ChatService {
 
 	async joinChatRoom(server: Server, client: Socket, body: any) {
 
-		const room = await this.findOne(body.roomId);
+		let room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 
 		this.result('joinChatRoomResult', client, 'approved', 'joinChatROom', room.id);
@@ -149,6 +149,7 @@ export class ChatService {
 		});
 
 		let clients = await server.in('chatRoom' + room.id).fetchSockets();
+		room = await this.findOne(body.roomId);
 
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
@@ -156,6 +157,7 @@ export class ChatService {
 		}
 
 		clients = await server.in('chatRoomList').fetchSockets();
+
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
 			let elemName = await this.wsService.findName(undefined, elem.id);
@@ -221,9 +223,11 @@ export class ChatService {
 					from: 'server',
 					content: `${room.owner.name} 님이 새로운 소유자가 되었습니다.`
 				})
+
+				await this.chatRoomRepository.save(room);
 			}
 
-			await this.chatRoomRepository.save(room);
+			room = await this.findOne(body.roomId);
 
 			let clients = await server.in('chatRoom' + room.id).fetchSockets();
 			for (const elem of clients) {
@@ -635,6 +639,7 @@ export class ChatService {
 		const banList: {
 			username: string
 		} [] = [];
+
 		for(let i = 0; i < room.users.length; ++i) {
 			userList.push({
 				username: room.users[i].user.name,
@@ -687,6 +692,7 @@ export class ChatService {
 	async updateChatRoomList(name: string, client: Socket) {
 		const chatRooms = await this.findAll();
 		const user = await this.userService.findOne(name);
+
 		const list: {
 			status: string,
 			title: string,
@@ -694,10 +700,14 @@ export class ChatService {
 			owner: string,
 			joining: number,
 		}[] = [];
+
 		for (let i = 0; i < chatRooms.length; ++i) {
 			let room = chatRooms[i];
+
 			if (room.status === RoomStatus.PRIVATE) continue;
+
 			if (room.users.find(elem => elem.user.id === user.id) !== undefined) continue;
+
 			list.push({
 				status: room.status,
 				title: room.title,
