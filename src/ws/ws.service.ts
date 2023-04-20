@@ -98,16 +98,16 @@ export class WsService {
 			client.emit('error', err);
 		})
 	}
-	
+
 	async subscribe(@ConnectedSocket() client: Socket, body: any) {
 		const name = await this.findName(client);
 
 		// chatRoom
 		if (body.type === Type.CHAT_ROOM) {
 			client.join('chatRoom' + body.roomId);
-			// this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
-			// this.chatService.updateBlockList(body.roomId, await this.findName(client), client);
-			// this.chatService.sendHistory(client, body);
+			this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
+			this.chatService.updateBlockList(body.roomId, await this.findName(client), client);
+			this.chatService.sendHistory(client, body);
 		}
 
 		// gameRoom
