@@ -277,7 +277,7 @@ export class ChatService {
 				user: true,
 			},
 			order: {
-				time: 'ASC'
+				time: 'DESC',
 			}
 		});
 		if (histories === null) return;
@@ -286,13 +286,16 @@ export class ChatService {
 			from: string,
 			content: string,
 		}[] = [];
+
 		for (const history of histories) {
 			if (history.time < joinTime) break;
-			list.push({
+
+			list.unshift({
 				from: history.user.name,
 				content: history.content,
 			})
 		}
+
 		client.emit('message', {
 			type: 'history',
 			list: list,
