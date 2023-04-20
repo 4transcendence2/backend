@@ -16,7 +16,7 @@ import { Block } from './entity/chat.block.entity';
 
 @Module({
 	imports: [
-		AuthModule,
+		forwardRef(() => AuthModule),
 		forwardRef(() => UserModule),
 		forwardRef(() => WsModule),
 		TypeOrmModule.forFeature([ChatRoom, User, Dm, ChatRoomUser, ChatHistory, Block]),

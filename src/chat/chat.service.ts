@@ -133,7 +133,7 @@ export class ChatService {
 
 
 
-	
+
 	async joinChatRoom(server: Server, client: Socket, body: any) {
 
 		let room = await this.findOne(body.roomId);
@@ -145,19 +145,23 @@ export class ChatService {
 			room: room,
 			time: new Date(Date.now()),
 		});
-		this.chatRoomUserRepository.save(newChatRoomUser);
+		await this.chatRoomUserRepository.save(newChatRoomUser);
 
-		server.to('chatRoom' + room.id).emit('message', {
-			type: 'chat',
-			roomId: room.id,
-			status: 'notice',
-			from: 'server',
-			content: `${user.name} 님이 입장하셨습니다.`,
-		});
+		setTimeout(() => {
+			server.to('chatRoom' + room.id).emit('message', {
+				type: 'chat',
+				roomId: room.id,
+				status: 'notice',
+				from: 'server',
+				content: `${user.name} 님이 입장하셨습니다.`,
+			});
+		}, 300);
+		
 
-		let clients = await server.in('chatRoom' + room.id).fetchSockets();
+
 		room = await this.findOne(body.roomId);
-
+		
+		let clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
 			this.updateChatRoom(elemClient, room);

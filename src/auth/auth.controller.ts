@@ -13,6 +13,7 @@ import { Repository } from 'typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { SignupJwtService } from './signup_jwt/signupJwt.service';
 import { UserService } from 'src/user/user.service';
+import { DupLoginGuard } from './auth.guard';
 require('dotenv').config();
 
 @Controller('auth')
@@ -32,6 +33,7 @@ export class AuthController {
 
 	//아이디 비번 확인 후, TempJwt 토큰을 발행
 	@UseGuards(AuthGuard('local'))
+	@UseGuards(DupLoginGuard)
 	@Post('login')
 	async login(@Request() req) {
 		return await this.tempJwtService.login(req.user);

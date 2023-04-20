@@ -11,11 +11,13 @@ import { TempJwtModule } from './temp_jwt/tempJwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { SignupJwtModule } from './signup_jwt/signupJwt.module';
+import { WsModule } from 'src/ws/ws.module';
 require('dotenv').config();
 
 @Module({
 	imports: [
 		forwardRef(() => UserModule),
+		forwardRef(() => WsModule),
 		PassportModule,
 		TempJwtModule,
 		SignupJwtModule,

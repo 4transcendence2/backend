@@ -13,8 +13,8 @@ import { DmModule } from 'src/dm/dm.module';
 
 @Module({
 	imports: [
-		AuthModule,
 		GameModule,
+		forwardRef(() => AuthModule),
 		forwardRef(() => DmModule),
 		forwardRef(() => UserModule),
 		forwardRef(() => ChatModule),

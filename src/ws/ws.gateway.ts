@@ -2,7 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { Socket, Server } from 'socket.io';
 import { WsService } from "./ws.service";
 import { ChatService } from "src/chat/chat.service";
-import { Inject, UseGuards, forwardRef } from "@nestjs/common";
+import { Inject, UseGuards, forwardRef, Request } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { TokenGuard } from "./guard/ws.token.guard";
 import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, ChatGuard, CreateChatRoomGuard, DmGuard, ExitChatRoomGuard, InviteChatGuard, JoinChatRoomGuard, KickGuard, LoginGuard, MuteGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";

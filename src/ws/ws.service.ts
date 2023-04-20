@@ -41,14 +41,21 @@ export class WsService {
 	async login(@ConnectedSocket() client: Socket) {
 		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
 		.then(async name => {
-			if (await this.isLogin(client)) {
-				client.emit('error', {
-					status: 'error',
-					detail: '이미 접속중인 유저입니다.',
-				})
-				client.disconnect();
-				return;
-			}
+
+			// const res = await this.isLogin(client);
+
+			// if ((await this.isLogin(client))) {
+
+			// 	console.log('dup login');
+
+			// 	client.emit('error', {
+			// 		status: 'error',
+			// 		detail: '이미 접속중인 유저입니다.',
+			// 	})
+			// 	client.disconnect();
+			// 	return;
+			// }
+
 			users.push({
 				name: name,
 				client: client,
@@ -201,7 +208,7 @@ export class WsService {
 
 	async findName(@ConnectedSocket() client: Socket, id?: string): Promise<string> {
 		const login = id === undefined ? users.find(user => user.client === client) : users.find(user => user.id === id);
-		if (login === undefined) return undefined;
+	if (login === undefined) return undefined;
 		return login.name;
 	}
 
@@ -214,9 +221,14 @@ export class WsService {
 	async isLogin(@ConnectedSocket() client: Socket, name?: string): Promise<boolean> {
 		if (client !== undefined) {
 			const res = await this.findName(client);
-			if (res === undefined) return false;
+
+			if (res === undefined) {
+				return false;
+			}
+			
 			return true;
 		}
+
 
 		if (name !== undefined) {
 			const res = await this.findClient(name);
