@@ -123,7 +123,7 @@ export class WsService {
 
 
 		// gameRoom
-		if (body.type === Type.CHAT_ROOM) {
+		if (body.type === Type.GAME_ROOM) {
 			const game = await this.gameService.findOne(body.roomId);
 			client.join('gameRoom' + game.id);
 		}

@@ -185,6 +185,8 @@ export class GameService {
 
 		const gameRoomUser = await this.findRoomUser(game.id, user);
 		await this.gameRoomUserRepository.remove(gameRoomUser);
+
+		//게임룸 상태 업데이트
 	}
 
 	async updateGameRoomList(client: Socket) {
