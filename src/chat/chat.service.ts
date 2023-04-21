@@ -127,13 +127,6 @@ export class ChatService {
 		}
 	}
 
-
-
-
-
-
-
-
 	async joinChatRoom(server: Server, client: Socket, body: any) {
 
 		let room = await this.findOne(body.roomId);
@@ -184,11 +177,6 @@ export class ChatService {
 			this.updateMyChatRoomList(elemName, elemClient);
 		}
 	}
-
-
-
-
-
 
 	async exitChatRoom(server: Server, client: Socket, body: any) {
 		let room = await this.findOne(body.roomId);
@@ -284,7 +272,6 @@ export class ChatService {
 		}
 	}
 
-
 	async sendHistory(client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
@@ -358,13 +345,14 @@ export class ChatService {
 	}
 
 	async kick(server: Server, client: Socket, body: any) {
-		const room = await this.findOne(body.roomId);
+		let room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
 		const chatRoomUser = await this.findRoomUser(user, room);
 		await this.chatRoomUserRepository.remove(chatRoomUser);
 
 		this.result('kickResult', client, 'approved', 'kick', room.id);
 
+		room = await this.findOne(body.roomId);
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
@@ -678,6 +666,40 @@ export class ChatService {
 			room: room,
 			status: 'notice',
 			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 관리자로 임명하셨습니다.`,
+		})
+		await this.chatHistoryRepository.save(newHistory);
+		room = await this.findOne(body.roomId);
+
+		const clients = await server.in('chatRoom' + body.roomId).fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoom(elemClient, room);
+		}
+	}
+
+	async dismissAdmin(server: Server, client: Socket, body: any) {
+		let room = await this.findOne(body.roomId);
+		const user = await this.userService.findOne(body.username);
+		const roomUser = await this.findRoomUser(user, room);
+		this.result('dismissAdminResult', client, 'approved', 'dismissAdmin', room.id);
+
+
+		roomUser.admin = false;
+		await this.chatRoomUserRepository.save(roomUser);
+
+		server.to('chatRoom' + room.id).emit('message', {
+			type: 'chat',
+			roomId: room.id,
+			status: 'notice',
+			from: 'server',
+			content: `${user.name}님이 관리자에서 해임되셨습니다.`
+		});
+		const newHistory = this.chatHistoryRepository.create({
+			time: new Date(Date.now()),
+			user: user,
+			room: room,
+			status: 'notice',
+			content: `${user.name}님이 관리자에서 해임되셨습니다.`,
 		})
 		await this.chatHistoryRepository.save(newHistory);
 		room = await this.findOne(body.roomId);

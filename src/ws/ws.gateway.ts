@@ -5,7 +5,7 @@ import { ChatService } from "src/chat/chat.service";
 import { Inject, UseGuards, forwardRef, Request } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { TokenGuard } from "./guard/ws.token.guard";
-import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChatGuard, CreateChatRoomGuard, DmGuard, ExitChatRoomGuard, ExitGameRoomGuard, InviteChatGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, SearchGameGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
+import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChangePasswordGuard, ChatGuard, CreateChatRoomGuard, DismissAdminGuard, DmGuard, ExitChatRoomGuard, ExitGameRoomGuard, InviteChatGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, RemovePasswordGuard, SearchGameGuard, SetPasswordGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
 import { DmService } from "src/dm/dm.service";
 import { GameService } from "src/game/game.service";
 require('dotenv').config();
@@ -189,7 +189,46 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	async appointAdmin(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		await this.chatService.appointAdmin(this.server, client, body);
 	}
+	
 
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(SetPasswordGuard)
+	@SubscribeMessage('setPassword')
+	async setPassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+
+	}
+
+
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(ChangePasswordGuard)
+	@SubscribeMessage('changePassword')
+	async changePassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+
+	}
+
+
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(RemovePasswordGuard)
+	@SubscribeMessage('removePassword')
+	async removePassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+
+	}
+
+	
+	/*
+	Dismiss Admin
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(DismissAdminGuard)
+	@SubscribeMessage('dismissAdmin')
+	async dismissAdmin(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.chatService.dismissAdmin(this.server, client ,body);
+	}
+	
 
 	/*
 		Block
