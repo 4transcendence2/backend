@@ -387,7 +387,7 @@ export class ChatService {
 	}
 	
 	async ban(server: Server, client: Socket, body: any) {
-		const room = await this.findOne(body.roomId);
+		let room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
 		this.result('banResult', client, 'approved', 'ban', room.id);
 	
@@ -397,6 +397,7 @@ export class ChatService {
 		room.ban.push(user);
 		await this.chatRoomRepository.save(room);
 
+		room = await this.findOne(body.roomId);
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			let elemName = await this.wsService.findName(undefined, elem.id);
@@ -432,12 +433,14 @@ export class ChatService {
 	}
 	
 	async unban(server: Server, client: Socket, body: any) {
-		const room = await this.findOne(body.roomId);
+		let room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
 		this.result('unbanResult', client, 'approved', 'unban', room.id);
 
 		room.ban.splice(room.ban.findIndex(elem => elem.id === user.id), 1);
+		await this.chatRoomRepository.save(room);
 	
+		room = await this.findOne(body.roomId);
 		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
@@ -454,7 +457,6 @@ export class ChatService {
 		})
 		await this.chatHistoryRepository.save(newHistory);
 	
-		await this.chatRoomRepository.save(room);
 
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
