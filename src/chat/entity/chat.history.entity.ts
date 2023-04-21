@@ -20,5 +20,10 @@ export class ChatHistory {
 	@Column({
 		nullable: false,
 	})
+	status: string;
+
+	@Column({
+		nullable: false,
+	})
 	content: string;
 }

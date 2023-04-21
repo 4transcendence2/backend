@@ -156,6 +156,14 @@ export class ChatService {
 				content: `${user.name} 님이 입장하셨습니다.`,
 			});
 		}, 300);
+		let newHistory = this.chatHistoryRepository.create({
+			time: new Date(Date.now()),
+			user: user,
+			room: room,
+			status: 'notice',
+			content: `${user.name} 님이 입장하셨습니다.`,
+		})
+		await this.chatHistoryRepository.save(newHistory);
 		
 
 
@@ -209,7 +217,14 @@ export class ChatService {
 				from: 'server',
 				content: `${user.name} 님이 퇴장하셨습니다.`
 			})
-			
+			let newHistory = this.chatHistoryRepository.create({
+				time: new Date(Date.now()),
+				user: user,
+				room: room,
+				status: 'notice',
+				content: `${user.name} 님이 퇴장하셨습니다.`,
+			})
+			await this.chatHistoryRepository.save(newHistory);
 			// 나가는 유저가 소유자인 경우
 			if (room.owner.id === user.id) {
 
@@ -239,6 +254,14 @@ export class ChatService {
 					from: 'server',
 					content: `${room.owner.name} 님이 새로운 소유자가 되었습니다.`
 				})
+				let newHistory = this.chatHistoryRepository.create({
+					time: new Date(Date.now()),
+					user: user,
+					room: room,
+					status: 'notice',
+					content: `${room.owner.name} 님이 새로운 소유자가 되었습니다.`,
+				})
+				await this.chatHistoryRepository.save(newHistory);
 
 				await this.chatRoomRepository.save(room);
 			}
@@ -362,6 +385,14 @@ export class ChatService {
 				this.updateChatRoom(elemClient, room);
 			}
 		}
+		const newHistory = this.chatHistoryRepository.create({
+			time: new Date(Date.now()),
+			user: user,
+			room: room,
+			status: 'notice',
+			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 kick 하셨습니다.`,
+		})
+		await this.chatHistoryRepository.save(newHistory);
 	}
 	
 	async ban(server: Server, client: Socket, body: any) {
@@ -395,9 +426,18 @@ export class ChatService {
 					from: 'server',
 					content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 ban 하셨습니다.`,
 				})
+				
 				this.updateChatRoom(elemClient, room);
 			}
 		}
+		const newHistory = this.chatHistoryRepository.create({
+			time: new Date(Date.now()),
+			user: user,
+			room: room,
+			status: 'notice',
+			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 ban 하셨습니다.`,
+		})
+		await this.chatHistoryRepository.save(newHistory);
 	}
 	
 	async unban(server: Server, client: Socket, body: any) {
@@ -414,6 +454,14 @@ export class ChatService {
 			from: 'server',
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 unban 하셨습니다.`,
 		})
+		const newHistory = this.chatHistoryRepository.create({
+			time: new Date(Date.now()),
+			user: user,
+			room: room,
+			status: 'notice',
+			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 unban 하셨습니다.`,
+		})
+		await this.chatHistoryRepository.save(newHistory);
 	
 		await this.chatRoomRepository.save(room);
 
@@ -425,7 +473,7 @@ export class ChatService {
 	}
 
 	async mute(server: Server, client: Socket, body: any) {
-		const room = await this.findOne(body.roomId);
+		let room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
 		this.result('muteResult', client, 'approved', 'mute', room.id);
 	
@@ -439,9 +487,18 @@ export class ChatService {
 			from: 'server',
 			content: `${await this.wsService.findName(client)} 님이 ${user.name} 님을 mute 하셨습니다.`,
 		})
+		const newHistory = this.chatHistoryRepository.create({
+			time: new Date(Date.now()),
+			user: user,
+			room: room,
+			status: 'notice',
+			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 mute 하셨습니다.`,
+		})
+		await this.chatHistoryRepository.save(newHistory);
 
 		await this.chatRoomUserRepository.save(roomUser);
 
+		room = await this.findOne(body.roomId);
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			if (user.name === await this.wsService.findName(undefined, elem.id)) {
@@ -553,6 +610,15 @@ export class ChatService {
 			content: `${user.name} 님이 초대 되었습니다.`,
 		});
 
+		const newHistory = this.chatHistoryRepository.create({
+			time: new Date(Date.now()),
+			user: user,
+			room: room,
+			status: 'notice',
+			content: `${user.name} 님이 초대 되었습니다.`,
+		})
+		await this.chatHistoryRepository.save(newHistory);
+
 		let clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
@@ -587,7 +653,7 @@ export class ChatService {
 	}
 
 	async appointAdmin(server: Server, client: Socket, body: any) {
-		const room = await this.findOne(body.roomId);
+		let room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
 		const roomUser = await this.findRoomUser(user, room);
 		this.result('appointAdminResult', client, 'approved', 'appointAdmin', room.id);
@@ -603,6 +669,21 @@ export class ChatService {
 			from: 'server',
 			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 관리자로 임명하셨습니다.`
 		});
+		const newHistory = this.chatHistoryRepository.create({
+			time: new Date(Date.now()),
+			user: user,
+			room: room,
+			status: 'notice',
+			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 관리자로 임명하셨습니다.`,
+		})
+		await this.chatHistoryRepository.save(newHistory);
+		room = await this.findOne(body.roomId);
+
+		const clients = await server.in('chatRoom' + body.roomId).fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoom(elemClient, room);
+		}
 	}
 
 	async isBan(id: number, client: Socket, name?: string): Promise<boolean> {
