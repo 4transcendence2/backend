@@ -1429,9 +1429,6 @@ export class RemovePasswordGuard implements CanActivate {
 	constructor(
 		private chatService: ChatService,
 
-		@Inject(forwardRef(() => GameService))
-		private gameSerivce: GameService,
-
 	) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
@@ -1439,32 +1436,32 @@ export class RemovePasswordGuard implements CanActivate {
 
 		// body 데이터 확인
 		if (body === undefined) {
-			this.chatService.result('changePasswordResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			this.chatService.result('removePasswordResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
 			return false;
 		}
 
 		// roomId 데이터 확인
 		if (body.roomId === undefined) {
-			this.chatService.result('changePasswordResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
+			this.chatService.result('removePasswordResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
 			return false;
 		}
 
 		// 존재하는 방인지 확인
 		if (!await this.chatService.isExist(body.roomId)) {
-			this.chatService.result('changePasswordResult', client, 'error', '존재하지 않는 채팅방입니다.');
+			this.chatService.result('removePasswordResult', client, 'error', '존재하지 않는 채팅방입니다.');
 			return false;
 		}
 
 		// 해당 방으 소유자인지 확인
 		if (!await this.chatService.isOwner(body.roomId, client)) {
-			this.chatService.result('changePasswordResult', client, 'error', '권한이 없습니다.');
+			this.chatService.result('removePasswordResult', client, 'error', '권한이 없습니다.');
 			return false;
 		}
 
 		// 해당 방이 protected인지 확인
 		const room = await this.chatService.findOne(body.roomId);
 		if (room.status !== RoomStatus.PROTECTED) {
-			this.chatService.result('changePasswordResult', client, 'error', '비밀번호 방이 아닙니다.');
+			this.chatService.result('removePasswordResult', client, 'error', '비밀번호 방이 아닙니다.');
 			return false;
 		}
 

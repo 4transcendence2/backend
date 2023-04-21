@@ -752,7 +752,7 @@ export class ChatService {
 		room.status = RoomStatus.PULBIC;
 		room.password = body.password;
 
-		client.emit('setPasswordResult', {
+		client.emit('removePasswordResult', {
 			status: 'approved',
 			roomId: room.id,
 		})

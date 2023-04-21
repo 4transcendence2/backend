@@ -191,30 +191,39 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 	
 
+	/*
+		Set PW
+	*/
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
 	@UseGuards(SetPasswordGuard)
 	@SubscribeMessage('setPassword')
 	async setPassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-
+		await this.chatService.setPassword(this.server, client, body);
 	}
 
 
+	/*
+		Change PW
+	*/
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
 	@UseGuards(ChangePasswordGuard)
 	@SubscribeMessage('changePassword')
 	async changePassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-
+		await this.chatService.changePassword(this.server, client, body);
 	}
 
 
+	/*
+		Remove PW
+	*/
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
 	@UseGuards(RemovePasswordGuard)
 	@SubscribeMessage('removePassword')
 	async removePassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-
+		await this.chatService.removePassword(this.server, client, body);
 	}
 
 	
