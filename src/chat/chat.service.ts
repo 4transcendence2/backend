@@ -76,7 +76,6 @@ export class ChatService {
 		})
 	}
 
-
 	async isExist(id: number): Promise<boolean> {
 		return await this.findOne(id) === null ? false : true;
 	}
@@ -86,7 +85,6 @@ export class ChatService {
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
 		return await this.findRoomUser(user, room) !== null ? true : false;
 	}
-
 
 
 
@@ -510,9 +508,10 @@ export class ChatService {
 		}
 
 		setTimeout(async () => {
+
 			roomUser.muted = false;
 			await this.chatRoomUserRepository.save(roomUser);
-
+			room = await this.findOne(body.roomId);
 			const clients = await server.in('chatRoom' + room.id).fetchSockets();
 			for (const elem of clients) {
 				let elemClient = await this.wsService.findClient(undefined, elem.id);
@@ -844,7 +843,6 @@ export class ChatService {
 			banList: banList,
 		});
 	}
-
 
 	async updateMyChatRoomList(name: string, client: Socket) {
 		const user = await this.userService.findOne(name);
