@@ -306,6 +306,7 @@ export class ChatService {
 		if (histories === null) return;
 
 		let list: {
+			status: string,
 			from: string,
 			content: string,
 		}[] = [];
@@ -314,7 +315,8 @@ export class ChatService {
 			if (history.time < joinTime) break;
 
 			list.unshift({
-				from: history.user.name,
+				status: history.status,
+				from: history.status === 'plain' ? history.user.name : 'server',
 				content: history.content,
 			})
 		}
@@ -332,6 +334,7 @@ export class ChatService {
 		const newHistory = this.chatHistoryRepository.create({
 			user: user,
 			room: room,
+			status: 'plain',
 			content: body.content,
 			time: new Date(Date.now()),
 		})
