@@ -835,6 +835,13 @@ export class UnsubscribeGuard implements CanActivate {
 		
 		@Inject(forwardRef(() => WsService))
 		private wsService:WsService,
+
+		@Inject(forwardRef(() => DmService))
+		private dmService: DmService,
+		
+		@Inject(forwardRef(() =>  GameService))
+		private gameService: GameService,
+
 	) {}
 	
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -878,7 +885,20 @@ export class UnsubscribeGuard implements CanActivate {
 		}
 
 		// dm id 유효성 검사
-		// game room id 유효성 검사
+		if (body.type=== Type.DM) {
+			let user1 = await this.userService.findOne(await this.wsService.findName(client));
+			let user2 = await this.userService.findOne(body.username);
+			
+			if (!await this.dmService.isExist(user1, user2)) {
+				return false;
+			}
+		}
+
+		// game id 유효성 검사
+		if (body.Type === Type.GAME_ROOM && !(await this.gameService.isExist(body.roomId))) {
+			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
+			return false;
+		}
 
 		// username 유효성 검사
 		if (body.type === Type.DM && !(await this.userService.isExist(body.username))) {

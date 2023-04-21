@@ -131,12 +131,12 @@ export class WsService {
 
 		// DM
 		if (body.type === Type.DM) {
-			// const user1 = await this.userService.findOne(await this.findName(client));
-			// const user2 = await this.userService.findOne(body.username);
-			// const dm = await this.dmService.findOne(user1, user2);
-			// client.join('dm' + dm.id);
+			const user1 = await this.userService.findOne(await this.findName(client));
+			const user2 = await this.userService.findOne(body.username);
+			const dm = await this.dmService.findOne(user1, user2);
+			client.join('dm' + dm.id);
 
-			// this.dmService.sendHistory(client, body);
+			this.dmService.sendHistory(client, body);
 		}
 
 
@@ -198,6 +198,7 @@ export class WsService {
 
 		// gameRoomList
 		if (body.type === Type.GAME_ROOM_LIST) {
+			client.leave('gameRoomList');
 		}
 
 		// dmList

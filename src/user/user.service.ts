@@ -137,14 +137,6 @@ export class UserService {
 		return true;
 	}
 
-	async save(user: User) {
-		await this.usersRepository.save(user);
-	}
-
-	
-
-
-
 	async addFriend(server: Server, client: Socket, body: any) {
 		const user = await this.findOne(await this.wsService.findName(client));
 		user.friend.push(await this.findOne(body.username));
