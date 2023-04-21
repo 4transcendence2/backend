@@ -1324,10 +1324,6 @@ export class ExitGameRoomGuard implements CanActivate {
 export class SetPasswordGuard implements CanActivate {
 	constructor(
 		private chatService: ChatService,
-
-		@Inject(forwardRef(() => GameService))
-		private gameSerivce: GameService,
-
 	) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
@@ -1342,6 +1338,12 @@ export class SetPasswordGuard implements CanActivate {
 		// roomId 데이터 확인
 		if (body.roomId === undefined) {
 			this.chatService.result('setPasswordResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// password데이터 확인
+		if (body.password === undefined) {
+			this.chatService.result('setPasswordResult', client, 'error', 'password 프로퍼티가 없습니다.');
 			return false;
 		}
 
@@ -1369,15 +1371,10 @@ export class SetPasswordGuard implements CanActivate {
 	}
 }
 
-
-
 @Injectable()
 export class ChangePasswordGuard implements CanActivate {
 	constructor(
 		private chatService: ChatService,
-
-		@Inject(forwardRef(() => GameService))
-		private gameSerivce: GameService,
 
 	) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -1393,6 +1390,12 @@ export class ChangePasswordGuard implements CanActivate {
 		// roomId 데이터 확인
 		if (body.roomId === undefined) {
 			this.chatService.result('changePasswordResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// password 데이터 확인
+		if (body.password === undefined) {
+			this.chatService.result('changePasswordResult', client, 'error', 'password 프로퍼티가 없습니다.');
 			return false;
 		}
 

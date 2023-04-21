@@ -310,6 +310,7 @@ export class ChatService {
 
 		client.emit('message', {
 			type: 'history',
+			roomId: room.id,
 			list: list,
 		});
 	}
@@ -713,6 +714,59 @@ export class ChatService {
 		}
 	}
 
+	async setPassword(server: Server, client: Socket, body: any) {
+		let room = await this.findOne(body.roomId);
+		room.status = RoomStatus.PROTECTED;
+		room.password = body.password;
+
+		client.emit('setPasswordResult', {
+			status: 'approved',
+			roomId: room.id,
+		})
+
+		await this.chatRoomRepository.save(room);
+		const clients = await server.in('chatRoomList').fetchSockets();
+		for (const elem of clients) {
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoomList(elemName, elemClient);
+			this.updateMyChatRoomList(elemName, elemClient);
+		}
+	}
+
+	async changePassword(server: Server, client: Socket, body: any) {
+		let room = await this.findOne(body.roomId);
+		room.password = body.password;
+
+		client.emit('changePasswordResult', {
+			status: 'approved',
+			roomId: room.id,
+		})
+
+
+		await this.chatRoomRepository.save(room);
+	}
+
+	async removePassword(server: Server, client: Socket, body: any) {
+		let room = await this.findOne(body.roomId);
+		room.status = RoomStatus.PULBIC;
+		room.password = body.password;
+
+		client.emit('setPasswordResult', {
+			status: 'approved',
+			roomId: room.id,
+		})
+
+		await this.chatRoomRepository.save(room);
+		const clients = await server.in('chatRoomList').fetchSockets();
+		for (const elem of clients) {
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			this.updateChatRoomList(elemName, elemClient);
+			this.updateMyChatRoomList(elemName, elemClient);
+		}
+	}
+
 	async isBan(id: number, client: Socket, name?: string): Promise<boolean> {
 		const room = await this.findOne(id);
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
@@ -875,6 +929,7 @@ export class ChatService {
 
 		client.emit('message', {
 			type: 'block',
+			roomId: id,
 			list: list,
 		});
 	}
