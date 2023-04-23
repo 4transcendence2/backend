@@ -185,9 +185,9 @@ export class ChatService {
 		this.result('exitChatRoomResult', client, 'approved', 'exitChatRoom', room.id);
 
 		await this.chatRoomUserRepository.remove(chatRoomUser);
-
+		room = await this.findOne(body.roomId);
 		// 방에 남은 유저가 한 명인 경우.
-		if (room.users.length === 1) {
+		if (room.users.length === 0) {
 			await this.chatHistoryRepository.remove(room.history);
 			await this.chatRoomRepository.remove(room);
 			const clients = await server.in('chatRoomList').fetchSockets();
@@ -214,8 +214,7 @@ export class ChatService {
 
 			// 나가는 유저가 소유자인 경우
 			if (room.owner.id === user.id) {
-				
-				room = await this.findOne(body.roomId);
+
 				// admin이 없는 경우.
 				if (room.users.find(elem => elem.admin === true) === undefined) {
 					room = await this.findOne(body.roomId);
@@ -238,7 +237,6 @@ export class ChatService {
 					await this.chatRoomUserRepository.save(roomUsers[0]);
 				}
 
-				await this.chatRoomRepository.save(room);
 				room = await this.findOne(body.roomId);
 				server.to('chatRoom' + room.id).emit('message', {
 					type: 'chat',
@@ -247,6 +245,7 @@ export class ChatService {
 					from: 'server',
 					content: `${room.owner.name} 님이 새로운 소유자가 되었습니다.`
 				})
+
 				let newHistory = this.chatHistoryRepository.create({
 					time: new Date(Date.now()),
 					user: user,
@@ -256,8 +255,6 @@ export class ChatService {
 				})
 
 				await this.chatHistoryRepository.save(newHistory);
-
-				await this.chatRoomRepository.save(room);
 			}
 
 			room = await this.findOne(body.roomId);
