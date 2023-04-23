@@ -8,16 +8,5 @@ import { UserService } from 'src/user/user.service';
 
 @Controller('chat')
 export class ChatController {
-	constructor( 
-		@InjectRepository(Dm)
-		private dmRepository: Repository<Dm>,
-
-
-		@InjectRepository(User)
-		private usersRepository: Repository<User>,
-
-		private userService: UserService,
-	) {}
-
 
 }
