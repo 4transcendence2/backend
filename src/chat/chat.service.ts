@@ -332,20 +332,27 @@ export class ChatService {
 		await this.chatHistoryRepository.save(newHistory);
 		this.result('chatResult', client, 'approved', 'chat', room.id);
 		
-		const clients = await server.in('chatRoom' + room.id).fetchSockets();
-		for (const elem of clients) {
-			let elemClient = await this.wsService.findClient(undefined, elem.id);
+		// const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		// for (const elem of clients) {
+		// 	let elemClient = await this.wsService.findClient(undefined, elem.id);
 
-			if (await this.isBlock(room.id, elemClient, user.name)) continue;
+		// 	if (await this.isBlock(room.id, elemClient, user.name)) continue;
 
-			elemClient.emit('message', {
-				type: 'chat',
-				roomId: room.id,
-				status: 'plain',
-				from: user.name,
-				content: body.content,
-			})
-		}
+		// 	elemClient.emit('message', {
+		// 		type: 'chat',
+		// 		roomId: room.id,
+		// 		status: 'plain',
+		// 		from: user.name,
+		// 		content: body.content,
+		// 	})
+		// }
+		server.to('chatRoom' + body.roomId).emit('message', {
+			type: 'chat',
+			roomId: room.id,
+			status: 'plain',
+			from: user.name,
+			content: body.content,
+		})
 	}
 
 	async kick(server: Server, client: Socket, body: any) {
