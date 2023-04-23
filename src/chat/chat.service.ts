@@ -233,9 +233,9 @@ export class ChatService {
 					});
 					roomUsers[0].admin = false;
 					room.owner = roomUsers[0].user;
-					await this.chatRoomRepository.save(room);
 					await this.chatRoomUserRepository.save(roomUsers[0]);
 				}
+				await this.chatRoomRepository.save(room);
 
 				room = await this.findOne(body.roomId);
 				server.to('chatRoom' + room.id).emit('message', {
