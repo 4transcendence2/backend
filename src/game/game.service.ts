@@ -18,6 +18,29 @@ interface queue {
 	id: string,
 };
 
+interface status {
+	playing: boolean,
+	roomId: number,
+	ballX: number,
+	ballY: number,
+	ballRadius: number,
+	dx: number,
+	dy: number,
+	redUser: string,
+	redPaddleX: number,
+	redPaddleY: number,
+	redPaddleWidth: number,
+	redPaddleHeight: number,
+	redScore: number,
+	blueUser: string,
+	bluePaddleX: number,
+	bluePaddleY: number,
+	bluePaddleWidth: number,
+	bluePaddleHeight: number,
+	blueScore: number,
+	spectator: string[],
+};
+
 
 @Injectable()
 export class GameService {
@@ -25,7 +48,7 @@ export class GameService {
 	public rank: queue[] = [];
 	public normal: queue[] = [];
 	public arcade: queue[] = [];
-
+	private rooms: status[] = [];
 	constructor(
 
 		@InjectRepository(GameRoom)
@@ -153,7 +176,6 @@ export class GameService {
 
 	}
 
-
 	async joinGameRoom(client: Socket, body: any) {
 		const game = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
@@ -172,7 +194,6 @@ export class GameService {
 
 		// 게임룸 상태 업데이트
 	}
-
 
 	async exitGameRoom(client: Socket, body: any) {
 		const user = await this.userService.findOne(await this.wsService.findName(client));
@@ -211,11 +232,68 @@ export class GameService {
 		});
 	}
 
+	play(id: number, red: string, blue: string) {
+		const game: status = {
+			playing: true,
+			roomId: id,
+			ballX: 540,
+			ballY: 360,
+			ballRadius: 15,
+			dx: 5,
+			dy: 5,
+			redUser: red,
+			redPaddleX: 0,
+			redPaddleY: 320,
+			redPaddleWidth: 10,
+			redPaddleHeight: 80,
+			redScore: 0,
+			blueUser: blue,
+			bluePaddleX: 1070,
+			bluePaddleY: 320,
+			bluePaddleWidth: 10,
+			bluePaddleHeight: 80,
+			blueScore: 0,
+			spectator: [],
+		};
+		this.rooms.push(game);
+		let intervalId = setInterval(() => {
+			if (game.playing === false) {
+				clearInterval(intervalId);
+				console.log('finish', game.roomId);
+				// 게임 종료 이벤트, 결과 등록 및 히스토리 등록 등등
+			}
+			game.ballX += game.dx;
+			game.ballY += game.dy;
 
+			if (game.ballY + game.dy < game.ballRadius || game.ballY + game.dy > 705) game.dy *= -1;
 
+			if (game.ballX + game.dx < game.ballRadius || game.ballX + game.dx > 1065) {
 
+				if ((game.redPaddleY < game.ballY && game.ballY < game.redPaddleY + game.redPaddleHeight) || (game.bluePaddleY < game.ballY && game.ballY < game.bluePaddleY + game.bluePaddleHeight))
+					game.dx *= -1;
+				else {
+					game.playing = false;
+				}
+			}
 
+			this.wsGateway.server.to('gameRoom' + game.roomId).emit('message', {
+				type: 'game',
+				status: game,
+			})
+		}, 30);
+	}
 
+	up(id: number, role: string) {
+		const room = this.rooms.find(elem => elem.roomId === id);
+		if (role === 'red') room.redPaddleY -= 10;
+		if (role === 'blue') room.bluePaddleY -= 10; 
+	}
+
+	down(id: number, role: string) {
+		const room = this.rooms.find(elem => elem.roomId === id);
+		if (role === 'red') room.redPaddleY += 10;
+		if (role === 'blue') room.bluePaddleY += 10;
+	}
 
 
 
@@ -254,6 +332,8 @@ export class GameService {
 					role: Role.BLUE,
 				});
 
+				client1.join('gameRoom' + newGame.id);
+				client2.join('gameRoom' + newGame.id);
 				this.gameRoomUserRepository.save(newGameUser1);
 				this.gameRoomUserRepository.save(newGameUser2);
 				client1.emit('searchGameResult', {
@@ -270,6 +350,8 @@ export class GameService {
 					let elemCLient = await this.wsService.findClient(undefined, elem.id);
 					this.updateGameRoomList(elemCLient);
 				}
+
+				this.play(newGame.id, user1.name, user2.name);
 			} 
 			
 			if (this.normal.length > 1) {
@@ -281,7 +363,7 @@ export class GameService {
 				this.normal.splice(0, 2);
 				
 				let newGame = this.gameRoomRepository.create({
-					rule: Rule.RANK,
+					rule: Rule.NORMAL,
 				});
 				await this.gameRoomRepository.save(newGame);
 				
@@ -296,7 +378,8 @@ export class GameService {
 					user: user2,
 					role: Role.BLUE,
 				});
-				
+				client1.join('gameRoom' + newGame.id);
+				client2.join('gameRoom' + newGame.id);
 				this.gameRoomUserRepository.save(newGameUser1);
 				this.gameRoomUserRepository.save(newGameUser2);
 				client1.emit('searchGameResult', {
@@ -313,6 +396,7 @@ export class GameService {
 					let elemCLient = await this.wsService.findClient(undefined, elem.id);
 					this.updateGameRoomList(elemCLient);
 				}
+				this.play(newGame.id, user1.name, user2.name);
 			}
 
 			if (this.arcade.length > 1) {
@@ -339,7 +423,8 @@ export class GameService {
 					user: user2,
 					role: Role.BLUE,
 				});
-				
+				client1.join('gameRoom' + newGame.id);
+				client2.join('gameRoom' + newGame.id);
 				this.gameRoomUserRepository.save(newGameUser1);
 				this.gameRoomUserRepository.save(newGameUser2);
 				client1.emit('searchGameResult', {
@@ -356,6 +441,7 @@ export class GameService {
 					let elemCLient = await this.wsService.findClient(undefined, elem.id);
 					this.updateGameRoomList(elemCLient);
 				}
+				this.play(newGame.id, user1.name, user2.name);
 			}
 
 			for (const user of this.rank) {

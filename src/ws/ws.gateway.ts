@@ -32,7 +32,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
 	) {
 		// 매치 
-		// this.gameService.match();
+		this.gameService.match();
+
 	}
 
 	@WebSocketServer()
@@ -82,7 +83,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(CreateChatRoomGuard)
 	@SubscribeMessage('createChatRoom')
 	async createChatRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		console.log('123');
 		await this.chatService.createChatRoom(this.server, client, body);
 	}
 
@@ -333,9 +333,29 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.exitGameRoom(client, body);
 	}
 
+
 	/*
 		inviteGame
 	*/
+
+
+
+	/*
+		paadle up
+	*/
+	@SubscribeMessage('up')
+	up(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.gameService.up(body.roomId, body.role);
+	}
+
+
+	/*
+		paddle down
+	*/
+	@SubscribeMessage('down')
+	down(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.gameService.down(body.roomId, body.role);
+	}
 	
 
 

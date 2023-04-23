@@ -211,28 +211,35 @@ export class ChatService {
 				content: `${user.name} 님이 퇴장하셨습니다.`,
 			})
 			await this.chatHistoryRepository.save(newHistory);
+
 			// 나가는 유저가 소유자인 경우
 			if (room.owner.id === user.id) {
-
+				
+				room = await this.findOne(body.roomId);
 				// admin이 없는 경우.
 				if (room.users.find(elem => elem.admin === true) === undefined) {
 					room = await this.findOne(body.roomId);
 					room.owner = room.users[0].user;
 				} else {
-					await this.chatRoomUserRepository.find({
+					let roomUsers = await this.chatRoomUserRepository.find({
 						where: {
 							admin: true,
 						},
 						order: {
 							time: 'ASC',
+						},
+						relations: {
+							user: true,
 						}
-					}).then(roomUsers => {
-						roomUsers[0].admin = false;
-						room.owner = roomUsers[0].user;
-					})
+					});
+					roomUsers[0].admin = false;
+					room.owner = roomUsers[0].user;
+					await this.chatRoomRepository.save(room);
+					await this.chatRoomUserRepository.save(roomUsers[0]);
 				}
 
 				await this.chatRoomRepository.save(room);
+				room = await this.findOne(body.roomId);
 				server.to('chatRoom' + room.id).emit('message', {
 					type: 'chat',
 					roomId: room.id,
@@ -247,6 +254,7 @@ export class ChatService {
 					status: 'notice',
 					content: `${room.owner.name} 님이 새로운 소유자가 되었습니다.`,
 				})
+
 				await this.chatHistoryRepository.save(newHistory);
 
 				await this.chatRoomRepository.save(room);

@@ -16,4 +16,7 @@ export class GameRoom {
 	@OneToMany(() => GameRoomUser, (gameRoomUser) => gameRoomUser.room)
 	users: GameRoomUser[];
 
+	
+
+
 }

@@ -1182,7 +1182,7 @@ export class SearchGameGuard implements CanActivate {
 		}
 
 		// rule 유효성 확인
-		if (!Object.values(Rule).includes(body.type)) {
+		if (!Object.values(Rule).includes(body.rule)) {
 			this.chatService.result('searchGameResult', client, 'error', '올바른 rule이 아닙니다. rank, normal, arcade 셋 중 하나를 입력해주세요.');
 			return false;
 		}
