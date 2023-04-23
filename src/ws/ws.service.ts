@@ -285,10 +285,20 @@ export class WsService {
 	}
 
 
-	result(event: string, @ConnectedSocket() client: Socket, status: string, detail?: string, type?: string) {
+	/**
+	 * 
+	 * @param event 이벤트이름
+	 * @param client 소켓
+	 * @param status 상태
+	 * @param detail 에러내용
+	 * @param type subscribe, unsubscribe 타입
+	 * @param roomId roomId
+	 */
+	result(event: string, client: Socket, status: string, detail: string, type?: string | undefined, roomId?: number | undefined) {
 		client.emit(event, {
-			type: type,
+			type: type, // subscribe 또는 unsubscribe 요청시.
 			status: status,
+			roomId: roomId, // roomId 관련 요청시.
 			detail: detail,
 		})
 	}
