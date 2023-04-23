@@ -1190,6 +1190,9 @@ export class SearchGameGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
+		@Inject(forwardRef(() => GameService))
+		private gameSerivce: GameService,
+
 	) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
@@ -1210,6 +1213,20 @@ export class SearchGameGuard implements CanActivate {
 		// rule 유효성 확인
 		if (!Object.values(Rule).includes(body.rule)) {
 			this.wsService.result('searchGameResult', client, 'error', '올바른 rule이 아닙니다. rank, normal, arcade 셋 중 하나를 입력해주세요.');
+			return false;
+		}
+
+		// 이미 게임을 찾고 있는 유저인경우
+		if (this.gameSerivce.normal.find(elem => elem.client) !== undefined) {
+			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
+			return false;
+		}
+		if (this.gameSerivce.rank.find(elem => elem.client) !== undefined) {
+			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
+			return false;
+		}
+		if (this.gameSerivce.arcade.find(elem => elem.client) !== undefined) {
+			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
 
