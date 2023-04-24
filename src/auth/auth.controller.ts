@@ -7,7 +7,6 @@ import { OtpDto, LoginOtpDto } from './dto/otp.dto';
 import { JwtService } from '@nestjs/jwt';
 import { TempJwtGuard } from './temp_jwt/tempJwt.guard';
 import { TempJwtService } from './temp_jwt/tempJwt.service';
-import * as jwt from 'jsonwebtoken';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entity/user.entity';
