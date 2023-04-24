@@ -136,9 +136,14 @@ export class UserService {
 
 	async addFriend(server: Server, client: Socket, body: any) {
 		const user = await this.findOne(await this.wsService.findName(client));
-		user.friend.push(await this.findOne(body.username));
+		const friend = await this.findOne(body.username);
+		user.friend.push(friend);
 		await this.usersRepository.save(user);
-		client.emit('addFriendResult', client, 'approved');
+
+		client.emit('addFriendResult', {
+			status: 'approved',
+			username: friend.name,
+		});
 
 		const clients = await server.in('friendList').fetchSockets();
 		for (const elem of clients) {

@@ -40,8 +40,11 @@
 		};
 
 		function addFriend() {
-			socket.emit('addFriend', { username: 'sorksoek22222' });
+			socket.emit('addFriend', { username: 'sorksoek22' });
 		};
+		socket.on('addFriendResult', data => {
+			console.log(data);
+		})
 
 		function createChatRoom() {
 			socket.emit('createChatRoom', {
