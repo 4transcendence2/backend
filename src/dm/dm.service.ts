@@ -140,16 +140,16 @@ export class DmService {
 			content: string,
 		} [] = [];
 		
-		const history = await this.dmHistoryRepository.findOne({
-			where: {
-				dm: dm
-			},
-			order: {
-				time: 'DESC'
-			}
-		});
-
+		
 		for (let i = 0; i < dm.length; ++i) {
+			const history = await this.dmHistoryRepository.findOne({
+				where: {
+					dm: dm[i]
+				},
+				order: {
+					time: 'DESC'
+				}
+			});
 			list.push({
 				username: dm[i].from.name === user.name ? dm[i].to.name : dm[i].from.name,
 				content: history !== null ? history.content : undefined,

@@ -820,17 +820,6 @@ export class SubscribeGuard implements CanActivate {
 			return false;
 		}
 		
-		// dm id 유효성 검사
-		// if (body.type=== Type.DM) {
-		// 	let user1 = await this.userService.findOne(await this.wsService.findName(client));
-		// 	let user2 = await this.userService.findOne(body.username);
-			
-		// 	if (!await this.dmService.isExist(user1, user2)) {
-		// 		this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 dm입니다.', body.type);
-		// 		return false;
-		// 	}
-		// }
-		
 		// game id 유효성 검사
 		if (body.Type === Type.GAME_ROOM && !(await this.gameService.isExist(body.roomId))) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
