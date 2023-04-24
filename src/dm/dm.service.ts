@@ -85,8 +85,6 @@ export class DmService {
 
 	async isExist(user1: User, user2: User): Promise<boolean> {
 		const dm = await this.findOne(user1, user2);
-		console.log(user1.name, user2.name);
-		console.log(dm);
 		return dm === null ? false : true;
 	}
 
@@ -144,12 +142,12 @@ export class DmService {
 		for (let i = 0; i < dm.length; ++i) {
 			const history = await this.dmHistoryRepository.findOne({
 				where: {
-					dm: dm[i]
+					dm: dm[i],
 				},
 				order: {
 					time: 'DESC'
-				}
-			});
+				},
+			})
 			list.push({
 				username: dm[i].from.name === user.name ? dm[i].to.name : dm[i].from.name,
 				content: history !== null ? history.content : undefined,
