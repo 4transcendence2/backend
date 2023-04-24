@@ -5,8 +5,8 @@
 		integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
 		crossorigin="anonymous"></script>
 	<script>
-		const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyMiIsImlkIjozLCJwaG9uZSI6IjAxMDIxMTQ1NTM3IiwiaWF0IjoxNjgyMTcyNjUxLCJleHAiOjE2ODI0MzE4NTF9.cWS4FAvcXUG3ScXuqKDBK7xCVcMPSk4lOti2nruXCcY';
-		const socket = io('ws://localhost', {
+		const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyIiwiaWQiOjEsInBob25lIjoiMDEwMjExNDU1MzciLCJpYXQiOjE2ODIzMDg3MzUsImV4cCI6MTY4MjU2NzkzNX0.Zc-DoufCv2MVkPGNm5oAKwntCzVdxEmQF0k6qvizgzg';
+		const socket = io('ws://localhost:81', {
 			extraHeaders: {
 				Authorization: 'Bearer ' + token,
 			}
@@ -59,12 +59,12 @@
 			}
 		}
 
-		socket.on('subscribe', {
+		socket.emit('subscribe', {
 			type: 'dm',
 			username: 'sorksoek22'
 		})
 
-		socket.on('subscribe', {
+		socket.emit('subscribe', {
 			type: 'dmList',
 		})
 
