@@ -46,8 +46,11 @@ export class User {
 	game: GameRoomUser[];
 	
 
-	@ManyToMany(() => Dm, (dm) => dm.user)
-	dm: Dm[];
+	@OneToMany(() => Dm, (dm) => dm.from)
+	from_dm: Dm[];
+
+	@OneToMany(() => Dm, (dm) => dm.to)
+	to_dm: Dm[];
 
 
 	@OneToMany(() => ChatHistory, (chatHistory) => chatHistory.user)

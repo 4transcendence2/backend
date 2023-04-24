@@ -41,9 +41,6 @@ export class UserService {
 					},
 					user: true,
 				},
-				dm: {
-					user: true,
-				}
 			}
 		});
 	}

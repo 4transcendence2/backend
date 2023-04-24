@@ -25,26 +25,60 @@ export class DmService {
 
 	) {}
 
-	async findOne(user1: User, user2: User): Promise<Dm> {
-		let list1 = [user1, user2];
-		let list2 = [user2, user1];
-
-		return await this.dmRepository.findOne({
+	async findAll(user: User): Promise<Dm[]> {
+		return await this.dmRepository.find({
 			relations: {
-				user: true,
+				from: true,
+				to: true,
 				history: {
 					user: true,
 				}
 			},
 			where: [
-				{ user: list1 },
-				{ user: list2 },
-			],
+				{ from: user },
+				{ to: user },
+			]
+		})
+	}
+
+	async findOne(user1: User, user2: User): Promise<Dm> {
+
+		let dm = await this.dmRepository.findOne({
+			relations: {
+				from: true,
+				to: true,
+				history: {
+					user: true,
+				}
+			},
+			where: {
+				from: user1,
+				to: user2,
+			}
 		});
+		if ( dm === null ) {
+			dm = await this.dmRepository.findOne({
+				relations: {
+					from: true,
+					to: true,
+					history: {
+						user: true,
+					}
+				},
+				where: {
+					from: user2,
+					to: user1,
+				},
+			});
+		}
+		return dm;
 	}
 
 	async isExist(user1: User, user2: User): Promise<boolean> {
-		return await this.findOne(user1, user2) !== null ? true : false;
+		const dm = await this.findOne(user1, user2);
+		console.log(user1.name, user2.name);
+		console.log(dm);
+		return dm === null ? false : true;
 	}
 
 	async dm(server: Server, client: Socket, body: any) {
@@ -56,7 +90,8 @@ export class DmService {
 		let dm = await this.findOne(user1, user2);
 		if (dm === null) {
 			dm = this.dmRepository.create({
-				user: [user1, user2]
+				from: user1,
+				to: user2,
 			})
 			await this.dmRepository.save(dm);
 		}
@@ -93,12 +128,13 @@ export class DmService {
 
 	async updateDmList(name: string, client: Socket) {
 		const user = await this.userService.findOne(name);
+		const dm = await this.findAll(user);
 		const list: {
 			username: string,
 		} [] = [];
-		for (let i = 0; i < user.dm.length; ++i) {
+		for (let i = 0; i < dm.length; ++i) {
 			list.push({
-				username: user.dm[i].user[0].name === user.name ? user.dm[i].user[1].name : user.dm[i].user[0].name,
+				username: dm[i].from.name === user.name ? dm[i].to.name : dm[i].from.name,
 			});
 		}
 
@@ -112,6 +148,8 @@ export class DmService {
 		const user1 = await this.userService.findOne(await this.wsService.findName(client));
 		const user2 = await this.userService.findOne(body.username);
 		const dm = await this.findOne(user1, user2);
+		if (dm === null) return ;
+
 		const histories = dm.history;
 
 		let list: {

@@ -827,6 +827,7 @@ export class SubscribeGuard implements CanActivate {
 			
 			if (!await this.dmService.isExist(user1, user2)) {
 				this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 dm입니다.', body.type);
+				console.log('??');
 				return false;
 			}
 		}
