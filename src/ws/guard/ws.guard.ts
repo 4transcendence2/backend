@@ -899,6 +899,7 @@ export class UnsubscribeGuard implements CanActivate {
 			let user2 = await this.userService.findOne(body.username);
 			
 			if (!await this.dmService.isExist(user1, user2)) {
+				this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
 				return false;
 			}
 		}
