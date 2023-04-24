@@ -133,9 +133,13 @@ export class WsService {
 		if (body.type === Type.DM) {
 			const user1 = await this.userService.findOne(await this.findName(client));
 			const user2 = await this.userService.findOne(body.username);
-			const dm = await this.dmService.findOne(user1, user2);
+			let dm = await this.dmService.findOne(user1, user2);
+			if (dm === null) {
+				dm = await this.dmService.createOne(user1, user2);
+			} else {
+				this.dmService.sendHistory(client, body);
+			}
 			client.join('dm' + dm.id);
-			this.dmService.sendHistory(client, body);
 		}
 
 

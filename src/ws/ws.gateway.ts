@@ -43,7 +43,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	async handleConnection(client: Socket) {
 		await this.wsService.login(client);
-	}
+}
 
 	/*
 		Socket Disconnect Event

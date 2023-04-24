@@ -74,6 +74,15 @@ export class DmService {
 		return dm;
 	}
 
+	async createOne(user1: User, user2: User): Promise<Dm> {
+		const dm = this.dmRepository.create({
+			from: user1,
+			to: user2,
+		})
+		await this.dmRepository.save(dm);
+		return dm;
+	}
+
 	async isExist(user1: User, user2: User): Promise<boolean> {
 		const dm = await this.findOne(user1, user2);
 		console.log(user1.name, user2.name);
@@ -89,10 +98,7 @@ export class DmService {
 
 		let dm = await this.findOne(user1, user2);
 		if (dm === null) {
-			dm = this.dmRepository.create({
-				from: user1,
-				to: user2,
-			})
+			dm = await this.createOne(user1, user2);
 			await this.dmRepository.save(dm);
 		}
 
@@ -131,10 +137,22 @@ export class DmService {
 		const dm = await this.findAll(user);
 		const list: {
 			username: string,
+			content: string,
 		} [] = [];
+		
+		const history = await this.dmHistoryRepository.findOne({
+			where: {
+				dm: dm
+			},
+			order: {
+				time: 'DESC'
+			}
+		});
+
 		for (let i = 0; i < dm.length; ++i) {
 			list.push({
 				username: dm[i].from.name === user.name ? dm[i].to.name : dm[i].from.name,
+				content: history !== null ? history.content : undefined,
 			});
 		}
 
