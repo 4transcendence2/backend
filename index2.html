@@ -5,8 +5,8 @@
 		integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
 		crossorigin="anonymous"></script>
 	<script>
-		const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyMiIsImlkIjozLCJwaG9uZSI6IjAxMDIxMTQ1NTM3IiwiaWF0IjoxNjgxNzgyNDI3LCJleHAiOjE2ODIwNDE2Mjd9.ENcnUrw0eWvKVKaACghfEtqV2ny82b-Vv6yhBzUs6w0';
-		const socket = io('ws://localhost', {
+		const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyMiIsImlkIjozLCJwaG9uZSI6IjAxMDIxMTQ1NTM3IiwiaWF0IjoxNjgyMzA5MzI2LCJleHAiOjE2ODI1Njg1MjZ9.MjxdHqJh1hvSGrD6tJqScyJOI0iuS3soAMu4VLclURc';
+		const socket = io('ws://localhost:81', {
 			extraHeaders: {
 				Authorization: 'Bearer ' + token,
 			}
@@ -52,6 +52,11 @@
 
 		socket.emit('subscribe', {
 			type: 'dm',
+			username: 'sorksoek2',
+		})
+
+		socket.emit('subscribe', {
+			type: 'dmList',
 			username: 'sorksoek2',
 		})
 
@@ -170,6 +175,10 @@
 			}
 
 			if (type === 'history') {
+				console.log(data);
+			}
+			
+			if (type === 'dmList') {
 				console.log(data);
 			}
 		})

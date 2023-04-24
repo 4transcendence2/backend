@@ -92,13 +92,14 @@ export class DmService {
 	}
 
 	async updateDmList(name: string, client: Socket) {
+		console.log(name);
 		const user = await this.userService.findOne(name);
 		const list: {
 			username: string,
 		} [] = [];
 		for (let i = 0; i < user.dm.length; ++i) {
 			list.push({
-				username: user.dm[i].user[0].name === user.name ? user.dm[i].user[1].name : user.name,
+				username: user.dm[i].user[0].name === user.name ? user.dm[i].user[1].name : user.dm[i].user[0].name,
 			});
 		}
 
