@@ -97,9 +97,7 @@ export class DmService {
 		let dm = await this.findOne(user1, user2);
 		if (dm === null) {
 			dm = await this.createOne(user1, user2);
-			await this.dmRepository.save(dm);
 		}
-
 		const newHistory = this.dmHistoryRepository.create({
 			time: new Date(Date.now()),
 			dm: dm,
@@ -122,7 +120,8 @@ export class DmService {
 		for (const elem of clients) {
 			let elemName = await this.wsService.findName(undefined, elem.id);
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
-			this.updateDmList(elemName, elemClient);
+			if (elemName === user1.name || elemName === user2.name)
+				this.updateDmList(elemName, elemClient);
 		}
 	}
 
@@ -138,8 +137,9 @@ export class DmService {
 			content: string,
 		} [] = [];
 		
-		
+
 		for (let i = 0; i < dm.length; ++i) {
+			if (dm[i].history.length === 0) continue;
 			const history = await this.dmHistoryRepository.findOne({
 				where: {
 					dm: dm[i],
