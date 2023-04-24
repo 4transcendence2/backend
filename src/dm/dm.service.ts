@@ -92,7 +92,6 @@ export class DmService {
 	}
 
 	async updateDmList(name: string, client: Socket) {
-		console.log(name);
 		const user = await this.userService.findOne(name);
 		const list: {
 			username: string,
