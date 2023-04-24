@@ -160,31 +160,57 @@ export class DmService {
 		});
 	}
 
-	async sendHistory(client: Socket, body: any) {
-		const user1 = await this.userService.findOne(await this.wsService.findName(client));
-		const user2 = await this.userService.findOne(body.username);
+	// async sendHistory(client: Socket, body: any) {
+	// 	const user1 = await this.userService.findOne(await this.wsService.findName(client));
+	// 	const user2 = await this.userService.findOne(body.username);
+	// 	const dm = await this.findOne(user1, user2);
+	// 	if (dm === null) return ;
+
+	// 	const histories = dm.history;
+
+	// 	let list: {
+	// 		from: string,
+	// 		content: string,
+	// 	} [] = [];
+
+	// 	for(const history of histories) {
+	// 		list.push({
+	// 			from: history.user.name,
+	// 			content: history.content,
+	// 		})
+	// 	}
+	// 	client.emit('message', {
+	// 		type: 'history',
+	// 		list: list,
+	// 	});
+	// }
+
+	async sendHistory(user1: User, user2: User, res: any) {
 		const dm = await this.findOne(user1, user2);
-		if (dm === null) return ;
+		const history = await this.dmHistoryRepository.find({
+			where: {
+				dm: dm,
+			},
+			relations: {
+				user: true,
+			}
+		})
 
-		const histories = dm.history;
-
-		let list: {
+		const list: {
 			from: string,
 			content: string,
-		} [] = [];
+		}[] = [];
 
-		for(const history of histories) {
+		for (const elem of history) {
 			list.push({
-				from: history.user.name,
-				content: history.content,
+				from: elem.user.name,
+				content: elem.content,
 			})
-		}
-		client.emit('message', {
-			type: 'history',
-			list: list,
-		});
-	}
+		};
 
-	
+		return res.json({
+			list: list,
+		})
+	}
 }
 

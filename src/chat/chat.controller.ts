@@ -26,8 +26,8 @@ export class ChatController {
 	@UseGuards(SendHistoryGuard)
 	@Get('history/:roomId')
 	async sendHistory(@Param('roomId') id: number, @Headers() header: any) {
-		const name = await this.authService.decodeToken(header, process.env.TMP_SECRET);
-		const user = await this.userService.findOne(name);
-		this.chatService.sendHistory(id, user);
+		// const name = await this.authService.decodeToken(header, process.env.TMP_SECRET);
+		// const user = await this.userService.findOne(name);
+		// this.chatService.sendHistory(id, user);
 	}
 }

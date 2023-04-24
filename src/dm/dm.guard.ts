@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, HttpException, Inject, Injectable, forwa
 import { AuthService } from "src/auth/auth.service";
 import { UserService } from "src/user/user.service";
 import { WsService } from "src/ws/ws.service";
-import { ChatService } from "./chat.service";
+import { DmService } from "./dm.service";
 require('dotenv').config();
 
 
@@ -20,8 +20,8 @@ export class SendHistoryGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
-		@Inject(forwardRef(() => ChatService))
-		private chatService: ChatService,
+		@Inject(forwardRef(() => DmService))
+		private dmService: DmService,
 
 	) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,13 +32,16 @@ export class SendHistoryGuard implements CanActivate {
 			throw new HttpException({ status: 'error', detail: 'Not logged in user.'}, 400);
 		}
 
-		const roomId = parseInt(req.params.roomId);
-		if (isNaN(roomId)) {
-			throw new HttpException({ status: 'error', detail: 'parameter should be a number type.'}, 400);
-		}
+		const username = req.params.username;
 
-		if (!await this.chatService.isExist(roomId)) {
-			throw new HttpException({ status: 'error', detail: 'Invalid roomId.'}, 400);
+		if (!await this.userService.isExist(username)) {
+			throw new HttpException({ status: 'error', detail: 'Invalid username.'}, 400);			
+		}
+		
+		const user1 = await this.userService.findOne(name);
+		const user2 = await this.userService.findOne(username);
+		if (!await this.dmService.isExist(user1, user2)) {
+			throw new HttpException({ status: 'error', detail: 'History not exist.'}, 404);
 		}
 
 		return true;

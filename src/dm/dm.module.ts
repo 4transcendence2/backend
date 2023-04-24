@@ -5,14 +5,18 @@ import { Dm } from './entity/dm.entity';
 import { DmHistory } from './entity/dm.history';
 import { WsModule } from 'src/ws/ws.module';
 import { UserModule } from 'src/user/user.module';
+import { DmController } from './dm.controller';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
 	imports: [
 		forwardRef(() => WsModule),
 		forwardRef(() => UserModule),
+		forwardRef(() => AuthModule),
 		TypeOrmModule.forFeature([ Dm, DmHistory ])
 	],
   providers: [DmService],
-	exports: [DmService]
+	exports: [DmService],
+	controllers: [DmController]
 })
 export class DmModule {}

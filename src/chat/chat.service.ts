@@ -275,52 +275,52 @@ export class ChatService {
 		}
 	}
 
-	// async sendHistory(client: Socket, body: any) {
-	// 	const room = await this.findOne(body.roomId);
-	// 	const user = await this.userService.findOne(await this.wsService.findName(client));
-	// 	const roomUser = await this.findRoomUser(user, room);
-	// 	if (roomUser === null) return;
-	// 	const joinTime = roomUser.time;
+	async sendHistory(client: Socket, body: any) {
+		const room = await this.findOne(body.roomId);
+		const user = await this.userService.findOne(await this.wsService.findName(client));
+		const roomUser = await this.findRoomUser(user, room);
+		if (roomUser === null) return;
+		const joinTime = roomUser.time;
 
-	// 	const histories = await this.chatHistoryRepository.find({
-	// 		where: {
-	// 			room: room,
-	// 		},
-	// 		relations: {
-	// 			user: true,
-	// 		},
-	// 		order: {
-	// 			time: 'DESC',
-	// 		}
-	// 	});
-	// 	if (histories === null) return;
+		const histories = await this.chatHistoryRepository.find({
+			where: {
+				room: room,
+			},
+			relations: {
+				user: true,
+			},
+			order: {
+				time: 'DESC',
+			}
+		});
+		if (histories === null) return;
 
-	// 	let list: {
-	// 		status: string,
-	// 		from: string,
-	// 		content: string,
-	// 	}[] = [];
+		let list: {
+			status: string,
+			from: string,
+			content: string,
+		}[] = [];
 
-	// 	for (const history of histories) {
-	// 		if (history.time < joinTime) break;
+		for (const history of histories) {
+			if (history.time < joinTime) break;
 
-	// 		list.unshift({
-	// 			status: history.status,
-	// 			from: history.status === 'plain' ? history.user.name : 'server',
-	// 			content: history.content,
-	// 		})
-	// 	}
+			list.unshift({
+				status: history.status,
+				from: history.status === 'plain' ? history.user.name : 'server',
+				content: history.content,
+			})
+		}
 
-	// 	client.emit('message', {
-	// 		type: 'history',
-	// 		roomId: room.id,
-	// 		list: list,
-	// 	});
-	// }
-
-	async sendHistory(id: number, user: User) {
-		
+		client.emit('message', {
+			type: 'history',
+			roomId: room.id,
+			list: list,
+		});
 	}
+
+	// async sendHistory(id: number, user: User) {
+
+	// }
 
 	async chat(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
