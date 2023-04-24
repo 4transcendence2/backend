@@ -142,7 +142,6 @@ export class UserService {
 
 		client.emit('addFriendResult', {
 			status: 'approved',
-			username: friend.name,
 		});
 
 		const clients = await server.in('friendList').fetchSockets();
