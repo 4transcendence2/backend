@@ -258,10 +258,12 @@ export class WsService {
 			username: string,
 			status: string,
 		}[] = [];
-		for(let i = 0; i < user.friend.length; ++i) {
+		const friends = await this.userService.findFriends(user);
+
+		for(let i = 0; i < friends.length; ++i) {
 			friendList.push({
-				username: user.friend[i].name,
-				status: user.friend[i].status,
+				username: friends[i].to.name,
+				status: friends[i].to.status,
 			})
 		}
 		client.emit('message', {

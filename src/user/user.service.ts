@@ -7,6 +7,7 @@ import { Socket, Server } from 'socket.io';
 const bcrypt = require('bcrypt');
 import { join } from 'path';
 import { WsService } from 'src/ws/ws.service';
+import { UserFriend } from './entity/user.friend';
 const fs = require('fs');
 
 @Injectable()
@@ -14,6 +15,9 @@ export class UserService {
 	constructor(
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
+
+		@InjectRepository(UserFriend)
+		private usersFriendRepository: Repository<UserFriend>,
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
@@ -30,7 +34,6 @@ export class UserService {
 				name: name,
 			},
 			relations: {
-				friend: true,
 				chat: {
 					room: {
 						owner: true,
@@ -45,6 +48,18 @@ export class UserService {
 		});
 	}
 
+	async findFriends(user: User): Promise<UserFriend[]> {
+		return await this.usersFriendRepository.find({
+			where: {
+				from: user
+			},
+			relations: {
+				from: true,
+				to: true,
+			}
+		});
+	}
+
 
 
 	async createUser(userInfo: CreateUserDto) {
@@ -53,7 +68,6 @@ export class UserService {
 			if (err) console.log(err, "기본 아바타 파일 이상");
 		});
 		const newUser: User = this.usersRepository.create({
-			friend: [],
 			chat: [],
 			name: userInfo.username,
 			password: hashedPassword,
@@ -80,9 +94,10 @@ export class UserService {
 		const user = await this.findOne(name);
 
 		let relation: string;
-		if (requester.name === user.name) relation = 'myself';
-		else {
-			relation = requester.friend.find(friend => friend === user) === undefined ? 'others' : 'friend';
+		if (requester.name === user.name) {
+			relation = 'myself';
+		} else {
+			relation = await this.isFriend(requesterName, name) ? 'friend' : 'others';
 		}
 
 		return ({
@@ -137,14 +152,18 @@ export class UserService {
 	async addFriend(server: Server, client: Socket, body: any) {
 		const user = await this.findOne(await this.wsService.findName(client));
 		const friend = await this.findOne(body.username);
-		user.friend.push(friend);
-		await this.usersRepository.save(user);
+
+		const newFriend = this.usersFriendRepository.create({
+			from: user,
+			to: friend,
+		});
+		await this.usersFriendRepository.save(newFriend);
 
 		client.emit('addFriendResult', {
 			status: 'approved',
 		});
 
-		const clients = await server.in('friendList').fetchSockets();
+		let clients = await server.in('friendList').fetchSockets();
 		for (const elem of clients) {
 			if (elem.id === client.id) {
 				let elemName = await this.wsService.findName(undefined, elem.id);
@@ -152,10 +171,18 @@ export class UserService {
 				break;
 			}
 		}
+
+		
 	}
 
 	async isFriend(from: string, to: string) {
 		const fromUser = await this.findOne(from);
-		return fromUser.friend.find(elem => elem.name === to) !== undefined ? true : false;
+		const toUser = await this.findOne(to);
+		const friends = await this.findFriends(fromUser);
+
+		if (friends === null) return false;
+		const res = friends.find(elem => elem.to.id === toUser.id);
+
+		return res !== undefined ? true : false;
 	}
 }

@@ -7,6 +7,7 @@ import { Dm } from "src/dm/entity/dm.entity";
 import { DmHistory } from "src/dm/entity/dm.history";
 import { Block } from "src/chat/entity/chat.block.entity";
 import { GameRoomUser } from "src/game/entity/game.room.user.entity";
+import { UserFriend } from "./user.friend";
 
 @Entity('user')
 export class User {
@@ -34,9 +35,11 @@ export class User {
 	})
 	lose: number;
 
-	@ManyToMany(() => User)
-	@JoinTable()
-	friend: User[];
+	@OneToMany(() => UserFriend, (userFriend) => userFriend.from)
+	from_friend: UserFriend[];
+
+	@OneToMany(() => UserFriend, (userFriend) => userFriend.to)
+	to_friend: UserFriend[];
 
 	@OneToMany(() => ChatRoomUser, (chatRoomUser) => chatRoomUser.user)
 	chat: ChatRoomUser[];
