@@ -596,13 +596,13 @@ export class ChatService {
 		const user = await this.userService.findOne(body.username);
 		const room = await this.findOne(body.roomId);
 
-		this.result('joinChatRoomResult', client, 'approved', 'joinChatROom', room.id);
+		this.result('inviteChatResult', client, 'approved', 'inviteChat', room.id);
 		const newChatRoomUser = this.chatRoomUserRepository.create({
 			user: user,
 			room: room,
 			time: new Date(Date.now()),
 		});
-		this.chatRoomUserRepository.save(newChatRoomUser);
+		await this.chatRoomUserRepository.save(newChatRoomUser);
 
 		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',

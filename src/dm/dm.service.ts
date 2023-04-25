@@ -120,8 +120,13 @@ export class DmService {
 		for (const elem of clients) {
 			let elemName = await this.wsService.findName(undefined, elem.id);
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
-			if (elemName === user1.name || elemName === user2.name)
-				this.updateDmList(elemName, elemClient);
+			if (elemName === user1.name || elemName === user2.name) {
+				elemClient.emit('message', {
+					type: 'dm',
+					alert: 'new',
+				})
+				// this.updateDmList(elemName, elemClient);
+			}
 		}
 	}
 
@@ -211,6 +216,35 @@ export class DmService {
 		return res.json({
 			list: list,
 		})
+	}
+
+	async sendList(user: User, res: any) {
+		const dm = await this.findAll(user);
+		const list: {
+			username: string,
+			content: string,
+		} [] = [];
+		
+
+		for (let i = 0; i < dm.length; ++i) {
+			if (dm[i].history.length === 0) continue;
+			const history = await this.dmHistoryRepository.findOne({
+				where: {
+					dm: dm[i],
+				},
+				order: {
+					time: 'DESC'
+				},
+			})
+			list.push({
+				username: dm[i].from.name === user.name ? dm[i].to.name : dm[i].from.name,
+				content: history !== null ? history.content : undefined,
+			});
+		}
+
+		return res.json({
+			list: list,
+		});
 	}
 }
 
