@@ -158,7 +158,7 @@ export class WsService {
 		// dmList
 		if (body.type === Type.DM_LIST) {
 			client.join('dmList');
-			this.dmService.updateDmList(name, client);
+			// this.dmService.updateDmList(name, client);
 		}
 
 		// friendList
