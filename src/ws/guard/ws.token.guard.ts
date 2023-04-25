@@ -8,15 +8,14 @@ export class TokenGuard implements CanActivate {
 		@Inject(forwardRef(()  => AuthService))
 		private authService:AuthService,
 	) {}
-	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+	async canActivate(context: ExecutionContext): Promise<boolean>{
 		const req = context.switchToHttp().getRequest();
-		this.authService.decodeToken(req.handshake.headers, process.env.TMP_SECRET)
+		return await this.authService.decodeToken(req.handshake.headers, process.env.TMP_SECRET)
 		.then(name => {
 			return true;
 		})
 		.catch(err => {
 			return false;
 		})
-		return true;
 	}
 }
