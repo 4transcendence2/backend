@@ -10,7 +10,6 @@ export class TokenGuard implements CanActivate {
 	) {}
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
 		const req = context.switchToHttp().getRequest();
-		
 		this.authService.decodeToken(req.handshake.headers, process.env.TMP_SECRET)
 		.then(name => {
 			return true;

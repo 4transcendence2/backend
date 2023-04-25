@@ -174,7 +174,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
 	@UseGuards(InviteChatGuard)
-	@SubscribeMessage('InviteChat')
+	@SubscribeMessage('inviteChat')
 	async inviteChat(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		await this.chatService.invite(this.server, client, body);
 	}

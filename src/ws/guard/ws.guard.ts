@@ -18,6 +18,7 @@ export class LoginGuard implements CanActivate {
 		private wsService: WsService,
 	) {}
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+
 		const client: Socket = context.switchToWs().getClient();
 		return this.wsService.isLogin(client)
 		.then(res => {

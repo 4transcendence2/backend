@@ -16,24 +16,12 @@
 			socket.emit('joinChatRoom', { roomId: id });
 		};
 
-		// socket.emit('subscribe', {
-		// 	type: 'chatRoomList',
-		// })
-		socket.emit('subscribe', {
-			type: 'chatRoom',
-			roomId: 23,
-		})
-		// socket.emit('subscribe', {
-		// 	type: 'dm',
-		// 	username: 'sorksoek22',
-		// })
-		// socket.emit('subscribe', {
-		// 	type: 'dmList',
-		// })
-
-		socket.on('subscribeResult', data => {
-			console.log(data);
-		})
+		function invite() {
+			socket.emit('inviteChat', {
+				username: 'sorksoek222',
+				roomId: 60,
+			})
+		}
 
 		function exit(id) {
 			socket.emit('exitChatRoom', { roomId: id });
@@ -42,10 +30,7 @@
 		function addFriend() {
 			socket.emit('addFriend', { username: 'sorksoek22' });
 		};
-		socket.on('addFriendResult', data => {
-			console.log(data);
-		})
-
+	
 		function createChatRoom() {
 			socket.emit('createChatRoom', {
 				status: "public",
@@ -61,15 +46,6 @@
 				})
 			}
 		}
-
-		socket.emit('subscribe', {
-			type: 'dm',
-			username: 'sorksoek22'
-		})
-
-		socket.emit('subscribe', {
-			type: 'dmList',
-		})
 
 		function appointAdmin(roomId, username) {
 			socket.emit('appointAdmin', {
@@ -95,6 +71,30 @@
 				username: username,
 			});
 		}
+		
+
+		socket.emit('subscribe', {
+			type: 'chatRoom',
+			roomId: 60,
+		})
+
+		socket.emit('subscribe', {
+			type: 'chatRoomList',
+		})
+
+		socket.emit('subscribe', {
+			type: 'dm',
+			username: 'sorksoek22'
+		})
+
+		socket.emit('subscribe', {
+			type: 'dmList',
+		})
+
+
+		socket.on('subscribeResult', data => {
+			console.log(data);
+		})
 
 		socket.on('createChatRoomResult', data => {
 			console.log(data);
@@ -118,8 +118,16 @@
 			console.log('mute', data);
 		})
 
+		socket.on('addFriendResult', data => {
+			console.log(data);
+		})
+
 		socket.on('error', (error) => {
 			console.log(error);
+		})
+
+		socket.on('inviteChatResult', data => {
+			console.log(data);
 		})
 
 
@@ -236,7 +244,6 @@
 			if (type === 'chat') {
 				console.log(data.from, data.content);
 			}
-
 			if (type === 'chatRoom') {
 				console.log(data);
 			}
@@ -294,6 +301,7 @@
 	<button onclick="addFriend()">addFriend</button>
 	<button onclick="createChatRoom()">createChatRoom</button>
 	<button onclick="appointAdmin()">appointAdmin</button>
+	<button onclick="invite()">invite</button>
 
 
 	<form action="http://localhost/user/avatar" id="myForm" method="Post" enctype="multipart/form-data">
