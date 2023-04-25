@@ -603,6 +603,7 @@ export class ChatService {
 			time: new Date(Date.now()),
 		});
 		await this.chatRoomUserRepository.save(newChatRoomUser);
+
 		server.to('chatRoom' + room.id).emit('message', {
 			type: 'chat',
 			roomId: room.id,
