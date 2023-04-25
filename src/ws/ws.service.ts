@@ -142,9 +142,6 @@ export class WsService {
 			client.join('dm' + dm.id);
 		}
 
-
-
-
 		// chatRoomList
 		if (body.type === Type.CHAT_ROOM_LIST) {
 			client.join('chatRoomList');
@@ -168,6 +165,11 @@ export class WsService {
 		if (body.type === Type.FRIEND_LIST) {
 			client.join('friendList');
 			this.updateFriend(name, client);
+		}
+
+		// chatInvitation
+		if (body.type === Type.CHAT_INVITATION) {
+			client.join('chatInvitation');
 		}
 
 	}
@@ -212,6 +214,11 @@ export class WsService {
 		// friendList
 		if (body.type === Type.FRIEND_LIST) {
 			client.leave('friendList');
+		}
+
+		// chatInvitation
+		if (body.type === Type.CHAT_INVITATION) {
+			client.leave('chatInvitation');
 		}
 
 	}
