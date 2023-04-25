@@ -122,8 +122,8 @@ export class DmService {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
 			if (elemName === user1.name || elemName === user2.name) {
 				elemClient.emit('message', {
-					type: 'dm',
-					from: user1.name,
+					type: 'dmList',
+					alert: 'new',
 				})
 				// this.updateDmList(elemName, elemClient);
 			}
