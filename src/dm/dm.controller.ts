@@ -20,6 +20,7 @@ export class DmController {
 		private dmService: DmService,
 	) {}
 
+	// @UserGuard(JwtGuard)
 	@UseGuards(TempJwtGuard)
 	@UseGuards(SendListGuard)
 	@Get('list')

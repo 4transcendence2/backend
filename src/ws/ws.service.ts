@@ -118,7 +118,7 @@ export class WsService {
 			client.join('chatRoom' + body.roomId);
 			this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
 			this.chatService.updateBlockList(body.roomId, await this.findName(client), client);
-			// this.chatService.sendHistory(client, body);
+			this.chatService.sendHistory(client, body);
 		}
 
 
