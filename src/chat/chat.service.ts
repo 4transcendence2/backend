@@ -372,7 +372,7 @@ export class ChatService {
 					roomId: room.id,
 					from: await this.wsService.findName(client),
 				})
-				elemClient.leave('chatRoom' + room.id);
+				await elemClient.leave('chatRoom' + room.id);
 			} else {
 				elemClient.emit('message', {
 					type: 'chat',
@@ -417,7 +417,7 @@ export class ChatService {
 					roomId: room.id,
 					from: await this.wsService.findName(client),
 				})
-				elemClient.leave('chatRoom' + room.id);
+				await elemClient.leave('chatRoom' + room.id);
 			} else {
 				elemClient.emit('message', {
 					type: 'chat',
