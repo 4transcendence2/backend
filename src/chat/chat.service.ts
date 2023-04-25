@@ -594,7 +594,7 @@ export class ChatService {
 
 	async invite(server: Server, client: Socket, body: any) {
 		const user = await this.userService.findOne(body.username);
-		const room = await this.findOne(body.roomId);
+		let room = await this.findOne(body.roomId);
 
 		this.result('inviteChatResult', client, 'approved', 'inviteChat', room.id);
 		const newChatRoomUser = this.chatRoomUserRepository.create({
@@ -621,6 +621,7 @@ export class ChatService {
 		})
 		await this.chatHistoryRepository.save(newHistory);
 
+		room = await this.findOne(body.roomId);
 		let clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
