@@ -115,7 +115,7 @@ export class WsService {
 
 		// chatRoom
 		if (body.type === Type.CHAT_ROOM) {
-			client.join('chatRoom' + body.roomId);
+			await client.join('chatRoom' + body.roomId);
 			this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
 			this.chatService.updateBlockList(body.roomId, await this.findName(client), client);
 			this.chatService.sendHistory(client, body);
@@ -125,7 +125,7 @@ export class WsService {
 		// gameRoom
 		if (body.type === Type.GAME_ROOM) {
 			const game = await this.gameService.findOne(body.roomId);
-			client.join('gameRoom' + game.id);
+			await client.join('gameRoom' + game.id);
 		}
 
 
@@ -139,37 +139,37 @@ export class WsService {
 			} else {
 				this.dmService.sendHistory(client, body);
 			}
-			client.join('dm' + dm.id);
+			await client.join('dm' + dm.id);
 		}
 
 		// chatRoomList
 		if (body.type === Type.CHAT_ROOM_LIST) {
-			client.join('chatRoomList');
+			await client.join('chatRoomList');
 			this.chatService.updateMyChatRoomList(name, client);
 			this.chatService.updateChatRoomList(name, client);
 		}
 
 		// gameRoomList
 		if (body.type === Type.GAME_ROOM_LIST) {
-			client.join('gameRoomList');
+			await client.join('gameRoomList');
 			this.gameService.updateGameRoomList(client);
 		}
 
 		// dmList
 		if (body.type === Type.DM_LIST) {
-			client.join('dmList');
+			await client.join('dmList');
 			// this.dmService.updateDmList(name, client);
 		}
 
 		// friendList
 		if (body.type === Type.FRIEND_LIST) {
-			client.join('friendList');
+			await client.join('friendList');
 			this.updateFriend(name, client);
 		}
 
 		// chatInvitation
 		if (body.type === Type.CHAT_INVITATION) {
-			client.join('chatInvitation');
+			await client.join('chatInvitation');
 		}
 
 	}
@@ -180,12 +180,12 @@ export class WsService {
 
 		// chatRoom
 		if (body.type === Type.CHAT_ROOM) {
-			client.leave('chatRoom' + body.roomId);
+			await client.leave('chatRoom' + body.roomId);
 		}
 
 		// gameRoom
 		if (body.type === Type.CHAT_ROOM) {
-			client.leave('gameRoom' + body.roomId);
+			await client.leave('gameRoom' + body.roomId);
 		}
 
 		// DM
@@ -193,32 +193,32 @@ export class WsService {
 			const user1 = await this.userService.findOne(await this.findName(client));
 			const user2 = await this.userService.findOne(body.username);
 			const dm = await this.dmService.findOne(user1, user2);
-			client.leave('dm' + dm.id);
+			await client.leave('dm' + dm.id);
 		}
 
 		// chatRoomList
 		if (body.type === Type.CHAT_ROOM_LIST) {
-			client.leave('chatRoomList');
+			await client.leave('chatRoomList');
 		}
 
 		// gameRoomList
 		if (body.type === Type.GAME_ROOM_LIST) {
-			client.leave('gameRoomList');
+			await client.leave('gameRoomList');
 		}
 
 		// dmList
 		if (body.type === Type.DM_LIST) {
-			client.leave('dmList');
+			await client.leave('dmList');
 		}
 
 		// friendList
 		if (body.type === Type.FRIEND_LIST) {
-			client.leave('friendList');
+			await client.leave('friendList');
 		}
 
 		// chatInvitation
 		if (body.type === Type.CHAT_INVITATION) {
-			client.leave('chatInvitation');
+			await client.leave('chatInvitation');
 		}
 
 	}
