@@ -17,10 +17,10 @@ export class LoginGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 	) {}
-	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+	async canActivate(context: ExecutionContext): Promise<boolean> {
 
 		const client: Socket = context.switchToWs().getClient();
-		return this.wsService.isLogin(client)
+		return await this.wsService.isLogin(client)
 		.then(res => {
 			return res
 		})
