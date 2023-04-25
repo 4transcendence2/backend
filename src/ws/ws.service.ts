@@ -137,7 +137,7 @@ export class WsService {
 			if (dm === null) {
 				dm = await this.dmService.createOne(user1, user2);
 			} else {
-				// this.dmService.sendHistory(client, body);
+				this.dmService.sendHistory(client, body);
 			}
 			client.join('dm' + dm.id);
 		}
@@ -161,7 +161,7 @@ export class WsService {
 		// dmList
 		if (body.type === Type.DM_LIST) {
 			client.join('dmList');
-			this.dmService.updateDmList(name, client);
+			// this.dmService.updateDmList(name, client);
 		}
 
 		// friendList

@@ -120,8 +120,13 @@ export class DmService {
 		for (const elem of clients) {
 			let elemName = await this.wsService.findName(undefined, elem.id);
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
-			if (elemName === user1.name || elemName === user2.name)
-				this.updateDmList(elemName, elemClient);
+			if (elemName === user1.name || elemName === user2.name) {
+				elemClient.emit('message', {
+					type: 'dm',
+					from: user1.name,
+				})
+				// this.updateDmList(elemName, elemClient);
+			}
 		}
 	}
 
@@ -160,57 +165,86 @@ export class DmService {
 		});
 	}
 
-	// async sendHistory(client: Socket, body: any) {
-	// 	const user1 = await this.userService.findOne(await this.wsService.findName(client));
-	// 	const user2 = await this.userService.findOne(body.username);
-	// 	const dm = await this.findOne(user1, user2);
-	// 	if (dm === null) return ;
-
-	// 	const histories = dm.history;
-
-	// 	let list: {
-	// 		from: string,
-	// 		content: string,
-	// 	} [] = [];
-
-	// 	for(const history of histories) {
-	// 		list.push({
-	// 			from: history.user.name,
-	// 			content: history.content,
-	// 		})
-	// 	}
-	// 	client.emit('message', {
-	// 		type: 'history',
-	// 		list: list,
-	// 	});
-	// }
-
-	async sendHistory(user1: User, user2: User, res: any) {
-		const dm = await this.findOne(user1, user2);
-		const history = await this.dmHistoryRepository.find({
-			where: {
-				dm: dm,
-			},
-			relations: {
-				user: true,
-			}
-		})
-
+	async sendList(user: User, res: any) {
+		const dm = await this.findAll(user);
 		const list: {
-			from: string,
+			username: string,
 			content: string,
-		}[] = [];
+		} [] = [];
+		
 
-		for (const elem of history) {
-			list.push({
-				from: elem.user.name,
-				content: elem.content,
+		for (let i = 0; i < dm.length; ++i) {
+			if (dm[i].history.length === 0) continue;
+			const history = await this.dmHistoryRepository.findOne({
+				where: {
+					dm: dm[i],
+				},
+				order: {
+					time: 'DESC'
+				},
 			})
-		};
+			list.push({
+				username: dm[i].from.name === user.name ? dm[i].to.name : dm[i].from.name,
+				content: history !== null ? history.content : undefined,
+			});
+		}
 
 		return res.json({
 			list: list,
-		})
+		});
 	}
+
+	async sendHistory(client: Socket, body: any) {
+		const user1 = await this.userService.findOne(await this.wsService.findName(client));
+		const user2 = await this.userService.findOne(body.username);
+		const dm = await this.findOne(user1, user2);
+		if (dm === null) return ;
+
+		const histories = dm.history;
+
+		let list: {
+			from: string,
+			content: string,
+		} [] = [];
+
+		for(const history of histories) {
+			list.push({
+				from: history.user.name,
+				content: history.content,
+			})
+		}
+		client.emit('message', {
+			type: 'history',
+			list: list,
+		});
+	}
+
+	// async sendHistory(user1: User, user2: User, res: any) {
+	// 	const dm = await this.findOne(user1, user2);
+	// 	const history = await this.dmHistoryRepository.find({
+	// 		where: {
+	// 			dm: dm,
+	// 		},
+	// 		relations: {
+	// 			user: true,
+	// 		}
+	// 	})
+
+	// 	const list: {
+	// 		from: string,
+	// 		content: string,
+	// 	}[] = [];
+
+	// 	for (const elem of history) {
+	// 		list.push({
+	// 			from: elem.user.name,
+	// 			content: elem.content,
+	// 		})
+	// 	};
+
+	// 	return res.json({
+	// 		list: list,
+	// 	})
+	// }
 }
 

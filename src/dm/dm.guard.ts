@@ -47,3 +47,27 @@ export class SendHistoryGuard implements CanActivate {
 		return true;
 	}
 }
+
+@Injectable()
+export class SendListGuard implements CanActivate {
+
+	constructor(
+
+		@Inject(forwardRef(() => AuthService))
+		private authService: AuthService,
+
+		@Inject(forwardRef(() => WsService))
+		private wsService: WsService,
+
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const req = context.switchToHttp().getRequest();
+		const name = await this.authService.decodeToken(req.headers, process.env.TMP_SECRET);
+
+		if (!await this.wsService.isLogin(undefined, name)) {
+			throw new HttpException({ status: 'error', detail: 'Not logged in user.'}, 400);
+		}
+
+		return true;
+	}
+}
