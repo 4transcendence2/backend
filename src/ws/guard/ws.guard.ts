@@ -832,7 +832,6 @@ export class SubscribeGuard implements CanActivate {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
 			return false;
 		}
-		this.wsService.result('subscribeResult', client, 'approved', undefined, body.type);
 		return true;
 	}
 }
@@ -867,8 +866,6 @@ export class UnsubscribeGuard implements CanActivate {
 			type: 'unsub',
 			detail: body.type,
 		})
-		// console.log(this.wsService.queue[0].detail, this.wsService.queue[0].type)
-		// if (body.type === 'chatRoom') console.log('guard unsub');
 		this.wsService.queueLen++;
 
 		// body 데이터 확인`
@@ -929,8 +926,6 @@ export class UnsubscribeGuard implements CanActivate {
 			this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 username입니다.', body.type);
 			return false;
 		}
-
-		this.wsService.result('unsubscribeResult', client, 'approved', undefined, body.type);
 		return true;
 
 	}

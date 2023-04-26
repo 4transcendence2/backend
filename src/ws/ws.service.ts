@@ -240,9 +240,12 @@ export class WsService {
 			clearInterval(id);
 			if (q.type === 'sub') {
 				await this.subscribe(client, body);
+				this.result('subscribeResult', client, 'approved', undefined, body.type);
+
 			}
 			if (q.type === 'unsub') {
 				await this.unsubscribe(client, body);
+				this.result('unsubscribeResult', client, 'approved', undefined, body.type);
 			}
 			this.queueLen--;
 		}, 10)
