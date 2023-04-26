@@ -238,10 +238,12 @@ export class WsService {
 			this.queue.splice(0, 1);
 
 			clearInterval(id);
-			// if (body.type === 'chatRoom') console.log('handle', q.type);
-			// console.log(q.type, q.detail);
-			if (q.type === 'sub') await this.subscribe(client, body);
-			if (q.type === 'unsub') await this.unsubscribe(client, body);
+			if (q.type === 'sub') {
+				await this.subscribe(client, body);
+			}
+			if (q.type === 'unsub') {
+				await this.unsubscribe(client, body);
+			}
 			this.queueLen--;
 		}, 10)
 
