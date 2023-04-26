@@ -782,6 +782,7 @@ export class SubscribeGuard implements CanActivate {
 		});
 		// console.log(this.wsService.queue[0].detail, this.wsService.queue[0].type)
 		// if (body.type === 'chatRoom') console.log('guard sub');
+		console.log(new Date(Date.now()), 'sub guard');
 		this.wsService.queueLen++;
 
 
@@ -866,6 +867,8 @@ export class UnsubscribeGuard implements CanActivate {
 			type: 'unsub',
 			detail: body.type,
 		})
+		console.log(new Date(Date.now()), 'unsub guard');
+
 		this.wsService.queueLen++;
 
 		// body 데이터 확인`
