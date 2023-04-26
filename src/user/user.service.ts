@@ -85,6 +85,7 @@ export class UserService {
 			name: userInfo.username,
 			password: hashedPassword,
 			avatar: defaultAvatar,
+			phone: userInfo.phonenumber,
 		});
 		await this.usersRepository.save(newUser);
 	}

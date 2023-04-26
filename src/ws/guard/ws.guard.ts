@@ -782,7 +782,7 @@ export class SubscribeGuard implements CanActivate {
 		});
 		// console.log(this.wsService.queue[0].detail, this.wsService.queue[0].type)
 		// if (body.type === 'chatRoom') console.log('guard sub');
-		console.log(new Date(Date.now()), 'sub guard');
+		// console.log(new Date(Date.now()), 'sub gura');
 		this.wsService.queueLen++;
 
 
@@ -867,11 +867,11 @@ export class UnsubscribeGuard implements CanActivate {
 			type: 'unsub',
 			detail: body.type,
 		})
-		console.log(new Date(Date.now()), 'unsub guard');
+		// console.log(new Date(Date.now()), 'unsub guard');
 
 		this.wsService.queueLen++;
 
-		// body 데이터 확인`
+		// body 데이터 확인
 		if (body === undefined) {
 			this.wsService.result('unsubscribeResult', client, 'error', '전달받은 데이터가 없습니다.');
 			return false;
