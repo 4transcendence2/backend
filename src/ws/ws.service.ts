@@ -145,9 +145,8 @@ export class WsService {
 			let dm = await this.dmService.findOne(user1, user2);
 			if (dm === null) {
 				dm = await this.dmService.createOne(user1, user2);
-			} else {
-				this.dmService.sendHistory(client, body);
 			}
+			this.dmService.sendHistory(client, body);
 			await client.join('dm' + dm.id);
 		}
 
@@ -240,13 +239,13 @@ export class WsService {
 			clearInterval(id);
 			if (q.type === 'sub') {
 				await this.subscribe(client, body);
-				console.log(new Date(Date.now()), q.type, q.detail);
+				// console.log(new Date(Date.now()), q.type, q.detail);
 				this.result('subscribeResult', client, 'approved', undefined, body.type);
 
 			}
 			if (q.type === 'unsub') {
 				await this.unsubscribe(client, body);
-				console.log(new Date(Date.now()), q.type, q.detail);
+				// console.log(new Date(Date.now()), q.type, q.detail);
 				this.result('unsubscribeResult', client, 'approved', undefined, body.type);
 			}
 			this.queueLen--;
