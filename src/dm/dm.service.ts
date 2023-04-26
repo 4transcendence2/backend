@@ -95,8 +95,7 @@ export class DmService {
 				name: body.username,
 			}
 		})
-		// const user1 = await this.userService.findOne(await this.wsService.findName(client));
-		// const user2 = await this.userService.findOne(body.username);
+		
 
 		client.emit('dmResult', { status: 'approved' });
 
@@ -122,18 +121,18 @@ export class DmService {
 			});
 		}
 
-		// clients = await server.in('dmList').fetchSockets();
-		// for (const elem of clients) {
-		// 	let elemName = await this.wsService.findName(undefined, elem.id);
-		// 	let elemClient = await this.wsService.findClient(undefined, elem.id);
-		// 	if (elemName === user1.name || elemName === user2.name) {
-		// 		elemClient.emit('message', {
-		// 			type: 'dmList',
-		// 			alert: 'new',
-		// 		})
-		// 		// this.updateDmList(elemName, elemClient);
-		// 	}
-		// }
+		clients = await server.in('dmList').fetchSockets();
+		for (const elem of clients) {
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			if (elemName === user1.name || elemName === user2.name) {
+				elemClient.emit('message', {
+					type: 'dmList',
+					alert: 'new',
+				})
+				// this.updateDmList(elemName, elemClient);
+			}
+		}
 	}
 
 	async exit(server: Server, client: Socket, body: any) {

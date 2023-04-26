@@ -73,11 +73,11 @@ export class WsService {
 				await this.userService.updateStatus(name, UserStatus.LOGIN);
 				const user = await this.userService.findOne(name);
 
-				for (const room of user.chat) {
-					let clients = await this.wsGateWay.server.in('chatRoom' + room.room.id).fetchSockets();
+				for (const chat of user.chat) {
+					let clients = await this.wsGateWay.server.in('chatRoom' + chat.room.id).fetchSockets();
 					for (const elem of clients) {
 						let elemClient = await this.findClient(undefined, elem.id);
-						this.chatService.updateChatRoom(elemClient, room.room);
+						this.chatService.updateChatRoom(elemClient, chat.room.id);
 					}
 				}
 
@@ -100,11 +100,11 @@ export class WsService {
 				await this.userService.updateStatus(name, UserStatus.LOGOUT);
 				const user = await this.userService.findOne(name);
 
-				for (const room of user.chat) {
-					let clients = await this.wsGateWay.server.in('chatRoom' + room.room.id).fetchSockets();
+				for (const chat of user.chat) {
+					let clients = await this.wsGateWay.server.in('chatRoom' + chat.room.id).fetchSockets();
 					for (const elem of clients) {
 						let elemClient = await this.findClient(undefined, elem.id);
-						this.chatService.updateChatRoom(elemClient, room.room);
+						this.chatService.updateChatRoom(elemClient, chat.room.id);
 					}
 				}
 
@@ -124,7 +124,7 @@ export class WsService {
 		// chatRoom
 		if (body.type === Type.CHAT_ROOM) {
 			await client.join('chatRoom' + body.roomId);
-			this.chatService.updateChatRoom(client, await this.chatService.findOne(body.roomId));
+			this.chatService.updateChatRoom(client, body.roomId);
 			this.chatService.updateBlockList(body.roomId, await this.findName(client), client);
 			this.chatService.sendHistory(client, body);
 			// console.log('sub');

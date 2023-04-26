@@ -35,15 +35,8 @@ export class UserService {
 			},
 			relations: {
 				chat: {
-					room: {
-						owner: true,
-						users: {
-							user: true,
-						},
-						ban: true,
-					},
-					user: true,
-				},
+					room: true,
+				}
 			}
 		});
 	}
