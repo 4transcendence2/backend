@@ -60,8 +60,11 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(SubscribeGuard)
 	@SubscribeMessage('subscribe')
 	async subscribe(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.wsService.subscribe(client, body);
+		this.wsService.handleQueue(client, body);
+		// await this.wsService.subscribe(client, body);
 	}
+	
+	
 	
 	/*
 	Unsubscribe
@@ -71,12 +74,13 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(UnsubscribeGuard)
 	@SubscribeMessage('unsubscribe')
 	async unsubscribe(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.wsService.unsubscribe(client, body);
+		// await this.wsService.unsubscribe(client, body);
+		this.wsService.handleQueue(client, body);
 	}
-
-
+	
+	
 	/*
-		Create Chat Room Event
+	Create Chat Room Event
 	*/
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)

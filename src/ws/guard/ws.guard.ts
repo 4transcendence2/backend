@@ -16,14 +16,14 @@ export class LoginGuard implements CanActivate {
 	constructor(
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 
-		const client: Socket = context.switchToWs().getClient();
+		const client: Socket = await context.switchToWs().getClient();
 		return await this.wsService.isLogin(client)
-		.then(res => {
-			return res
-		})
+			.then(res => {
+				return res
+			})
 	}
 }
 
@@ -35,7 +35,7 @@ export class CreateChatRoomGuard implements CanActivate {
 		private wsService: WsService,
 
 
-	) {}
+	) { }
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -51,7 +51,7 @@ export class CreateChatRoomGuard implements CanActivate {
 			this.wsService.result('createChatRoomResult', client, 'error', 'status 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// status 프로퍼티 확인2
 		if (body.status !== 'public' && body.status !== 'private' && body.status !== 'protected') {
 			this.wsService.result('createChatRoomResult', client, 'error', 'status 프로퍼티가 잘못 되었습니다.');
@@ -87,7 +87,7 @@ export class JoinChatRoomGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -103,7 +103,7 @@ export class JoinChatRoomGuard implements CanActivate {
 			this.wsService.result('joinChatRoomResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// 존재하는 방인지 확인
 		if (!await this.chatService.isExist(body.roomId)) {
 			this.wsService.result('joinChatRoomResult', client, 'error', '존재하지 않는 채팅방입니다.', undefined, body.roomId);
@@ -130,7 +130,7 @@ export class JoinChatRoomGuard implements CanActivate {
 				this.wsService.result('joinChatRoomResult', client, 'error', 'protected 방인데, password 프로퍼티가 없습니다.', undefined, body.roomId);
 				return false;
 			}
-			
+
 			// 비번방인데 비번을 확인
 			if (room.status === RoomStatus.PROTECTED) {
 				if (room.password !== body.password) {
@@ -138,13 +138,13 @@ export class JoinChatRoomGuard implements CanActivate {
 					return false;
 				}
 			}
-			
+
 			// 밴 당한 유저인지 확인
 			if (await this.chatService.isBan(body.roomId, client)) {
 				this.wsService.result('joinChatRoomResult', client, 'warning', '밴 당하셨습니다.', undefined, body.roomId);
 				return false;
 			}
-			
+
 			// private 방인데, 참가하려고 하는지
 
 			return true;
@@ -159,7 +159,7 @@ export class ExitChatRoomGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -175,7 +175,7 @@ export class ExitChatRoomGuard implements CanActivate {
 			this.wsService.result('exitChatRoomResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// 존재하는 방인지 확인
 		if (!await this.chatService.isExist(body.roomId)) {
 			this.wsService.result('exitChatRoomResult', client, 'error', '존재하지 않는 채팅방입니다.', undefined, body.roomId);
@@ -199,7 +199,7 @@ export class ChatGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -215,13 +215,13 @@ export class ChatGuard implements CanActivate {
 			this.wsService.result('chatResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// content 프로퍼티 확인
 		if (body.content === undefined) {
 			this.wsService.result('chatResult', client, 'error', 'content 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// 존재하는 방인지 확인
 		if (!await this.chatService.isExist(body.roomId)) {
 			this.wsService.result('chatResult', client, 'error', '존재하지 않는 채팅방입니다.', undefined, body.roomId);
@@ -236,7 +236,7 @@ export class ChatGuard implements CanActivate {
 
 		// 대상이 muted인지 확인
 		if (await this.chatService.isMute(body.roomId, client)) {
-			this.wsService.result('chatResult' ,client, 'warning', 'mute 당하셨습니다.', undefined, body.roomId);
+			this.wsService.result('chatResult', client, 'warning', 'mute 당하셨습니다.', undefined, body.roomId);
 			return false;
 		}
 		return true;
@@ -253,7 +253,7 @@ export class KickGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -272,7 +272,7 @@ export class KickGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('kickResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('kickResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 방인지 확인
@@ -286,14 +286,14 @@ export class KickGuard implements CanActivate {
 			this.wsService.result('kickResult', client, 'error', '해당 채팅방의 유저가 아닙니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
 			this.wsService.result('kickResult', client, 'error', '존재하지 않는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
-		
+
+
 		// 상대방이 해당 채팅방에 존재하는지 확인
 		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
 			this.wsService.result('kickResult', client, 'error', '해당 채팅방에 없는 대상입니다.', undefined, body.roomId);
@@ -313,7 +313,7 @@ export class KickGuard implements CanActivate {
 				this.wsService.result('kickResult', client, 'warning', '소유자는 kick 할 수 없습니다', undefined, body.roomId);
 				return false;
 			}
-			
+
 			// 자기 자신을 킥 하는지 확인
 			if (await this.wsService.findName(client) === user.name) {
 				this.wsService.result('kickResult', client, 'warning', '자기 자신은 kick 할 수 없습니다', undefined, body.roomId);
@@ -334,7 +334,7 @@ export class BanGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -353,7 +353,7 @@ export class BanGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('banResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('banResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 방인지 확인
@@ -367,14 +367,14 @@ export class BanGuard implements CanActivate {
 			this.wsService.result('banResult', client, 'error', '해당 채팅방의 유저가 아닙니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
 			this.wsService.result('banResult', client, 'error', '존재하지 않는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
-		
+
+
 		// 상대방이 해당 채팅방에 존재하는지 확인
 		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
 			this.wsService.result('banResult', client, 'error', '해당 채팅방에 없는 대상입니다.', undefined, body.roomId);
@@ -394,7 +394,7 @@ export class BanGuard implements CanActivate {
 				this.wsService.result('banResult', client, 'warning', '소유자는 ban 할 수 없습니다', undefined, body.roomId);
 				return false;
 			}
-			
+
 			// 자기 자신을 밴 하는지 확인
 			if (await this.wsService.findName(client) === user.name) {
 				this.wsService.result('banResult', client, 'warning', '자기 자신은 ban 할 수 없습니다', undefined, body.roomId);
@@ -415,7 +415,7 @@ export class UnbanGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -434,7 +434,7 @@ export class UnbanGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('unbanResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('unbanResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 방인지 확인
@@ -448,7 +448,7 @@ export class UnbanGuard implements CanActivate {
 			this.wsService.result('unbanResult', client, 'error', '해당 채팅방의 유저가 아닙니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
 			this.wsService.result('unbanResult', client, 'error', '존재하지 않는 대상입니다.', undefined, body.roomId);
@@ -479,7 +479,7 @@ export class MuteGuard implements CanActivate {
 		private userService: UserService,
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -498,7 +498,7 @@ export class MuteGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('muteResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('muteResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 방인지 확인
@@ -512,26 +512,26 @@ export class MuteGuard implements CanActivate {
 			this.wsService.result('muteResult', client, 'error', '해당 채팅방의 유저가 아닙니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
 			this.wsService.result('muteResult', client, 'error', '존재하지 않는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
-		
+
+
 		// 상대방이 해당 채팅방에 존재하는지 확인
 		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
 			this.wsService.result('muteResult', client, 'error', '해당 채팅방에 없는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		//이미 mute 당한 대상인지
 		if (await this.chatService.isMute(body.roomId, client, body.username)) {
 			this.wsService.result('muteResult', client, 'warning', '이미 mute된 유저입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 
 		// 권한 확인
 		if (!await this.chatService.isOwner(body.roomId, client) && !await this.chatService.isAdmin(body.roomId, client)) {
@@ -545,7 +545,7 @@ export class MuteGuard implements CanActivate {
 				this.wsService.result('muteResult', client, 'warning', '소유자는 mute 할 수 없습니다', undefined, body.roomId);
 				return false;
 			}
-			
+
 			// 자기 자신을 mute 하는지 확인
 			if (await this.wsService.findName(client) === user.name) {
 				this.wsService.result('muteResult', client, 'warning', '자기 자신은 mute 할 수 없습니다', undefined, body.roomId);
@@ -567,7 +567,7 @@ export class AppointAdminGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -586,7 +586,7 @@ export class AppointAdminGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('appointAdminResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('appointAdminResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 방인지 확인
@@ -600,26 +600,26 @@ export class AppointAdminGuard implements CanActivate {
 			this.wsService.result('appointAdminResult', client, 'error', '해당 채팅방의 유저가 아닙니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
 			this.wsService.result('appointAdminResult', client, 'error', '존재하지 않는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
-		
+
+
 		// 상대방이 해당 채팅방에 존재하는지 확인
 		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
 			this.wsService.result('appointAdminResult', client, 'error', '해당 채팅방에 없는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 권한 확인
 		if (!await this.chatService.isOwner(body.roomId, client) && !await this.chatService.isAdmin(body.roomId, client)) {
 			this.wsService.result('appointAdminResult', client, 'warning', '권한이 없습니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 소유자인지 확인
 		if (await this.chatService.isOwner(body.roomId, client, body.username)) {
 			this.wsService.result('appointAdminResult', client, 'warning', '소유자를 관리자로 임명할 수 없습니다.', undefined, body.roomId);
@@ -646,7 +646,7 @@ export class DismissAdminGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -665,7 +665,7 @@ export class DismissAdminGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('dismissAdminResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('dismissAdminResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 방인지 확인
@@ -679,19 +679,19 @@ export class DismissAdminGuard implements CanActivate {
 			this.wsService.result('dismissAdminResult', client, 'error', '해당 채팅방의 유저가 아닙니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
 			this.wsService.result('dismissAdminResult', client, 'error', '존재하지 않는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 상대방이 해당 채팅방에 존재하는지 확인
 		if (!await this.chatService.isExistUser(body.roomId, client, body.username)) {
 			this.wsService.result('dismissAdminResult', client, 'error', '해당 채팅방에 없는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 권한 확인
 		if (!await this.chatService.isOwner(body.roomId, client)) {
 			this.wsService.result('dismissAdminResult', client, 'warning', '권한이 없습니다.', undefined, body.roomId);
@@ -717,7 +717,7 @@ export class AddFriendGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -730,7 +730,7 @@ export class AddFriendGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('addFriendResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('addFriendResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 상대방인지 확인
@@ -738,7 +738,7 @@ export class AddFriendGuard implements CanActivate {
 			this.wsService.result('addFriendResult', client, 'error', '존재하지 않는 대상입니다.');
 			return false;
 		}
-		
+
 		// 자기 자신인지
 		if (await this.wsService.findName(client) === body.username) {
 			this.wsService.result('addFriendResult', client, 'error', '자기 자신은 친구추가를 할 수 없습니다.');
@@ -761,23 +761,29 @@ export class SubscribeGuard implements CanActivate {
 	constructor(
 		private chatService: ChatService,
 
-
-		@Inject(forwardRef(() => DmService))
-		private dmService: DmService,
-
 		@Inject(forwardRef(() => UserService))
 		private userService: UserService,
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
-		@Inject(forwardRef(() =>  GameService))
+		@Inject(forwardRef(() => GameService))
 		private gameService: GameService,
-	) {}
-	
+	) { }
+
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
+		
+		this.wsService.queue.push({
+			client: client,
+			type: 'sub',
+			detail: body.type,
+		});
+		// console.log(this.wsService.queue[0].detail, this.wsService.queue[0].type)
+		// if (body.type === 'chatRoom') console.log('guard sub');
+		this.wsService.queueLen++;
+
 
 		// body 데이터 확인
 		if (body === undefined) {
@@ -794,7 +800,7 @@ export class SubscribeGuard implements CanActivate {
 		// type 유효성 확인
 		if (!Object.values(Type).includes(body.type)) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 type입니디ㅏ.');
-			return true;
+			return false;
 		}
 
 		// roomId 프로퍼티 확인
@@ -820,13 +826,12 @@ export class SubscribeGuard implements CanActivate {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
 			return false;
 		}
-		
+
 		// game id 유효성 검사
 		if (body.Type === Type.GAME_ROOM && !(await this.gameService.isExist(body.roomId))) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
 			return false;
 		}
-
 		this.wsService.result('subscribeResult', client, 'approved', undefined, body.type);
 		return true;
 	}
@@ -837,28 +842,36 @@ export class UnsubscribeGuard implements CanActivate {
 
 	constructor(
 
-		private chatService:ChatService,
+		private chatService: ChatService,
 
 		@Inject(forwardRef(() => UserService))
-		private userService:UserService,
-		
-		
+		private userService: UserService,
+
+
 		@Inject(forwardRef(() => WsService))
-		private wsService:WsService,
+		private wsService: WsService,
 
 		@Inject(forwardRef(() => DmService))
 		private dmService: DmService,
-		
-		@Inject(forwardRef(() =>  GameService))
+
+		@Inject(forwardRef(() => GameService))
 		private gameService: GameService,
 
-	) {}
-	
+	) { }
+
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
+		this.wsService.queue.push({
+			client: client,
+			type: 'unsub',
+			detail: body.type,
+		})
+		// console.log(this.wsService.queue[0].detail, this.wsService.queue[0].type)
+		// if (body.type === 'chatRoom') console.log('guard unsub');
+		this.wsService.queueLen++;
 
-		// body 데이터 확인
+		// body 데이터 확인`
 		if (body === undefined) {
 			this.wsService.result('unsubscribeResult', client, 'error', '전달받은 데이터가 없습니다.');
 			return false;
@@ -873,7 +886,7 @@ export class UnsubscribeGuard implements CanActivate {
 		// type 유효성 확인
 		if (!Object.values(Type).includes(body.type)) {
 			this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 type입니디ㅏ.');
-			return true;
+			return false;
 		}
 
 		// roomId 프로퍼티 확인
@@ -895,10 +908,10 @@ export class UnsubscribeGuard implements CanActivate {
 		}
 
 		// dm id 유효성 검사
-		if (body.type=== Type.DM) {
+		if (body.type === Type.DM) {
 			let user1 = await this.userService.findOne(await this.wsService.findName(client));
 			let user2 = await this.userService.findOne(body.username);
-			
+
 			if (!await this.dmService.isExist(user1, user2)) {
 				this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
 				return false;
@@ -919,6 +932,7 @@ export class UnsubscribeGuard implements CanActivate {
 
 		this.wsService.result('unsubscribeResult', client, 'approved', undefined, body.type);
 		return true;
+
 	}
 }
 
@@ -934,7 +948,7 @@ export class InviteChatGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -953,7 +967,7 @@ export class InviteChatGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('inviteChatResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('inviteChatResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 방인지 확인
@@ -967,20 +981,20 @@ export class InviteChatGuard implements CanActivate {
 			this.wsService.result('inviteChatResult', client, 'error', '해당 채팅방의 유저가 아닙니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
 			this.wsService.result('inviteChatResult', client, 'error', '존재하지 않는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
-		
+
+
 		// 상대방이 해당 채팅방에 존재하는지 확인
 		if (await this.chatService.isExistUser(body.roomId, client, body.username)) {
 			this.wsService.result('inviteChatResult', client, 'error', '이미 해당 채팅방에 있는 대상입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 
 		return true;
 	}
@@ -997,7 +1011,7 @@ export class DmGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1010,7 +1024,7 @@ export class DmGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('inviteChatResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('inviteChatResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 상대방인지 확인
@@ -1018,7 +1032,7 @@ export class DmGuard implements CanActivate {
 			this.wsService.result('inviteChatResult', client, 'error', '존재하지 않는 대상입니다.');
 			return false;
 		}
-		
+
 		return true;
 	}
 }
@@ -1036,7 +1050,7 @@ export class BlockGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1055,7 +1069,7 @@ export class BlockGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('blockResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('blockResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 방인지 확인
@@ -1109,7 +1123,7 @@ export class UnblockGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1128,7 +1142,7 @@ export class UnblockGuard implements CanActivate {
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('blockResult', client, 'error' , 'username 프로퍼티가 없습니다.');
+			this.wsService.result('blockResult', client, 'error', 'username 프로퍼티가 없습니다.');
 			return false;
 		}
 
@@ -1184,7 +1198,7 @@ export class SearchGameGuard implements CanActivate {
 		@Inject(forwardRef(() => GameService))
 		private gameSerivce: GameService,
 
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1236,7 +1250,7 @@ export class CancleSearchGuard implements CanActivate {
 		private wsService: WsService,
 
 
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1252,30 +1266,30 @@ export class CancleSearchGuard implements CanActivate {
 			this.wsService.result('cancleSearchResult', client, 'error', 'rule 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// rule 유효성 확인
 		if (!Object.values(Rule).includes(body.type)) {
 			this.wsService.result('cancleSearchResult', client, 'error', '올바른 rule이 아닙니다. rank, normal, arcade 셋 중 하나를 입력해주세요.');
 			return false;
 		}
-		
+
 		// 해당 큐에 등록이 된 유저인지 확인
 		let name = await this.wsService.findName(client);
-		
+
 		if (body.rule === Rule.RANK) {
 			if (this.gameSerivce.rank.find(elem => elem.name === name) === undefined) {
 				this.wsService.result('cancleSearchResult', client, 'error', 'rank 큐에 등록된 유저가 아닙니다.');
 				return false;
 			}
 		}
-		
+
 		if (body.rule === Rule.NORMAL) {
 			if (this.gameSerivce.normal.find(elem => elem.name === name) === undefined) {
 				this.wsService.result('cancleSearchResult', client, 'error', 'normal 큐에 등록된 유저가 아닙니다.');
 				return false;
 			}
 		}
-		
+
 		if (body.rule === Rule.ARCADE) {
 			if (this.gameSerivce.arcade.find(elem => elem.name === name) === undefined) {
 				this.wsService.result('cancleSearchResult', client, 'error', 'arcade 큐에 등록된 유저가 아닙니다.');
@@ -1300,7 +1314,7 @@ export class JoinGameRoomGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1322,7 +1336,7 @@ export class JoinGameRoomGuard implements CanActivate {
 			this.wsService.result('joinGameRoomResult', client, 'error', '존재하지 않는 방입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 이미 해당 방에 참여중인 유저인지
 		if (await this.gameSerivce.isExistUser(body.roomId, client)) {
 			this.wsService.result('joinGameRoomResult', client, 'error', '이미 참여중입니다.', undefined, body.roomId);
@@ -1341,7 +1355,7 @@ export class ExitGameRoomGuard implements CanActivate {
 		@Inject(forwardRef(() => GameService))
 		private gameSerivce: GameService,
 
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1363,7 +1377,7 @@ export class ExitGameRoomGuard implements CanActivate {
 			this.wsService.result('exitGameRoomResult', client, 'error', '존재하지 않는 방입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 해당 방의 유저인지 확인
 		if (!await this.gameSerivce.isExistUser(body.roomId, client)) {
 			this.wsService.result('exitGameRoomResult', client, 'error', '해당 방의 유저가 아닙니다.', undefined, body.roomId);
@@ -1383,7 +1397,7 @@ export class SetPasswordGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1411,7 +1425,7 @@ export class SetPasswordGuard implements CanActivate {
 			this.wsService.result('setPasswordResult', client, 'error', '존재하지 않는 채팅방입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 해당 방이 protected인지 확인
 		const room = await this.chatService.findOne(body.roomId);
 		if (room.status !== RoomStatus.PULBIC) {
@@ -1438,7 +1452,7 @@ export class ChangePasswordGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1466,7 +1480,7 @@ export class ChangePasswordGuard implements CanActivate {
 			this.wsService.result('changePasswordResult', client, 'error', '존재하지 않는 채팅방입니다.', undefined, body.roomId);
 			return false;
 		}
-		
+
 		// 해당 방이 protected인지 확인
 		const room = await this.chatService.findOne(body.roomId);
 		if (room.status !== RoomStatus.PROTECTED) {
@@ -1493,7 +1507,7 @@ export class RemovePasswordGuard implements CanActivate {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
