@@ -858,12 +858,10 @@ export class ChatService {
 				});
 			}
 		}
-		if (room.ban !== null) {
-			for (const ban of room.ban) {
-				banList.push({
-					username: ban.name,
-				});
-			}
+		for (const ban of room.ban) {
+			banList.push({
+				username: ban.name,
+			});
 		}
 
 		client.emit('message', {

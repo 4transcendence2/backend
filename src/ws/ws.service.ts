@@ -59,7 +59,6 @@ export class WsService {
 						detail: '이미 접속중인 유저입니다.',
 					});
 
-
 					client.disconnect();
 					return;
 				}
