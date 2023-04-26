@@ -230,8 +230,8 @@ export class ChatService {
 			if (room.owner.id === user.id) {
 
 				// admin이 없는 경우.
-				if (room.users.find(elem => elem.admin === true) === undefined) {
-					room = await this.findOne(body.roomId);
+				let roomUsers = await this.findAllRoomUser(room);
+				if (roomUsers.find(elem => elem.admin === true) === undefined) {
 					room.owner = room.users[0].user;
 				} else {
 					let roomUsers = await this.chatRoomUserRepository.find({
