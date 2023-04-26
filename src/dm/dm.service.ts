@@ -17,6 +17,10 @@ export class DmService {
 		@InjectRepository(DmHistory)
 		private dmHistoryRepository: Repository<DmHistory>,
 
+		// temp
+		@InjectRepository(User)
+		private userRepository: Repository<User>,
+
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
@@ -41,36 +45,27 @@ export class DmService {
 		})
 	}
 
+	/**
+	 * 
+	 * @param user1 
+	 * @param user2 
+	 * @returns 
+	 */
 	async findOne(user1: User, user2: User): Promise<Dm> {
 
 		let dm = await this.dmRepository.findOne({
 			relations: {
 				from: true,
 				to: true,
-				history: {
-					user: true,
-				}
+				// history: {
+				// 	user: true,
+				// }
 			},
-			where: {
-				from: user1,
-				to: user2,
-			}
+			where: [
+				{from: user1, to: user2},
+				{from: user2, to: user1},
+			],
 		});
-		if ( dm === null ) {
-			dm = await this.dmRepository.findOne({
-				relations: {
-					from: true,
-					to: true,
-					history: {
-						user: true,
-					}
-				},
-				where: {
-					from: user2,
-					to: user1,
-				},
-			});
-		}
 		return dm;
 	}
 
@@ -89,8 +84,19 @@ export class DmService {
 	}
 
 	async dm(server: Server, client: Socket, body: any) {
-		const user1 = await this.userService.findOne(await this.wsService.findName(client));
-		const user2 = await this.userService.findOne(body.username);
+		const user1 = await this.userRepository.findOne({
+			where: {
+				name: await this.wsService.findName(client),
+			}
+		})
+
+		const user2 = await this.userRepository.findOne({
+			where: {
+				name: body.username,
+			}
+		})
+		// const user1 = await this.userService.findOne(await this.wsService.findName(client));
+		// const user2 = await this.userService.findOne(body.username);
 
 		client.emit('dmResult', { status: 'approved' });
 
@@ -116,18 +122,18 @@ export class DmService {
 			});
 		}
 
-		clients = await server.in('dmList').fetchSockets();
-		for (const elem of clients) {
-			let elemName = await this.wsService.findName(undefined, elem.id);
-			let elemClient = await this.wsService.findClient(undefined, elem.id);
-			if (elemName === user1.name || elemName === user2.name) {
-				elemClient.emit('message', {
-					type: 'dmList',
-					alert: 'new',
-				})
-				// this.updateDmList(elemName, elemClient);
-			}
-		}
+		// clients = await server.in('dmList').fetchSockets();
+		// for (const elem of clients) {
+		// 	let elemName = await this.wsService.findName(undefined, elem.id);
+		// 	let elemClient = await this.wsService.findClient(undefined, elem.id);
+		// 	if (elemName === user1.name || elemName === user2.name) {
+		// 		elemClient.emit('message', {
+		// 			type: 'dmList',
+		// 			alert: 'new',
+		// 		})
+		// 		// this.updateDmList(elemName, elemClient);
+		// 	}
+		// }
 	}
 
 	async exit(server: Server, client: Socket, body: any) {
@@ -200,7 +206,15 @@ export class DmService {
 		const dm = await this.findOne(user1, user2);
 		if (dm === null) return ;
 
-		const histories = dm.history;
+
+		const histories = await this.dmHistoryRepository.find({
+			where: {
+				dm: dm
+			},
+			relations: {
+				user: true,
+			},
+		});
 
 		let list: {
 			from: string,

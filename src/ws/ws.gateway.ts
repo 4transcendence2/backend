@@ -287,8 +287,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(DmGuard)
 	@SubscribeMessage('dm')
-	async dm(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.dmService.dm(this.server, client ,body);
+	dm(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.dmService.dm(this.server, client ,body);
 	}
 
 

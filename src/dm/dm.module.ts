@@ -7,13 +7,14 @@ import { WsModule } from 'src/ws/ws.module';
 import { UserModule } from 'src/user/user.module';
 import { DmController } from './dm.controller';
 import { AuthModule } from 'src/auth/auth.module';
+import { User } from 'src/user/entity/user.entity';
 
 @Module({
 	imports: [
 		forwardRef(() => WsModule),
 		forwardRef(() => UserModule),
 		forwardRef(() => AuthModule),
-		TypeOrmModule.forFeature([ Dm, DmHistory ])
+		TypeOrmModule.forFeature([ Dm, DmHistory, User ])
 	],
   providers: [DmService],
 	exports: [DmService],

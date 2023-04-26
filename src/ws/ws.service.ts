@@ -183,18 +183,18 @@ export class WsService {
 
 
 	async unsubscribe(@ConnectedSocket() client: Socket, body: any) {
-		
+
 			// chatRoom
 			if (body.type === Type.CHAT_ROOM) {
 				await client.leave('chatRoom' + body.roomId);
 				// console.log('unsub');
 			}
-	
+
 			// gameRoom
 			if (body.type === Type.CHAT_ROOM) {
 				await client.leave('gameRoom' + body.roomId);
 			}
-	
+
 			// DM
 			if (body.type === Type.DM) {
 				const user1 = await this.userService.findOne(await this.findName(client));
@@ -202,12 +202,12 @@ export class WsService {
 				const dm = await this.dmService.findOne(user1, user2);
 				await client.leave('dm' + dm.id);
 			}
-	
+
 			// chatRoomList
 			if (body.type === Type.CHAT_ROOM_LIST) {
 				await client.leave('chatRoomList');
 			}
-	
+
 			// gameRoomList
 			if (body.type === Type.GAME_ROOM_LIST) {
 				await client.leave('gameRoomList');
