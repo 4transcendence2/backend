@@ -59,6 +59,7 @@ export class WsService {
 						detail: '이미 접속중인 유저입니다.',
 					});
 
+
 					client.disconnect();
 					return;
 				}
@@ -84,6 +85,7 @@ export class WsService {
 
 			})
 			.catch(err => {
+				console.log('login error');
 				client.emit('error', err);
 				client.disconnect();
 			})
@@ -114,6 +116,7 @@ export class WsService {
 
 			})
 			.catch(err => {
+				console.log('logout error');
 				client.emit('error', err);
 			})
 	}

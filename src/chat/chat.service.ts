@@ -90,7 +90,6 @@ export class ChatService {
 
 	async removeHistory(room: ChatRoom) {
 		const history = await this.findHistory(room);
-		if (history === null) return;
 		await this.chatHistoryRepository.remove(history);
 	}
 
@@ -228,29 +227,30 @@ export class ChatService {
 
 			// 나가는 유저가 소유자인 경우
 			if (room.owner.id === user.id) {
+				let roomUsers = await this.chatRoomUserRepository.find({
+					where: {
+						room: room,
+						admin: true,
+					},
+					order: {
+						time: 'ASC',
+					},
+					relations: {
+						user: true,
+					}
+				});
 
 				// admin이 없는 경우.
-				let roomUsers = await this.findAllRoomUser(room);
-				if (roomUsers.find(elem => elem.admin === true) === undefined) {
-					room.owner = room.users[0].user;
+				room = await this.findOne(body.roomId);
+				if (roomUsers.length === 0) {
+					roomUsers = await this.findAllRoomUser(room);
+					room.owner = roomUsers[0].user;
 				} else {
-					let roomUsers = await this.chatRoomUserRepository.find({
-						where: {
-							admin: true,
-						},
-						order: {
-							time: 'ASC',
-						},
-						relations: {
-							user: true,
-						}
-					});
 					roomUsers[0].admin = false;
 					room.owner = roomUsers[0].user;
 					await this.chatRoomUserRepository.save(roomUsers[0]);
 				}
 				await this.chatRoomRepository.save(room);
-
 				room = await this.findOne(body.roomId);
 				server.to('chatRoom' + room.id).emit('message', {
 					type: 'chat',
@@ -272,7 +272,6 @@ export class ChatService {
 			}
 
 			room = await this.findOne(body.roomId);
-
 			let clients = await server.in('chatRoom' + room.id).fetchSockets();
 			for (const elem of clients) {
 				let elemClient = await this.wsService.findClient(undefined, elem.id);
@@ -834,6 +833,8 @@ export class ChatService {
 		const room = await this.findOne(id);
 		const roomUsers = await this.findAllRoomUser(room);
 
+		if (room === null || roomUsers === null) return;
+
 		const userList: {
 			username: string,
 			owner: boolean,
@@ -846,25 +847,24 @@ export class ChatService {
 			username: string
 		} [] = [];
 
-		for (const roomUser of roomUsers) {
-			userList.push({
-				username: roomUser.user.name,
-				owner: room.owner.id === roomUser.user.id ? true : false,
-				admin: roomUser.admin,
-				muted: roomUser.muted,
-				status: roomUser.user.status,
-			})
-
+		if (roomUsers !== null) {
+			for (const roomUser of roomUsers) {
+				userList.push({
+					username: roomUser.user.name,
+					owner: room.owner.id === roomUser.user.id ? true : false,
+					admin: roomUser.admin,
+					muted: roomUser.muted,
+					status: roomUser.user.status,
+				});
+			}
 		}
-		for(let i = 0; i < room.users.length; ++i) {
+		if (room.ban !== null) {
+			for (const ban of room.ban) {
+				banList.push({
+					username: ban.name,
+				});
+			}
 		}
-
-		for(let i = 0; i < room.ban.length; ++i) {
-			banList.push({
-				username: room.ban[i].name,
-			});
-		}
-
 
 		client.emit('message', {
 			type: 'chatRoom',
