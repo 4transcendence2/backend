@@ -293,6 +293,15 @@ export class ChatService {
 	async sendHistory(client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
+		const blockList = await this.blockRepository.find({
+			where: {
+				room: room,
+				from: user,
+			},
+			relations: {
+				to: true,
+			}
+		});
 
 		if (room === null) return;
 		const roomUser = await this.findRoomUser(user, room);
@@ -321,6 +330,8 @@ export class ChatService {
 
 		for (const history of histories) {
 			if (history.time < joinTime) break;
+
+			if (blockList.find(elem => elem.to === history.user)) continue;
 
 			list.unshift({
 				status: history.status,
