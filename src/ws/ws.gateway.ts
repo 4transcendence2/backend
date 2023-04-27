@@ -308,7 +308,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
 	@UseGuards(ExitDmGuard)
-	@SubscribeMessage('dm')
+	@SubscribeMessage('exitDm')
 	exitDm(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.dmService.exit(this.server, client ,body);
 	}
