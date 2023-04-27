@@ -291,7 +291,10 @@ export class ChatService {
 	async sendHistory(client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
+
+		if (room === null) return;
 		const roomUser = await this.findRoomUser(user, room);
+		
 		if (roomUser === null) return;
 		const joinTime = roomUser.time;
 
