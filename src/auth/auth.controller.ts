@@ -104,7 +104,6 @@ export class AuthController {
 	// 최종적으로 데이터베이스에 유저정보를 저장할 수 있게 하는 otp(SignupJwt) 발급
 	@Post('check/otp/signup')
 	async checkSignupOtp(@Request() req, @Body() body: OtpDto, @Res() res: Response) {
-		console.log(body);
 		try {
 			const result = await this.authService.checkOtp(body.otp, body.phonenumber);
 			if (result.status === 'approved') {

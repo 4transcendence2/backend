@@ -1062,18 +1062,73 @@ export class DmGuard implements CanActivate {
 
 		// body 데이터 확인
 		if (body === undefined) {
-			this.wsService.result('inviteChatResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			this.wsService.result('dmResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
 			return false;
 		}
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('inviteChatResult', client, 'error', 'username 프로퍼티가 없습니다.');
+			this.wsService.result('dmResult', client, 'error', 'username 프로퍼티가 없습니다.');
 		}
 
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
-			this.wsService.result('inviteChatResult', client, 'error', '존재하지 않는 대상입니다.');
+			this.wsService.result('dmResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+
+		return true;
+	}
+}
+
+@Injectable()
+export class ExitDmGuard implements CanActivate {
+	constructor(
+
+		@Inject(forwardRef(() => UserService))
+		private userService: UserService,
+
+		@Inject(forwardRef(() => WsService))
+		private wsService: WsService,
+
+		@Inject(forwardRef(() => DmService))
+		private dmService: DmService,
+
+	) { }
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.wsService.result('exitDmResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.wsService.result('exitDmResult', client, 'error', 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.wsService.result('exitDmResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+		
+		const user1 = await this.userService.findOne(await this.wsService.findName(client));
+		const user2 = await this.userService.findOne(body.username);
+		const dm = await this.dmService.findOne(user1, user2);
+
+		// 상대방과의 dm이 존재하는지 확인
+		if (dm === null) {
+			this.wsService.result('exitDmResult', client, 'error', '대상과의 dm 방이 존재하지 않습니다.');
+			return false;
+		}
+
+		// 해당 dm에 들어가있는지 확인
+		if (!await this.dmService.isExistDmUser(dm, user1)) {
+			this.wsService.result('exitDmResult', client, 'error', '대상과의 dm 방에 있지 않습니다.');
 			return false;
 		}
 
