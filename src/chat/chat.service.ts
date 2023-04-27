@@ -570,8 +570,7 @@ export class ChatService {
 	async block(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const from = await this.userService.findOne(await this.wsService.findName(client));
-		const to = await this.userService.findOne(body.roomId);
-
+		const to = await this.userService.findOne(body.username);
 
 		client.emit('blockResult', {
 			status: 'approved',
@@ -617,7 +616,7 @@ export class ChatService {
 		});
 
 		await this.blockRepository.remove(block);
-		
+
 		const clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			if (elem.id === client.id) {

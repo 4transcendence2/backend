@@ -5,7 +5,7 @@
 		integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
 		crossorigin="anonymous"></script>
 	<script>
-		const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyIiwiaWQiOjEsInBob25lIjoiMDEwMjExNDU1MzciLCJpYXQiOjE2ODIzMDg3MzUsImV4cCI6MTY4MjU2NzkzNX0.Zc-DoufCv2MVkPGNm5oAKwntCzVdxEmQF0k6qvizgzg';
+		const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic29ya3NvZWsyIiwiaWQiOjEsInBob25lIjoiMDEwMjExNDU1MzciLCJpYXQiOjE2ODI1ODA4NzMsImV4cCI6MTY4Mjg0MDA3M30.5PMe-nDljmrNCWDHw8hpYkg5Z3U8dZY-kcXwTUGyHL8';
 		const socket = io('ws://localhost:81', {
 			extraHeaders: {
 				Authorization: 'Bearer ' + token,
@@ -20,6 +20,13 @@
 			socket.emit('inviteChat', {
 				username: 'sorksoek222',
 				roomId: 60,
+			})
+		}
+
+		function block() {
+			socket.emit('block', {
+				roomId: 109,
+				username: 'sorksoek22'
 			})
 		}
 
@@ -75,7 +82,7 @@
 
 		socket.emit('subscribe', {
 			type: 'chatRoom',
-			roomId: 60,
+			roomId: 109,
 		})
 
 		socket.emit('subscribe', {
@@ -119,6 +126,10 @@
 		})
 
 		socket.on('addFriendResult', data => {
+			console.log(data);
+		})
+
+		socket.on('blockResult', data => {
 			console.log(data);
 		})
 
@@ -259,6 +270,9 @@
 			if (type === 'dm') {
 				console.log(data);
 			}
+			if (type === 'block') {
+				console.log(data);
+			}
 		})
 		
 
@@ -302,6 +316,7 @@
 	<button onclick="createChatRoom()">createChatRoom</button>
 	<button onclick="appointAdmin()">appointAdmin</button>
 	<button onclick="invite()">invite</button>
+	<button onclick="block()">block</button>
 
 
 	<form action="http://localhost/user/avatar" id="myForm" method="Post" enctype="multipart/form-data">
