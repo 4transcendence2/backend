@@ -264,7 +264,7 @@ export class DmService {
 					dm: dm,
 				},
 				order: {
-					time: 'ASC',
+					time: 'DESC',
 				},
 				relations: {
 					user: true,
