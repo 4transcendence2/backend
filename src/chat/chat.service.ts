@@ -88,9 +88,12 @@ export class ChatService {
 		});
 	}
 
-	async removeHistory(room: ChatRoom) {
-		const history = await this.findHistory(room);
-		await this.chatHistoryRepository.remove(history);
+	async findBlock(room: ChatRoom): Promise<Block[]> {
+		return await this.blockRepository.find({
+			where: {
+				room: room,
+			}
+		});
 	}
 
 	async isExist(id: number): Promise<boolean> {
@@ -102,8 +105,6 @@ export class ChatService {
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
 		return await this.findRoomUser(user, room) !== null ? true : false;
 	}
-
-
 
 
 	/*---------------채팅방---------------*/
@@ -156,7 +157,6 @@ export class ChatService {
 		});
 		await this.chatRoomUserRepository.save(newChatRoomUser);
 
-		// setTimeout(() => {
 		let newHistory = this.chatHistoryRepository.create({
 			time: new Date(Date.now()),
 			user: user,
@@ -172,7 +172,6 @@ export class ChatService {
 			from: 'server',
 			content: `${user.name} 님이 입장하셨습니다.`,
 		});
-		// }, 300);
 
 		let clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
@@ -201,7 +200,10 @@ export class ChatService {
 		room = await this.findOne(body.roomId);
 		// 방에 남은 유저가 한 명인 경우.
 		if (room.users.length === 0) {
-			await this.removeHistory(room);
+			const blockList = await this.findBlock(room);
+			const history = await this.findHistory(room);
+			await this.blockRepository.remove(blockList);
+			await this.chatHistoryRepository.remove(history);
 			await this.chatRoomRepository.remove(room);
 			const clients = await server.in('chatRoomList').fetchSockets();
 			for (const elem of clients) {
