@@ -971,11 +971,13 @@ export class ChatService {
 			username :string,
 		} [] = [];
 
-		for (let i = 0; i < blockList.length; ++i) {
-			list.push({
-				username: blockList[i].to.name,
-			})
-		};
+		if (blockList.length > 0) {
+			for (const elem of blockList) {
+				list.push({
+					username: elem.to.name,
+				});
+			}
+		}
 
 		client.emit('message', {
 			type: 'block',
