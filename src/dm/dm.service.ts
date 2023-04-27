@@ -234,7 +234,7 @@ export class DmService {
 
 			if (history === null) continue;
 			list.push({
-				username: dmUser.user.name === user.name ? dm.to.name : dm.from.name,
+				username: user.name === dm.from.name ? dm.to.name : dm.from.name,
 				content: history.content,
 			});
 		}
