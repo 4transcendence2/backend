@@ -215,14 +215,14 @@ export class DmService {
 
 	async sendList(user: User, res: any) {
 		const dmUsers = await this.findAllDmUser(user);
-
 		const list: {
 			username: string,
 			content: string,
 		} [] = [];
 		
 		for (const dmUser of dmUsers) {
-			let dm = await this.dmRepository.findOne({ where: {id: dmUser.dm.id }});
+			let dm = await this.dmRepository.findOne({ where: {id: dmUser.dm.id }, relations: {from: true, to: true}});
+
 			let history = await this.dmHistoryRepository.findOne({
 				where: {
 					dm: dm,
@@ -231,8 +231,8 @@ export class DmService {
 					time: 'DESC'
 				}
 			})
-			if (history === null) continue;
 
+			if (history === null) continue;
 			list.push({
 				username: dmUser.user.name === user.name ? dm.to.name : dm.from.name,
 				content: history.content,
