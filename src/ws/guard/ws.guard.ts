@@ -754,6 +754,54 @@ export class AddFriendGuard implements CanActivate {
 		return true;
 	}
 }
+@Injectable()
+export class RemoveFriendGuard implements CanActivate {
+	constructor(
+
+		@Inject(forwardRef(() => UserService))
+		private userService: UserService,
+
+		@Inject(forwardRef(() => WsService))
+		private wsService: WsService,
+	) { }
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.wsService.result('removeFriendResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.wsService.result('removeFriendResult', client, 'error', 'username 프로퍼티가 없습니다.');
+		}
+
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.wsService.result('removeFriendResult', client, 'error', '존재하지 않는 대상입니다.');
+			return false;
+		}
+
+		// 자기 자신인지
+		if (await this.wsService.findName(client) === body.username) {
+			this.wsService.result('removeFriendResult', client, 'error', '자기 자신은 친구삭제를 할 수 없습니다.');
+			return false;
+		}
+
+		// 친구가 아닌지
+		if (!await this.userService.isFriend(await this.wsService.findName(client), body.username)) {
+			this.wsService.result('removeFriendResult', client, 'warning', '친구가 아닙니다.');
+			return false;
+		}
+
+		return true;
+	}
+}
+
+
 
 @Injectable()
 export class SubscribeGuard implements CanActivate {
@@ -867,8 +915,6 @@ export class UnsubscribeGuard implements CanActivate {
 			type: 'unsub',
 			detail: body.type,
 		})
-		// console.log(new Date(Date.now()), 'unsub guard');
-
 		this.wsService.queueLen++;
 
 		// body 데이터 확인

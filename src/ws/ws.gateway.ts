@@ -5,7 +5,7 @@ import { ChatService } from "src/chat/chat.service";
 import { Inject, UseGuards, forwardRef, Request } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { TokenGuard } from "./guard/ws.token.guard";
-import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChangePasswordGuard, ChatGuard, CreateChatRoomGuard, DismissAdminGuard, DmGuard, ExitChatRoomGuard, ExitGameRoomGuard, InviteChatGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, RemovePasswordGuard, SearchGameGuard, SetPasswordGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
+import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChangePasswordGuard, ChatGuard, CreateChatRoomGuard, DismissAdminGuard, DmGuard, ExitChatRoomGuard, ExitGameRoomGuard, InviteChatGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, RemoveFriendGuard, RemovePasswordGuard, SearchGameGuard, SetPasswordGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
 import { DmService } from "src/dm/dm.service";
 import { GameService } from "src/game/game.service";
 require('dotenv').config();
@@ -61,7 +61,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('subscribe')
 	async subscribe(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.wsService.handleQueue(client, body);
-		// await this.wsService.subscribe(client, body);
 	}
 	
 	
@@ -74,7 +73,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(UnsubscribeGuard)
 	@SubscribeMessage('unsubscribe')
 	async unsubscribe(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		// await this.wsService.unsubscribe(client, body);
 		this.wsService.handleQueue(client, body);
 	}
 	
@@ -277,6 +275,18 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('addFriend')
 	async addFriend(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		await this.userService.addFriend(this.server, client, body);
+	}
+
+
+	/*
+		Remove Friend
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(RemoveFriendGuard)
+	@SubscribeMessage('removeFriend')
+	async removeFriend(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		await this.userService.removeFriend(this.server, client, body);
 	}
 
 

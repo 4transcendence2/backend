@@ -189,7 +189,6 @@ export class WsService {
 			// chatRoom
 			if (body.type === Type.CHAT_ROOM) {
 				await client.leave('chatRoom' + body.roomId);
-				// console.log('unsub');
 			}
 
 			// gameRoom

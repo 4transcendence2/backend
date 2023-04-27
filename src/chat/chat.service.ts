@@ -156,15 +156,7 @@ export class ChatService {
 		});
 		await this.chatRoomUserRepository.save(newChatRoomUser);
 
-		setTimeout(() => {
-			server.to('chatRoom' + room.id).emit('message', {
-				type: 'chat',
-				roomId: room.id,
-				status: 'notice',
-				from: 'server',
-				content: `${user.name} 님이 입장하셨습니다.`,
-			});
-		}, 300);
+		// setTimeout(() => {
 		let newHistory = this.chatHistoryRepository.create({
 			time: new Date(Date.now()),
 			user: user,
@@ -173,6 +165,14 @@ export class ChatService {
 			content: `${user.name} 님이 입장하셨습니다.`,
 		})
 		await this.chatHistoryRepository.save(newHistory);
+		server.to('chatRoom' + room.id).emit('message', {
+			type: 'chat',
+			roomId: room.id,
+			status: 'notice',
+			from: 'server',
+			content: `${user.name} 님이 입장하셨습니다.`,
+		});
+		// }, 300);
 
 		let clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {

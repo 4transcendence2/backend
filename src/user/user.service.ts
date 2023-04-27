@@ -131,9 +131,35 @@ export class UserService {
 				break;
 			}
 		}
-
-
 	}
+
+
+	async removeFriend(server: Server, client: Socket, body: any) {
+		const user = await this.findOne(await this.wsService.findName(client));
+		const friend = await this.findOne(body.username);
+
+		const f = await this.usersFriendRepository.findOne({
+			where: {
+				from: user,
+				to: friend,
+			}
+		});
+		await this.usersFriendRepository.remove(f);
+
+		client.emit('removeFriendResult', {
+			status: 'approved',
+		});
+
+		let clients = await server.in('friendList').fetchSockets();
+		for (const elem of clients) {
+			if (elem.id === client.id) {
+				let elemName = await this.wsService.findName(undefined, elem.id);
+				this.wsService.updateFriend(elemName, client);
+				break;
+			}
+		}
+	}
+
 
 	async findFriends(user: User): Promise<UserFriend[]> {
 		return await this.usersFriendRepository.find({
