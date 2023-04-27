@@ -331,7 +331,9 @@ export class ChatService {
 		for (const history of histories) {
 			if (history.time < joinTime) break;
 
-			if (blockList.find(elem => elem.to === history.user)) continue;
+			if (blockList.find(elem => elem.to.name === history.user.name) !== undefined) {
+				continue;
+			}
 
 			list.unshift({
 				status: history.status,
