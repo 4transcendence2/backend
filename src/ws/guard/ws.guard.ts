@@ -1137,8 +1137,6 @@ export class ExitDmGuard implements CanActivate {
 }
 
 
-
-
 @Injectable()
 export class BlockGuard implements CanActivate {
 	constructor(

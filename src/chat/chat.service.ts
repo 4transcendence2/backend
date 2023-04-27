@@ -374,7 +374,7 @@ export class ChatService {
 		this.result('kickResult', client, 'approved', 'kick', room.id);
 
 		room = await this.findOne(body.roomId);
-		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		let clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
 			let elemName = await this.wsService.findName(undefined, elem.id);
@@ -397,6 +397,7 @@ export class ChatService {
 				this.updateChatRoom(elemClient, room.id);
 			}
 		}
+
 		const newHistory = this.chatHistoryRepository.create({
 			time: new Date(Date.now()),
 			user: user,
@@ -405,8 +406,17 @@ export class ChatService {
 			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 kick 하셨습니다.`,
 		})
 		await this.chatHistoryRepository.save(newHistory);
+
+		clients = await server.in('chatRoomList').fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			this.updateMyChatRoomList(elemName, elemClient);
+			this.updateChatRoomList(elemName, elemClient);
+		}
+
 	}
-	
+
 	async ban(server: Server, client: Socket, body: any) {
 		let room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
@@ -419,7 +429,7 @@ export class ChatService {
 		await this.chatRoomRepository.save(room);
 
 		room = await this.findOne(body.roomId);
-		const clients = await server.in('chatRoom' + room.id).fetchSockets();
+		let clients = await server.in('chatRoom' + room.id).fetchSockets();
 		for (const elem of clients) {
 			let elemName = await this.wsService.findName(undefined, elem.id);
 			let elemClient = await this.wsService.findClient(undefined, elem.id);
@@ -451,8 +461,18 @@ export class ChatService {
 			content: `${await this.wsService.findName(client)}님이 ${user.name}님을 ban 하셨습니다.`,
 		})
 		await this.chatHistoryRepository.save(newHistory);
+
+
+		clients = await server.in('chatRoomList').fetchSockets();
+		for (const elem of clients) {
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			this.updateMyChatRoomList(elemName, elemClient);
+			this.updateChatRoomList(elemName, elemClient);
+		}
 	}
-	
+
+
 	async unban(server: Server, client: Socket, body: any) {
 		let room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(body.username);
