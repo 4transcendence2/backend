@@ -67,6 +67,9 @@ export class ChatService {
 			relations: {
 				user: true,
 				room: true,
+			},
+			order: {
+				id: 'ASC'
 			}
 		})
 	}
