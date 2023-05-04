@@ -408,16 +408,20 @@ export class GameService {
 		if (winner === 'red') {
 			redClient.emit('message', {
 				type: 'win',
+				roomId: game.roomId,
 			})
 			blueClient.emit('message', {
 				type: 'lost',
+				roomId: game.roomId,
 			})
 		} else {
 			redClient.emit('message', {
 				type: 'lose',
+				roomId: game.roomId,
 			})
 			blueClient.emit('message', {
 				type: 'win',
+				roomId: game.roomId,
 			})
 		}
 
@@ -427,6 +431,7 @@ export class GameService {
 
 			client.emit('message', {
 				type: 'finish',
+				roomId: game.roomId,
 				winner: winner,
 			})
 		}
