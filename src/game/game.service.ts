@@ -281,7 +281,17 @@ export class GameService {
 				if ((game.redPaddleY < game.ballY && game.ballY < game.redPaddleY + game.redPaddleHeight) || (game.bluePaddleY < game.ballY && game.ballY < game.bluePaddleY + game.bluePaddleHeight))
 					game.dx *= -1;
 				else {
-					game.playing = false;
+					if (game.ballX > 270) { // 레드 승리
+						game.redScore++;
+					} else { // 블루 승리
+						game.blueScore++;
+					}
+
+					if (game.redScore === 5 || game.blueScore === 5) {
+						game.playing = false;
+					}
+
+					this.initGame(game);
 				}
 			}
 
