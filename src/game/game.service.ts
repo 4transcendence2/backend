@@ -477,7 +477,7 @@ export class GameService {
 			game.bluePaddleX = 530;
 			game.bluePaddleY = 140;
 			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5;
-			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * -10);
+			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3;
 	}
 
 	play(id: number, rule: string, red: string, blue: string) {
@@ -489,7 +489,7 @@ export class GameService {
 			ballY: 180,
 			ballRadius: 10,
 			dx: Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5,
-			dy: Math.random() >= 0.5 ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * -10),
+			dy: Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3,
 			redUser: red,
 			redPaddleX: 0,
 			redPaddleY: 140,
