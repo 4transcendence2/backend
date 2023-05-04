@@ -1354,15 +1354,15 @@ export class SearchGameGuard implements CanActivate {
 		}
 
 		// 이미 게임을 찾고 있는 유저인경우
-		if (this.gameSerivce.normal.find(elem => elem.client) !== undefined) {
+		if (this.gameSerivce.normal.find(elem => elem.client === client) !== undefined) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
-		if (this.gameSerivce.rank.find(elem => elem.client) !== undefined) {
+		if (this.gameSerivce.rank.find(elem => elem.client === client) !== undefined) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
-		if (this.gameSerivce.arcade.find(elem => elem.client) !== undefined) {
+		if (this.gameSerivce.arcade.find(elem => elem.client === client) !== undefined) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
