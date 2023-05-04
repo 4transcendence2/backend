@@ -265,9 +265,9 @@ export class GameService {
 			game.ballX += game.dx;
 			game.ballY += game.dy;
 
-			if (game.ballY + game.dy < game.ballRadius || game.ballY + game.dy > 705) game.dy *= -1;
+			if (game.ballY + game.dy < game.ballRadius || game.ballY + game.dy > 350) game.dy *= -1;
 
-			if (game.ballX + game.dx < game.ballRadius || game.ballX + game.dx > 1065) {
+			if (game.ballX + game.dx < game.ballRadius || game.ballX + game.dx > 530) {
 
 				if ((game.redPaddleY < game.ballY && game.ballY < game.redPaddleY + game.redPaddleHeight) || (game.bluePaddleY < game.ballY && game.ballY < game.bluePaddleY + game.bluePaddleHeight))
 					game.dx *= -1;
