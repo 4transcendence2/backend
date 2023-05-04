@@ -10,6 +10,7 @@ import { UserService } from 'src/user/user.service';
 import { Role } from './game.role';
 import { WsGateWay } from 'src/ws/ws.gateway';
 import { User } from 'src/user/entity/user.entity';
+import { GameHistory } from './entity/game.history.entity';
 
 
 interface queue {
@@ -56,6 +57,9 @@ export class GameService {
 
 		@InjectRepository(GameRoomUser)
 		private gameRoomUserRepository: Repository<GameRoomUser>,
+
+		@InjectRepository(GameHistory)
+		private gameHistoryRepository: Repository<GameHistory>,
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
@@ -232,6 +236,51 @@ export class GameService {
 		});
 	}
 
+	async sendResult(game: status) {
+		const redClient = await this.wsService.findClient(game.redUser);
+		const blueClient = await this.wsService.findClient(game.blueUser);
+		const winner = game.redScore === 5 ? 'red' : 'blue';
+
+		if (winner === 'red') {
+			redClient.emit('message', {
+				type: 'win',
+			})
+			blueClient.emit('message', {
+				type: 'lost',
+			})
+		} else {
+			redClient.emit('message', {
+				type: 'lose',
+			})
+			blueClient.emit('message', {
+				type: 'win',
+			})
+		}
+
+		for (const spectator of game.spectator) {
+			let client = await this.wsService.findClient(spectator);
+			if (client === undefined) continue;
+
+			client.emit('message', {
+				type: 'finish',
+				winner: winner,
+			})
+		}
+	}
+
+	async saveHistory(game: status) {
+		const redUser = await this.userService.findOne(game.redUser);
+		const blueUser = await this.userService.findOne(game.blueUser);
+		const winner = game.redScore === 5 ? 'red' : 'blue';
+		const newHistory = this.gameHistoryRepository.create({
+			red: redUser,
+			blue: blueUser,
+			winner: winner,
+			time: new Date(Date.now()),
+		});
+		await this.gameHistoryRepository.save(newHistory);
+	}
+
 	initGame(game: status) {
 			game.ballX = 270;
 			game.ballY = 180;
@@ -239,6 +288,8 @@ export class GameService {
 			game.redPaddleY = 140;
 			game.bluePaddleX = 530;
 			game.bluePaddleY = 140;
+			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * -10);
+			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * -10);
 	}
 
 	play(id: number, red: string, blue: string) {
@@ -248,8 +299,8 @@ export class GameService {
 			ballX: 270,
 			ballY: 180,
 			ballRadius: 10,
-			dx: 5,
-			dy: 5,
+			dx: Math.random() >= 0.5 ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * -10),
+			dy: Math.random() >= 0.5 ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * -10),
 			redUser: red,
 			redPaddleX: 0,
 			redPaddleY: 140,
@@ -268,8 +319,9 @@ export class GameService {
 		let intervalId = setInterval(() => {
 			if (game.playing === false) {
 				clearInterval(intervalId);
-				console.log('finish', game.roomId);
 				// 게임 종료 이벤트, 결과 등록 및 히스토리 등록 등등
+				this.sendResult(game);
+				this.saveHistory(game);
 			}
 			game.ballX += game.dx;
 			game.ballY += game.dy;
@@ -317,6 +369,8 @@ export class GameService {
 		if (role === 'red') room.redPaddleY += 10;
 		if (role === 'blue') room.bluePaddleY += 10;
 	}
+
+	
 
 
 
