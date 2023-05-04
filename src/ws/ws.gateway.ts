@@ -5,7 +5,7 @@ import { ChatService } from "src/chat/chat.service";
 import { Inject, UseGuards, forwardRef, Request } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { TokenGuard } from "./guard/ws.token.guard";
-import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChangePasswordGuard, ChatGuard, CreateChatRoomGuard, DismissAdminGuard, DmGuard, ExitChatRoomGuard, ExitDmGuard, ExitGameRoomGuard, InviteChatGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, RemoveFriendGuard, RemovePasswordGuard, SearchGameGuard, SetPasswordGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
+import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChangePasswordGuard, ChatGuard, CreateChatRoomGuard, DismissAdminGuard, DmGuard, ExitChatRoomGuard, ExitDmGuard, ExitGameRoomGuard, InviteChatGuard, InviteGameGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, RemoveFriendGuard, RemovePasswordGuard, SearchGameGuard, SetPasswordGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
 import { DmService } from "src/dm/dm.service";
 import { GameService } from "src/game/game.service";
 require('dotenv').config();
@@ -335,7 +335,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(CancleSearchGuard)
 	@SubscribeMessage('cancleSearch')
 	async cancleSearch(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.gameService.cancleQueue(client, body);
+		this.gameService.cancleQueue(client, body);
 	}
 
 	/*
@@ -346,7 +346,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JoinGameRoomGuard)
 	@SubscribeMessage('joinGameRoom')
 	async joinGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.joinGameRoom(client, body);
+		this.joinGameRoom(client, body);
 	}
 
 	/*
@@ -357,16 +357,43 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(ExitGameRoomGuard)
 	@SubscribeMessage('exitGameRoom')
 	async exitGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.exitGameRoom(client, body);
+		this.exitGameRoom(client, body);
 	}
 
 
 	/*
 		inviteGame
 	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@UseGuards(InviteGameGuard)
+	@SubscribeMessage('inviteGame')
+	async inviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.inviteGame(client, body);
+	}
 
 
+	/*
+		acceptGame
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@SubscribeMessage('acceptGame')
+	async acceptGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		
+	}
 
+
+	/*
+	declineGame
+	*/
+	@UseGuards(TokenGuard)
+	@UseGuards(LoginGuard)
+	@SubscribeMessage('acceptGame')
+	async delcineGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		
+	}
+	
 	/*
 		paadle up
 	*/

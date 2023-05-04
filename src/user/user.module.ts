@@ -13,6 +13,7 @@ import { UserFriend } from './entity/user.friend';
 		TypeOrmModule.forFeature([User, UserFriend]),
 		forwardRef(() => AuthModule),
 		forwardRef(() => WsModule),
+		forwardRef(() => GameModule),
 ],
 	controllers: [ UserController ],
 	providers: [ UserService ],

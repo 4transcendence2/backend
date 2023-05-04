@@ -11,6 +11,7 @@ import { Role } from './game.role';
 import { WsGateWay } from 'src/ws/ws.gateway';
 import { User } from 'src/user/entity/user.entity';
 import { GameHistory } from './entity/game.history.entity';
+import { UserStatus } from 'src/user/user.status';
 
 
 interface queue {
@@ -22,6 +23,7 @@ interface queue {
 interface status {
 	playing: boolean,
 	roomId: number,
+	rule: string,
 	ballX: number,
 	ballY: number,
 	ballRadius: number,
@@ -42,6 +44,14 @@ interface status {
 	spectator: string[],
 };
 
+interface invitation {
+	fromClient: Socket,
+	from: string,
+	to: string,
+	rule: string,
+	status: string,
+	timer: number,
+}
 
 @Injectable()
 export class GameService {
@@ -49,6 +59,7 @@ export class GameService {
 	public rank: queue[] = [];
 	public normal: queue[] = [];
 	public arcade: queue[] = [];
+	public invitationList: invitation[] = [];
 	private rooms: status[] = [];
 	constructor(
 
@@ -106,6 +117,19 @@ export class GameService {
 		})
 	}
 
+	async findHistory(user: User): Promise<GameHistory[]> {
+		return await this.gameHistoryRepository.find({
+			where: [
+				{red: user},
+				{blue: user},
+			],
+			relations: {
+				red: true,
+				blue: true,
+			}
+		})
+	}
+
 	async isExist(id: number): Promise<boolean> {
 		return await this.findOne(id) !== null ? true : false;
 	}
@@ -127,6 +151,120 @@ export class GameService {
 		for(const user of game.users) {
 			if (user.role === Role.BLUE) return user.user.name;
 		}
+	}
+
+	async inviteGame(client: Socket, body: any) {
+		const from = await this.userService.findOne(await this.wsService.findName(client));
+		const to = await this.userService.findOne(body.username);
+
+		const invitation: invitation = {
+			fromClient: client,
+			from: from.name,
+			to: to.name,
+			rule: body.rule,
+			status: 'waiting',
+			timer: 0,
+		};
+
+		this.invitationList.push(invitation);
+
+		let intervalId = setInterval(async () => {
+
+			if (invitation.timer === 10) {
+				clearInterval(intervalId);
+				client.emit('inviteGameResult', {
+					username: to.name,
+					status: 'decline',
+				});
+			}
+
+			if (invitation.status === 'accept') {
+				clearInterval(intervalId);
+				client.emit('inviteGameResult', {
+					username: to.name,
+					status: 'accept',
+				});
+				let index = this.invitationList.findIndex(elem => elem.from === from.name);
+				this.invitationList.splice(index, 1);
+				
+				let newGame = this.gameRoomRepository.create({
+					rule: body.rule,
+				});
+				await this.gameRoomRepository.save(newGame);
+
+
+				let newGameUser1 = this.gameRoomUserRepository.create({
+					room: newGame,
+					user: from,
+					role: Role.RED,
+				});
+
+				let newGameUser2 = this.gameRoomUserRepository.create({
+					room: newGame,
+					user: to,
+					role: Role.BLUE,
+				});
+
+				client.join('gameRoom' + newGame.id);
+				(await this.wsService.findClient(body.username)).join('gameRoom' + newGame.id);
+				this.gameRoomUserRepository.save(newGameUser1);
+				this.gameRoomUserRepository.save(newGameUser2);
+
+				let clients = await this.wsGateway.server.in('gameRoomList').fetchSockets();
+				for (const elem of clients) {
+					let elemCLient = await this.wsService.findClient(undefined, elem.id);
+					this.updateGameRoomList(elemCLient);
+				}
+				this.play(newGame.id, newGame.rule, from.name, to.name);
+			}
+
+			if (invitation.status === 'decline') {
+				clearInterval(intervalId);
+				client.emit('inviteGameResult', {
+					username: to.name,
+					status: 'decline',
+				});
+				let index = this.invitationList.findIndex(elem => elem.from === from.name);
+				this.invitationList.splice(index, 1);
+			}
+
+			invitation.timer++;
+			client.emit('inviteGameResult', {
+				username: to.name,
+				status: 'waiting'
+			});
+		}, 1000)
+		
+		let clients = await this.wsGateway.server.in('gameInvitation').fetchSockets();
+		for (const elem of clients) {
+			let elemName = await this.wsService.findName(undefined, elem.id);
+			let elemClient = await this.wsService.findClient(undefined, elem.id);
+
+			if (elemName === to.name) {
+				elemClient.emit('message', {
+					type: 'gameInvitation',
+					from: from.name
+				})
+			}
+		}
+	}
+
+	async acceptGame(client: Socket, body: any) {
+		client.emit('acceptGameResult', {
+			username: body.username,
+			status: 'approved',
+		});
+		const invitation = this.invitationList.find(elem => elem.from = body.username);
+		invitation.status = 'accept';
+	}
+	
+	async declineGame(client: Socket, body: any) {
+		client.emit('declineGameResult', {
+			username: body.username,
+			status: 'approved',
+		});
+		const invitation = this.invitationList.find(elem => elem.from = body.username);
+		invitation.status = 'decline';
 	}
 
 	async enrollQueue(client: Socket, body: any) {
@@ -196,7 +334,8 @@ export class GameService {
 		});
 		await this.gameRoomUserRepository.save(newGmaeRoomUser);
 
-		// 게임룸 상태 업데이트
+		const room = this.rooms.find(elem => elem.roomId === game.id);
+		room.spectator.push(user.name);
 	}
 
 	async exitGameRoom(client: Socket, body: any) {
@@ -211,11 +350,25 @@ export class GameService {
 		const gameRoomUser = await this.findRoomUser(game.id, user);
 		await this.gameRoomUserRepository.remove(gameRoomUser);
 
+		await this.userService.updateStatus(user.name, UserStatus.LOGIN);
+
 		//게임룸 상태 업데이트
+		const room = this.rooms.find(room => room.roomId === game.id);
+
+		if (room.redUser === user.name) { //레드가 나가면
+			room.blueScore = 5;
+		} else if (room.blueUser === user.name) { // 블루가 나가면
+			room.redScore = 5;
+		} else { // 관전자가 나가면
+			let index = room.spectator.findIndex(elem => elem === user.name);
+			if (index !== -1) room.spectator.splice(index, 1);
+		}
+
 	}
 
 	async updateGameRoomList(client: Socket) {
 		const list: {
+			roomId: number,
 			rule: string,
 			red: string,
 			blue: string,
@@ -224,6 +377,7 @@ export class GameService {
 		const games = await this.findAll();
 		for (const game of games) {
 			list.push({
+				roomId: game.id,
 				rule: game.rule,
 				red: await this.findRed(game.id),
 				blue: await this.findBlue(game.id),
@@ -278,7 +432,38 @@ export class GameService {
 			winner: winner,
 			time: new Date(Date.now()),
 		});
+
+		if (winner === 'red') {
+			await this.userService.win(game.redUser);
+			await this.userService.lose(game.blueUser);
+			if (game.rule === Rule.RANK) {
+				await this.userService.plus(game.redUser);
+				await this.userService.minus(game.blueUser);
+			}
+		} else {
+			await this.userService.win(game.blueUser);
+			await this.userService.lose(game.redUser);
+			if (game.rule === Rule.RANK) {
+				await this.userService.plus(game.redUser);
+				await this.userService.minus(game.blueUser);
+			}
+		}
 		await this.gameHistoryRepository.save(newHistory);
+
+
+		const gameRoom = await this.findOne(game.roomId);
+		// 나가기 처리
+		const roomUsers = await this.gameRoomUserRepository.find({
+			where: {
+				room: gameRoom
+			},
+		});
+
+		for (const roomUser of roomUsers) {
+			await this.gameRoomUserRepository.remove(roomUser);
+		}
+		await this.gameRoomRepository.remove(gameRoom);
+
 	}
 
 	initGame(game: status) {
@@ -292,9 +477,10 @@ export class GameService {
 			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * -10);
 	}
 
-	play(id: number, red: string, blue: string) {
+	play(id: number, rule: string, red: string, blue: string) {
 		const game: status = {
 			playing: true,
+			rule: rule,
 			roomId: id,
 			ballX: 270,
 			ballY: 180,
@@ -361,7 +547,7 @@ export class GameService {
 		if (role === 'red') room.redPaddleY -= 10;
 		if (role === 'blue') room.bluePaddleY -= 10; 
 	}
-	
+
 	down(id: number, role: string) {
 		const room = this.rooms.find(elem => elem.roomId === id);
 		if (room.redPaddleY >= 280) return;
@@ -370,7 +556,6 @@ export class GameService {
 		if (role === 'blue') room.bluePaddleY += 10;
 	}
 
-	
 
 
 
@@ -421,14 +606,15 @@ export class GameService {
 					status: 'match',
 					roomId: newGame.id,
 				})
-
+				await this.userService.updateStatus(user1.name, UserStatus.GAMING);
+				await this.userService.updateStatus(user2.name, UserStatus.GAMING);
 				let clients = await this.wsGateway.server.in('gameRoomList').fetchSockets();
 				for (const elem of clients) {
 					let elemCLient = await this.wsService.findClient(undefined, elem.id);
 					this.updateGameRoomList(elemCLient);
 				}
 
-				this.play(newGame.id, user1.name, user2.name);
+				this.play(newGame.id, newGame.rule, user1.name, user2.name);
 			} 
 			
 			if (this.normal.length > 1) {
@@ -468,12 +654,14 @@ export class GameService {
 					roomId: newGame.id,
 				})
 
+				await this.userService.updateStatus(user1.name, UserStatus.GAMING);
+				await this.userService.updateStatus(user2.name, UserStatus.GAMING);
 				let clients = await this.wsGateway.server.in('gameRoomList').fetchSockets();
 				for (const elem of clients) {
 					let elemCLient = await this.wsService.findClient(undefined, elem.id);
 					this.updateGameRoomList(elemCLient);
 				}
-				this.play(newGame.id, user1.name, user2.name);
+				this.play(newGame.id, newGame.rule, user1.name, user2.name);
 			}
 
 			if (this.arcade.length > 1) {
@@ -513,12 +701,14 @@ export class GameService {
 					roomId: newGame.id,
 				})
 
+				await this.userService.updateStatus(user1.name, UserStatus.GAMING);
+				await this.userService.updateStatus(user2.name, UserStatus.GAMING);
 				let clients = await this.wsGateway.server.in('gameRoomList').fetchSockets();
 				for (const elem of clients) {
 					let elemCLient = await this.wsService.findClient(undefined, elem.id);
 					this.updateGameRoomList(elemCLient);
 				}
-				this.play(newGame.id, user1.name, user2.name);
+				this.play(newGame.id, newGame.rule, user1.name, user2.name);
 			}
 
 			for (const user of this.rank) {

@@ -16,6 +16,7 @@ export class UserController {
 		private authService: AuthService,
 	) {}
 
+
 	// @UseGuards(AuthGuard('jwt'))
 	@UseGuards(TempJwtGuard)
 	@Get('profile/:name')
@@ -31,7 +32,6 @@ export class UserController {
 			})
 		}
 	}
-
 
 	// @UseGuards(AuthGuard('jwt'))
 	@UseGuards(TempJwtGuard)

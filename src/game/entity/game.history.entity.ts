@@ -17,7 +17,6 @@ export class GameHistory {
 	@Column()
 	time: Date;
 
-
 	@Column()
 	winner: string;
 }

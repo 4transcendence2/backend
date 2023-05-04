@@ -8,6 +8,8 @@ const bcrypt = require('bcrypt');
 import { join } from 'path';
 import { UserFriend } from './entity/user.friend';
 import { WsService } from 'src/ws/ws.service';
+import { GameService } from 'src/game/game.service';
+import { UserStatus } from './user.status';
 const fs = require('fs');
 
 @Injectable()
@@ -21,6 +23,11 @@ export class UserService {
 
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
+
+		@Inject(forwardRef(() => GameService))
+		private gameService: GameService,
+
+
 
 	) {}
 
@@ -56,6 +63,22 @@ export class UserService {
 			relation = await this.isFriend(requesterName, name) ? 'friend' : 'others';
 		}
 
+		const gameHistory = await this.gameService.findHistory(user);
+
+		let list: {
+			red: string,
+			blue: string,
+			winner: string,
+		}[] = [];
+
+		for(const history of gameHistory) {
+			list.push({
+				red: history.red.name,
+				blue: history.blue.name,
+				winner: history.winner,
+			})
+		}
+
 		return ({
 			"username": user.name,
 			"status": user.status,
@@ -63,7 +86,7 @@ export class UserService {
 			"win": user.win,
 			"lose": user.lose,
 			"relation": relation,
-			// game history 추가 필요.
+			"gameHistory": list,
 		})
 
 	}
@@ -94,6 +117,11 @@ export class UserService {
 
 	async isExist(username: string): Promise<boolean> {
 		return await this.findOne(username) === null ? false : true;
+	}
+
+	async isGaming(name: string, client?: Socket): Promise<boolean> {
+		const user = client === undefined ? await this.findOne(name) : await this.findOne(await this.wsService.findName(client));
+		return user.status === UserStatus.GAMING ? true : false;
 	}
 
 	async updateStatus(name: string, status: string) {
@@ -182,5 +210,28 @@ export class UserService {
 		const res = friends.find(elem => elem.to.id === toUser.id);
 
 		return res !== undefined ? true : false;
+	}
+
+	async win(name: string) {
+		const user = await this.findOne(name);
+		user.win++;
+		await this.usersRepository.save(user);
+	}
+
+	async lose(name: string) {
+		const user = await this.findOne(name);
+		user.lose++;
+		await this.usersRepository.save(user);
+	}
+	
+	async plus(name: string) {
+		const user = await this.findOne(name);
+		user.rating += 20;
+		await this.usersRepository.save(user);
+	}
+	async minus(name: string) {
+		const user = await this.findOne(name);
+		user.rating -= 20;
+		await this.usersRepository.save(user);
 	}
 }

@@ -1366,6 +1366,11 @@ export class SearchGameGuard implements CanActivate {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
+		
+		if (this.gameSerivce.invitationList.find(elem => elem.fromClient === client) !== undefined) {
+			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
+			return false;
+		}
 
 		return true;
 	}
@@ -1429,10 +1434,122 @@ export class CancleSearchGuard implements CanActivate {
 			}
 		}
 
+		if (this.gameSerivce.invitationList.find(elem => elem.fromClient === client) !== undefined) {
+			this.wsService.result('cancleSearchResult', client, 'error', '게임 신청한 유저가 하닙니다.');
+			return false;
+		}
+
 		return true;
 	}
 }
 
+@Injectable()
+export class InviteGameGuard implements CanActivate {
+	constructor(
+
+		@Inject(forwardRef(() => UserService))
+		private userService: UserService,
+
+		@Inject(forwardRef(() => WsService))
+		private wsService: WsService,
+
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.wsService.result('inviteGameResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.wsService.result('inviteGameResult', client, 'error', 'username 프로퍼티가 없습니다.');
+			return false;
+		}
+		
+		// Rule 프로퍼티 확인
+		if (body.rule === undefined) {
+			this.wsService.result('inviteGameResult', client, 'error', 'rule 프로퍼티가 없습니다.');
+			return false;
+		}
+		
+		// 유효한 rule인지 확인
+		if (body.rule !== Rule.ARCADE && body.rule !== Rule.NORMAL && body.rule !== Rule.RANK) {
+			this.wsService.result('inviteGameResult', client, 'error', '유효한 rule 프로퍼티가 아닙니다.');
+			return false;
+		}
+		
+		// 존재하는 상대방인지 확인
+		if (!await this.userService.isExist(body.username)) {
+			this.wsService.result('inviteGameResult', client, 'error', '존재하지 않는 대상입니다.', undefined, body.roomId);
+			return false;
+		}
+
+		// 상대방이 로그인 중인지
+		if (!await this.wsService.isLogin(undefined, body.username)) {
+			this.wsService.result('inviteGameResult', client, 'warning', '상대방이 로그아웃 상태입니다.', undefined, body.roomId);
+			return false;
+		}
+
+		// 초대자가 게임중인지 확인
+		if (await this.userService.isGaming(undefined, client)) {
+			this.wsService.result('inviteGameResult', client, 'wanring', '게임중에는 다른 처리를 할 수 없습니다..', undefined, body.roomId);
+			return false;
+		}
+
+		// 상대방이 게임중인지 확인
+		if (await this.userService.isGaming(body.username)) {
+			this.wsService.result('inviteGameResult', client, 'warning', '상대방이 게임중입니다.', undefined, body.roomId);
+			return false;
+		}
+
+		return true;
+	}
+}
+
+@Injectable()
+export class acceptGameGuard implements CanActivate {
+	constructor(
+
+		@Inject(forwardRef(() => UserService))
+		private userService: UserService,
+
+		@Inject(forwardRef(() => GameService))
+		private gameService: GameService,
+
+		@Inject(forwardRef(() => WsService))
+		private wsService: WsService,
+
+	) {}
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.wsService.result('acceptGameResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.wsService.result('acceptGameResult', client, 'error', 'username 프로퍼티가 없습니다.');
+			return false;
+		}
+		
+		// 유효한 초대인지 확인
+		const invitation = this.gameService.invitationList.find(elem => elem.from === body.username);
+		if (invitation === undefined || invitation.to !== await this.wsService.findName(client)) {
+			this.wsService.result('acceptGameResult', client, 'error', '초대받은 유저가 아닙니다.');
+			return false;
+		}
+
+		return true;
+	}
+}
 
 
 @Injectable()
@@ -1478,6 +1595,8 @@ export class JoinGameRoomGuard implements CanActivate {
 		return true;
 	}
 }
+
+
 @Injectable()
 export class ExitGameRoomGuard implements CanActivate {
 	constructor(
@@ -1519,6 +1638,9 @@ export class ExitGameRoomGuard implements CanActivate {
 		return true;
 	}
 }
+
+
+
 
 
 
