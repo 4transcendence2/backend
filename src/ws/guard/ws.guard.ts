@@ -822,12 +822,16 @@ export class SubscribeGuard implements CanActivate {
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
-		
+
 		this.wsService.queue.push({
 			client: client,
 			type: 'sub',
 			detail: body.type,
 		});
+		if (body.Type === Type.GAME_ROOM) {
+			console.log(body.roomId);
+			console.log(await this.gameService.isExist(body.roomId));
+		}
 		// console.log(this.wsService.queue[0].detail, this.wsService.queue[0].type)
 		// if (body.type === 'chatRoom') console.log('guard sub');
 		// console.log(new Date(Date.now()), 'sub gura');
@@ -839,7 +843,7 @@ export class SubscribeGuard implements CanActivate {
 			this.wsService.result('subscribeResult', client, 'error', '전달받은 데이터가 없습니다.')
 			this.wsService.queue.pop();
 			this.wsService.queueLen--;
-		return false;
+			return false;
 		}
 
 		// type 프로퍼티 확인
@@ -890,8 +894,8 @@ export class SubscribeGuard implements CanActivate {
 			return false;
 		}
 
-		// game id 유효성 검사
-		if (body.Type === Type.GAME_ROOM && !await this.gameService.isExist(body.roomId)) {
+		// 게임 roomId 유효성 검사
+		if (body.type === Type.GAME_ROOM && !await this.gameService.isExist(body.roomId)) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
 			this.wsService.queue.pop();
 			this.wsService.queueLen--;
@@ -988,14 +992,14 @@ export class UnsubscribeGuard implements CanActivate {
 
 			if (!await this.dmService.isExist(user1, user2)) {
 				this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
-			return false;
+				this.wsService.queue.pop();
+				this.wsService.queueLen--;
+				return false;
 			}
 		}
 
 		// game id 유효성 검사
-		if (body.Type === Type.GAME_ROOM && !(await this.gameService.isExist(body.roomId))) {
+		if (body.type === Type.GAME_ROOM && !(await this.gameService.isExist(body.roomId))) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
 			this.wsService.queue.pop();
 			this.wsService.queueLen--;
@@ -1042,7 +1046,7 @@ export class InviteChatGuard implements CanActivate {
 			this.wsService.result('inviteChatResult', client, 'error', 'roomId 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
 			this.wsService.result('inviteChatResult', client, 'error', 'username 프로퍼티가 없습니다.');
@@ -1150,7 +1154,7 @@ export class ExitDmGuard implements CanActivate {
 			this.wsService.result('exitDmResult', client, 'error', '존재하지 않는 대상입니다.');
 			return false;
 		}
-		
+
 		const user1 = await this.userService.findOne(await this.wsService.findName(client));
 		const user2 = await this.userService.findOne(body.username);
 		const dm = await this.dmService.findOne(user1, user2);
@@ -1366,7 +1370,7 @@ export class SearchGameGuard implements CanActivate {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
-		
+
 		if (this.gameSerivce.invitationList.find(elem => elem.fromClient === client) !== undefined) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
@@ -1453,7 +1457,7 @@ export class InviteGameGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1469,19 +1473,19 @@ export class InviteGameGuard implements CanActivate {
 			this.wsService.result('inviteGameResult', client, 'error', 'username 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// Rule 프로퍼티 확인
 		if (body.rule === undefined) {
 			this.wsService.result('inviteGameResult', client, 'error', 'rule 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// 유효한 rule인지 확인
 		if (body.rule !== Rule.ARCADE && body.rule !== Rule.NORMAL && body.rule !== Rule.RANK) {
 			this.wsService.result('inviteGameResult', client, 'error', '유효한 rule 프로퍼티가 아닙니다.');
 			return false;
 		}
-		
+
 		// 존재하는 상대방인지 확인
 		if (!await this.userService.isExist(body.username)) {
 			this.wsService.result('inviteGameResult', client, 'error', '존재하지 않는 대상입니다.', undefined, body.roomId);
@@ -1523,7 +1527,7 @@ export class acceptGameGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
-	) {}
+	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
@@ -1539,7 +1543,7 @@ export class acceptGameGuard implements CanActivate {
 			this.wsService.result('acceptGameResult', client, 'error', 'username 프로퍼티가 없습니다.');
 			return false;
 		}
-		
+
 		// 유효한 초대인지 확인
 		const invitation = this.gameService.invitationList.find(elem => elem.from === body.username);
 		if (invitation === undefined || invitation.to !== await this.wsService.findName(client)) {
@@ -1585,6 +1589,7 @@ export class JoinGameRoomGuard implements CanActivate {
 			this.wsService.result('joinGameRoomResult', client, 'error', '존재하지 않는 방입니다.', undefined, body.roomId);
 			return false;
 		}
+
 
 		// 이미 해당 방에 참여중인 유저인지
 		if (await this.gameSerivce.isExistUser(body.roomId, client)) {

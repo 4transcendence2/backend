@@ -405,7 +405,6 @@ export class GameService {
 		// 	console.log(elemName);
 		// }
 
-		console.log(winner);
 		if (winner === 'red') {
 			redClient.emit('message', {
 				type: 'win',
@@ -523,7 +522,6 @@ export class GameService {
 			if (game.playing === false) {
 				clearInterval(intervalId);
 				// 게임 종료 이벤트, 결과 등록 및 히스토리 등록 등등
-				console.log('??');
 				await this.sendResult(game);
 				await this.saveHistory(game);
 				return;
