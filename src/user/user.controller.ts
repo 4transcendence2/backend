@@ -13,7 +13,6 @@ require('dotenv').config();
 export class UserController {
 	constructor(
 		private userService: UserService,
-		private authService: AuthService,
 	) {}
 
 
