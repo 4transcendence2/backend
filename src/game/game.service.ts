@@ -396,7 +396,15 @@ export class GameService {
 		const redClient = await this.wsService.findClient(game.redUser);
 		const blueClient = await this.wsService.findClient(game.blueUser);
 		const winner = game.redScore === 5 ? 'red' : 'blue';
-
+		
+		// let clients = await this.wsGateway.server.in('gameRoom' + game.roomId).fetchSockets();
+		// console.log('redName:', await this.wsService.findName(redClient));
+		// console.log('blueName:', await this.wsService.findName(blueClient));
+		// for (const elem of clients) {
+		// 	let elemName = await this.wsService.findName(undefined, elem.id);
+		// 	console.log(elemName);
+		// }
+		console.log(winner);
 		if (winner === 'red') {
 			redClient.emit('message', {
 				type: 'win',
@@ -505,12 +513,14 @@ export class GameService {
 			spectator: [],
 		};
 		this.rooms.push(game);
-		let intervalId = setInterval(() => {
+		let intervalId = setInterval(async () => {
 			if (game.playing === false) {
 				clearInterval(intervalId);
 				// 게임 종료 이벤트, 결과 등록 및 히스토리 등록 등등
-				this.sendResult(game);
-				this.saveHistory(game);
+				console.log('??');
+				await this.sendResult(game);
+				await this.saveHistory(game);
+				return;
 			}
 			game.ballX += game.dx;
 			game.ballY += game.dy;
@@ -532,7 +542,6 @@ export class GameService {
 					} else { // 블루 승리
 						game.blueScore++;
 					}
-
 
 					this.initGame(game);
 				}
