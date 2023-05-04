@@ -98,7 +98,7 @@ export class User {
 	phone: string;
 
 	@Column({
-		nullable: false,
+		nullable: true,
 	})
 	intra_id: string
 }
