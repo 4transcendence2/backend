@@ -891,7 +891,7 @@ export class SubscribeGuard implements CanActivate {
 		}
 
 		// game id 유효성 검사
-		if (body.Type === Type.GAME_ROOM && !(await this.gameService.isExist(body.roomId))) {
+		if (body.Type === Type.GAME_ROOM && !await this.gameService.isExist(body.roomId)) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
 			this.wsService.queue.pop();
 			this.wsService.queueLen--;

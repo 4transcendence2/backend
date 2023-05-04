@@ -404,6 +404,7 @@ export class GameService {
 		// 	let elemName = await this.wsService.findName(undefined, elem.id);
 		// 	console.log(elemName);
 		// }
+
 		console.log(winner);
 		if (winner === 'red') {
 			redClient.emit('message', {
@@ -411,7 +412,7 @@ export class GameService {
 				roomId: game.roomId,
 			})
 			blueClient.emit('message', {
-				type: 'lost',
+				type: 'lose',
 				roomId: game.roomId,
 			})
 		} else {
