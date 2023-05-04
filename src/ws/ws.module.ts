@@ -10,6 +10,7 @@ import { ChatRoom } from 'src/chat/entity/chat.room.entity';
 import { UserModule } from 'src/user/user.module';
 import { Dm } from 'src/dm/entity/dm.entity';
 import { DmModule } from 'src/dm/dm.module';
+import { GameRoomUser } from 'src/game/entity/game.room.user.entity';
 
 @Module({
 	imports: [

@@ -338,6 +338,7 @@ export class GameService {
 		room.spectator.push(user.name);
 	}
 
+
 	async exitGameRoom(client: Socket, body: any) {
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 		const game = await this.findOne(body.roomId);
@@ -354,6 +355,7 @@ export class GameService {
 
 		//게임룸 상태 업데이트
 		const room = this.rooms.find(room => room.roomId === game.id);
+
 
 		if (room.redUser === user.name) { //레드가 나가면
 			room.blueScore = 5;
@@ -431,6 +433,7 @@ export class GameService {
 			blue: blueUser,
 			winner: winner,
 			time: new Date(Date.now()),
+			rule: game.rule,
 		});
 
 		if (winner === 'red') {
@@ -512,6 +515,11 @@ export class GameService {
 			game.ballX += game.dx;
 			game.ballY += game.dy;
 
+			if (game.redScore === 5 || game.blueScore === 5) {
+				game.playing = false;
+				return;
+			}
+
 			if (game.ballY + game.dy < game.ballRadius || game.ballY + game.dy > 350) game.dy *= -1;
 
 			if (game.ballX + game.dx < game.ballRadius || game.ballX + game.dx > 530) {
@@ -525,9 +533,6 @@ export class GameService {
 						game.blueScore++;
 					}
 
-					if (game.redScore === 5 || game.blueScore === 5) {
-						game.playing = false;
-					}
 
 					this.initGame(game);
 				}

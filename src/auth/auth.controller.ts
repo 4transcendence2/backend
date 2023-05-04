@@ -22,13 +22,16 @@ export class AuthController {
 		private tempJwtService: TempJwtService,
 		private jwtService: JwtService,
 		private signupJwtService: SignupJwtService,
-
 		private userService: UserService,
 		
-		@InjectRepository(User)
-		private usersRepository: Repository<User>,
 	) {}
 
+
+	// 42 OAuth통해, 아이디가 존재하는지 없는지 확인.
+	@Post('oauth')
+	async oauth(@Request() req) {
+
+	}
 
 	//아이디 비번 확인 후, TempJwt 토큰을 발행
 	@UseGuards(AuthGuard('local'))

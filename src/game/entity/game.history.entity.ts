@@ -19,4 +19,7 @@ export class GameHistory {
 
 	@Column()
 	winner: string;
+
+	@Column()
+	rule: string;
 }

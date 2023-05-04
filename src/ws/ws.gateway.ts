@@ -349,15 +349,16 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		this.joinGameRoom(client, body);
 	}
 
+
 	/*
-		exitGameROom
+		exitGameRoom
 	*/
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
 	@UseGuards(ExitGameRoomGuard)
 	@SubscribeMessage('exitGameRoom')
 	async exitGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.exitGameRoom(client, body);
+		await this.gameService.exitGameRoom(client, body);
 	}
 
 
@@ -369,7 +370,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(InviteGameGuard)
 	@SubscribeMessage('inviteGame')
 	async inviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.inviteGame(client, body);
+		this.gameService.inviteGame(client, body);
 	}
 
 
