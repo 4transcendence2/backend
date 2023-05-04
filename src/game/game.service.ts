@@ -232,6 +232,15 @@ export class GameService {
 		});
 	}
 
+	initGame(game: status) {
+			game.ballX = 270;
+			game.ballY = 180;
+			game.redPaddleX = 0;
+			game.redPaddleY = 140;
+			game.bluePaddleX = 530;
+			game.bluePaddleY = 140;
+	}
+
 	play(id: number, red: string, blue: string) {
 		const game: status = {
 			playing: true,
@@ -285,12 +294,16 @@ export class GameService {
 
 	up(id: number, role: string) {
 		const room = this.rooms.find(elem => elem.roomId === id);
+		if (room.redPaddleY <= 0) return;
+		if (room.bluePaddleY <= 0) return;
 		if (role === 'red') room.redPaddleY -= 10;
 		if (role === 'blue') room.bluePaddleY -= 10; 
 	}
-
+	
 	down(id: number, role: string) {
 		const room = this.rooms.find(elem => elem.roomId === id);
+		if (room.redPaddleY >= 280) return;
+		if (room.bluePaddleY >= 280) return;
 		if (role === 'red') room.redPaddleY += 10;
 		if (role === 'blue') room.bluePaddleY += 10;
 	}
