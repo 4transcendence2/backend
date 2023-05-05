@@ -181,6 +181,11 @@ export class WsService {
 		if (body.type === Type.CHAT_INVITATION) {
 			await client.join('chatInvitation');
 		}
+
+		// gameInvitation
+		if (body.type === Type.GAME_INVITATION) {
+			await client.join('gameInvitation');
+		}
 	}
 
 
@@ -227,6 +232,11 @@ export class WsService {
 			// chatInvitation
 			if (body.type === Type.CHAT_INVITATION) {
 				await client.leave('chatInvitation');
+			}
+
+			// gameInvitation
+			if (body.type === Type.GAME_INVITATION) {
+				await client.leave('gameInvitation');
 			}
 	}
 

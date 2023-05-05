@@ -176,6 +176,9 @@ export class GameService {
 					username: to.name,
 					status: 'decline',
 				});
+				let index = this.invitationList.findIndex(elem => elem.from === from.name);
+				this.invitationList.splice(index, 1);
+				return;
 			}
 
 			if (invitation.status === 'accept') {
@@ -216,6 +219,7 @@ export class GameService {
 					this.updateGameRoomList(elemCLient);
 				}
 				this.play(newGame.id, newGame.rule, from.name, to.name);
+				return;
 			}
 
 			if (invitation.status === 'decline') {
@@ -226,6 +230,7 @@ export class GameService {
 				});
 				let index = this.invitationList.findIndex(elem => elem.from === from.name);
 				this.invitationList.splice(index, 1);
+				return;
 			}
 
 			invitation.timer++;
@@ -234,7 +239,7 @@ export class GameService {
 				status: 'waiting'
 			});
 		}, 1000)
-		
+
 		let clients = await this.wsGateway.server.in('gameInvitation').fetchSockets();
 		for (const elem of clients) {
 			let elemName = await this.wsService.findName(undefined, elem.id);
