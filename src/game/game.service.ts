@@ -570,17 +570,21 @@ export class GameService {
 			if (rule === Rule.ARCADE) {
 				if (game.ball2Y + game.dy2 < game.ball2Radius || game.ball2Y + game.dy2 > 350) game.dy2 *= -1;
 
-				if (game.ball2X + game.dx2 < game.ball2Radius || game.ball2X + game.dx2 > 530) {
-	
-					if ((game.redPaddleY < game.ball2Y && game.ball2Y < game.redPaddleY + game.redPaddleHeight) || (game.bluePaddleY < game.ball2Y && game.ball2Y < game.bluePaddleY + game.bluePaddleHeight))
+				if (game.ball2X + game.dx2 < game.ball2Radius) {
+				
+					if (game.redPaddleY < game.ball2Y && game.ball2Y < game.redPaddleY + game.redPaddleHeight) // 레드 사이드
 						game.dx2 *= -1;
 					else {
-						if (game.ball2X > 270) { // 레드 승리
-							game.redScore++;
-						} else { // 블루 승리
-							game.blueScore++;
-						}
+						game.blueScore++;
+						this.initGame(game);
+					}
+				}
 	
+				if (game.ball2X + game.dx2 > 530) { // 블루 사이드
+					if (game.bluePaddleY < game.ball2Y && game.ball2Y < game.bluePaddleY + game.bluePaddleHeight)
+						game.dx2 *= -1;
+					else {
+						game.redScore++;
 						this.initGame(game);
 					}
 				}
@@ -588,17 +592,21 @@ export class GameService {
 
 			if (game.ballY + game.dy < game.ballRadius || game.ballY + game.dy > 350) game.dy *= -1;
 
-			if (game.ballX + game.dx < game.ballRadius || game.ballX + game.dx > 530) {
-
-				if ((game.redPaddleY < game.ballY && game.ballY < game.redPaddleY + game.redPaddleHeight) || (game.bluePaddleY < game.ballY && game.ballY < game.bluePaddleY + game.bluePaddleHeight))
+			if (game.ballX + game.dx < game.ballRadius) {
+				
+				if (game.redPaddleY < game.ballY && game.ballY < game.redPaddleY + game.redPaddleHeight) // 레드 사이드
 					game.dx *= -1;
 				else {
-					if (game.ballX > 270) { // 레드 승리
-						game.redScore++;
-					} else { // 블루 승리
-						game.blueScore++;
-					}
+					game.blueScore++;
+					this.initGame(game);
+				}
+			}
 
+			if (game.ballX + game.dx > 530) { // 블루 사이드
+				if (game.bluePaddleY < game.ballY && game.ballY < game.bluePaddleY + game.bluePaddleHeight)
+					game.dx *= -1;
+				else {
+					game.redScore++;
 					this.initGame(game);
 				}
 			}
@@ -614,27 +622,34 @@ export class GameService {
 	up(id: number, role: string) {
 		const room = this.rooms.find(elem => elem.roomId === id);
 
-		if (room.redPaddleY <= 0)
-			return;
+		if (role === 'red') {
+			if (room.redPaddleY <= 0)
+				return;
+			room.redPaddleY -= 10;
+		}
 
-		if (room.bluePaddleY <= 0)
-			return;
+		if (role === 'blue') {
+			if (room.bluePaddleY <= 0)
+				return;
+			room.bluePaddleY -= 10; 
+		}
 
-		if (role === 'red') room.redPaddleY -= 10;
-		if (role === 'blue') room.bluePaddleY -= 10; 
 	}
 
 	down(id: number, role: string) {
 		const room = this.rooms.find(elem => elem.roomId === id);
 
-		if (room.redPaddleY >= 280)
-			return;
+		if (role === 'red') {
+			if (room.redPaddleY >= 280)
+				return;
+			room.redPaddleY += 10;
+		}
 
-		if (room.bluePaddleY >= 280)
-			return;
-
-		if (role === 'red') room.redPaddleY += 10;
-		if (role === 'blue') room.bluePaddleY += 10;
+		if (role === 'blue') {
+			if (room.bluePaddleY >= 280)
+				return;
+			room.bluePaddleY += 10;
+		}
 	}
 
 

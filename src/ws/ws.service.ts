@@ -135,7 +135,6 @@ export class WsService {
 			this.chatService.updateChatRoom(client, body.roomId);
 			this.chatService.updateBlockList(body.roomId, await this.findName(client), client);
 			this.chatService.sendHistory(client, body);
-			// console.log('sub');
 		}
 
 
