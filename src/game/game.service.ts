@@ -52,6 +52,7 @@ interface status {
 interface invitation {
 	fromClient: Socket,
 	from: string,
+	toClient: Socket,
 	to: string,
 	rule: string,
 	status: string,
@@ -165,6 +166,7 @@ export class GameService {
 		const invitation: invitation = {
 			fromClient: client,
 			from: from.name,
+			toClient: null,
 			to: to.name,
 			rule: body.rule,
 			status: 'waiting',
@@ -201,6 +203,12 @@ export class GameService {
 					status: 'accept',
 					roomId: newGame.id,
 				});
+
+				invitation.toClient.emit('acceptGameResult', {
+					username: body.username,
+					status: 'approved',
+					roomId: newGame.id,
+				})
 
 				let newGameUser1 = this.gameRoomUserRepository.create({
 					room: newGame,
@@ -261,12 +269,13 @@ export class GameService {
 	}
 
 	async acceptGame(client: Socket, body: any) {
-		client.emit('acceptGameResult', {
-			username: body.username,
-			status: 'approved',
-		});
+		// client.emit('acceptGameResult', {
+		// 	username: body.username,
+		// 	status: 'approved',
+		// });
 		const invitation = this.invitationList.find(elem => elem.from = body.username);
 		invitation.status = 'accept';
+		invitation.toClient = client;
 	}
 	
 	async declineGame(client: Socket, body: any) {

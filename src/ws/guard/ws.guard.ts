@@ -1467,6 +1467,9 @@ export class InviteGameGuard implements CanActivate {
 		@Inject(forwardRef(() => WsService))
 		private wsService: WsService,
 
+		@Inject(forwardRef(() => GameService))
+		private gameService: GameService,
+
 	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
@@ -1493,6 +1496,14 @@ export class InviteGameGuard implements CanActivate {
 		// 유효한 rule인지 확인
 		if (body.rule !== Rule.ARCADE && body.rule !== Rule.NORMAL && body.rule !== Rule.RANK) {
 			this.wsService.result('inviteGameResult', client, 'error', '유효한 rule 프로퍼티가 아닙니다.');
+			return false;
+		}
+
+		// 이미 초대 신청 중인지
+		const name = await this.wsService.findName(client);
+		const invitation = this.gameService.invitationList.find(elem => elem.from === name);
+		if (invitation !== undefined) {
+			this.wsService.result('inviteGameResult', client, 'warning', '이미 게임 신청 중입니다.');
 			return false;
 		}
 
