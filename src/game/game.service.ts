@@ -26,9 +26,14 @@ interface status {
 	rule: string,
 	ballX: number,
 	ballY: number,
+	ball2X: number | null,
+	ball2Y: number | null,
 	ballRadius: number,
+	ball2Radius: number | null,
 	dx: number,
 	dy: number,
+	dx2: number | null,
+	dy2: number | null,
 	redUser: string,
 	redPaddleX: number,
 	redPaddleY: number,
@@ -401,14 +406,6 @@ export class GameService {
 		const redClient = await this.wsService.findClient(game.redUser);
 		const blueClient = await this.wsService.findClient(game.blueUser);
 		const winner = game.redScore === 5 ? 'red' : 'blue';
-		
-		// let clients = await this.wsGateway.server.in('gameRoom' + game.roomId).fetchSockets();
-		// console.log('redName:', await this.wsService.findName(redClient));
-		// console.log('blueName:', await this.wsService.findName(blueClient));
-		// for (const elem of clients) {
-		// 	let elemName = await this.wsService.findName(undefined, elem.id);
-		// 	console.log(elemName);
-		// }
 
 		if (winner === 'red') {
 			redClient.emit('message', {
@@ -485,6 +482,8 @@ export class GameService {
 		}
 		await this.gameRoomRepository.remove(gameRoom);
 
+		this.userService.updateStatus(redUser.name, UserStatus.LOGIN);
+		this.userService.updateStatus(blueUser.name, UserStatus.LOGIN);
 	}
 
 	initGame(game: status) {
@@ -496,6 +495,11 @@ export class GameService {
 			game.bluePaddleY = 140;
 			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5;
 			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3;
+			game.ball2X = game.rule === Rule.ARCADE ? 270 : null;
+			game.ball2Y = game.rule === Rule.ARCADE ? 180 : null;
+			game.ball2Radius = game.rule === Rule.ARCADE ? 10 : null;
+			game.dx2 = game.rule === Rule.ARCADE ? Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5 : null;
+			game.dy2 = game.rule === Rule.ARCADE ? Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3 : null;
 	}
 
 	play(id: number, rule: string, red: string, blue: string) {
@@ -505,9 +509,14 @@ export class GameService {
 			roomId: id,
 			ballX: 270,
 			ballY: 180,
+			ball2X: rule === Rule.ARCADE ? 270 : null,
+			ball2Y: rule === Rule.ARCADE ? 180 : null,
 			ballRadius: 10,
+			ball2Radius: rule === Rule.ARCADE ? 10 : null,
 			dx: Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5,
 			dy: Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3,
+			dx2: rule === Rule.ARCADE ? Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5 : null,
+			dy2: rule === Rule.ARCADE ? Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3 : null,
 			redUser: red,
 			redPaddleX: 0,
 			redPaddleY: 140,
@@ -534,12 +543,37 @@ export class GameService {
 			game.ballX += game.dx;
 			game.ballY += game.dy;
 
+			if (rule === Rule.ARCADE) {
+				game.ball2X += game.dx2;
+				game.ball2Y += game.dy2;
+			}
+
 			if (game.redScore === 5 || game.blueScore === 5) {
 				game.playing = false;
 				return;
 			}
 
 			if (game.ballY + game.dy < game.ballRadius || game.ballY + game.dy > 350) game.dy *= -1;
+
+			if (rule === Rule.ARCADE) {
+				if (game.ball2Y + game.dy2 < game.ball2Radius || game.ball2Y + game.dy2 > 350) game.dy2 *= -1;
+
+				if (game.ball2X + game.dx2 < game.ball2Radius || game.ball2X + game.dx2 > 530) {
+	
+					if ((game.redPaddleY < game.ball2Y && game.ball2Y < game.redPaddleY + game.redPaddleHeight) || (game.bluePaddleY < game.ball2Y && game.ball2Y < game.bluePaddleY + game.bluePaddleHeight))
+						game.dx2 *= -1;
+					else {
+						if (game.ball2X > 270) { // 레드 승리
+							game.redScore++;
+						} else { // 블루 승리
+							game.blueScore++;
+						}
+	
+						this.initGame(game);
+					}
+				}
+			}
+
 
 			if (game.ballX + game.dx < game.ballRadius || game.ballX + game.dx > 530) {
 
@@ -555,6 +589,7 @@ export class GameService {
 					this.initGame(game);
 				}
 			}
+
 
 			this.wsGateway.server.to('gameRoom' + game.roomId).emit('message', {
 				type: 'game',

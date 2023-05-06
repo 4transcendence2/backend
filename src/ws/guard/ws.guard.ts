@@ -1409,7 +1409,7 @@ export class CancleSearchGuard implements CanActivate {
 		}
 
 		// rule 유효성 확인
-		if (!Object.values(Rule).includes(body.type)) {
+		if (!Object.values(Rule).includes(body.rule)) {
 			this.wsService.result('cancleSearchResult', client, 'error', '올바른 rule이 아닙니다. rank, normal, arcade 셋 중 하나를 입력해주세요.');
 			return false;
 		}
@@ -1515,7 +1515,7 @@ export class InviteGameGuard implements CanActivate {
 }
 
 @Injectable()
-export class acceptGameGuard implements CanActivate {
+export class AcceptGameGuard implements CanActivate {
 	constructor(
 
 		@Inject(forwardRef(() => UserService))
@@ -1534,26 +1534,77 @@ export class acceptGameGuard implements CanActivate {
 
 		// body 데이터 확인
 		if (body === undefined) {
-			this.wsService.result('acceptGameResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			this.wsService.result('declineGameResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
 			return false;
 		}
 
 		// username 프로퍼티 확인
 		if (body.username === undefined) {
-			this.wsService.result('acceptGameResult', client, 'error', 'username 프로퍼티가 없습니다.');
+			this.wsService.result('declineGameResult', client, 'error', 'username 프로퍼티가 없습니다.');
 			return false;
 		}
 
 		// 유효한 초대인지 확인
 		const invitation = this.gameService.invitationList.find(elem => elem.from === body.username);
-		if (invitation === undefined || invitation.to !== await this.wsService.findName(client)) {
-			this.wsService.result('acceptGameResult', client, 'error', '초대받은 유저가 아닙니다.');
+
+		if (invitation === undefined) {
+			this.wsService.result('declineGameResult', client, 'warning', '초대 대기 시간이 지났습니다.');
+			return false;
+		}
+
+		if (invitation !== undefined && invitation.to !== await this.wsService.findName(client)) {
+			this.wsService.result('declineGameResult', client, 'warning', '초대받은 유저가 아닙니다.');
 			return false;
 		}
 
 		return true;
 	}
 }
+
+@Injectable()
+export class DeclineGameGuard implements CanActivate {
+	constructor(
+
+		@Inject(forwardRef(() => GameService))
+		private gameService: GameService,
+
+		@Inject(forwardRef(() => WsService))
+		private wsService: WsService,
+
+	) { }
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const client = context.switchToWs().getClient();
+		const body = context.switchToWs().getData();
+
+		// body 데이터 확인
+		if (body === undefined) {
+			this.wsService.result('declineGameResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
+			return false;
+		}
+
+		// username 프로퍼티 확인
+		if (body.username === undefined) {
+			this.wsService.result('declineGameResult', client, 'error', 'username 프로퍼티가 없습니다.');
+			return false;
+		}
+
+		// 유효한 초대인지 확인
+		const invitation = this.gameService.invitationList.find(elem => elem.from === body.username);
+
+		if (invitation === undefined) {
+			this.wsService.result('declineGameResult', client, 'warning', '초대 대기 시간이 지났습니다.');
+			return false;
+		}
+
+		if (invitation !== undefined && invitation.to !== await this.wsService.findName(client)) {
+			this.wsService.result('declineGameResult', client, 'warning', '초대받은 유저가 아닙니다.');
+			return false;
+		}
+
+		return true;
+	}
+}
+
 
 
 @Injectable()

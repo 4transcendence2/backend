@@ -5,7 +5,7 @@ import { ChatService } from "src/chat/chat.service";
 import { Inject, UseGuards, forwardRef, Request } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { TokenGuard } from "./guard/ws.token.guard";
-import { AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChangePasswordGuard, ChatGuard, CreateChatRoomGuard, DismissAdminGuard, DmGuard, ExitChatRoomGuard, ExitDmGuard, ExitGameRoomGuard, InviteChatGuard, InviteGameGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, RemoveFriendGuard, RemovePasswordGuard, SearchGameGuard, SetPasswordGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
+import { AcceptGameGuard, AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChangePasswordGuard, ChatGuard, CreateChatRoomGuard, DeclineGameGuard, DismissAdminGuard, DmGuard, ExitChatRoomGuard, ExitDmGuard, ExitGameRoomGuard, InviteChatGuard, InviteGameGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, RemoveFriendGuard, RemovePasswordGuard, SearchGameGuard, SetPasswordGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
 import { DmService } from "src/dm/dm.service";
 import { GameService } from "src/game/game.service";
 require('dotenv').config();
@@ -379,9 +379,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
+	@UseGuards(AcceptGameGuard)
 	@SubscribeMessage('acceptGame')
 	async acceptGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		
+		this.gameService.acceptGame(client, body);
 	}
 
 
@@ -390,9 +391,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	*/
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
+	@UseGuards(DeclineGameGuard)
 	@SubscribeMessage('acceptGame')
 	async delcineGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		
+		this.gameService.declineGame(client, body);
 	}
 	
 	/*
