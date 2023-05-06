@@ -188,10 +188,6 @@ export class GameService {
 
 			if (invitation.status === 'accept') {
 				clearInterval(intervalId);
-				client.emit('inviteGameResult', {
-					username: to.name,
-					status: 'accept',
-				});
 				let index = this.invitationList.findIndex(elem => elem.from === from.name);
 				this.invitationList.splice(index, 1);
 				
@@ -199,7 +195,12 @@ export class GameService {
 					rule: body.rule,
 				});
 				await this.gameRoomRepository.save(newGame);
-
+				
+				client.emit('inviteGameResult', {
+					username: to.name,
+					status: 'accept',
+					roomId: newGame.id,
+				});
 
 				let newGameUser1 = this.gameRoomUserRepository.create({
 					room: newGame,
@@ -336,6 +337,10 @@ export class GameService {
 			status: 'approved',
 			roomId: game.id,
 		});
+
+
+		const gameRoomUser = await this.findRoomUser(game.id, user);
+		if (gameRoomUser !== null) return;
 
 		const newGmaeRoomUser = this.gameRoomUserRepository.create({
 			room: game,
@@ -553,8 +558,6 @@ export class GameService {
 				return;
 			}
 
-			if (game.ballY + game.dy < game.ballRadius || game.ballY + game.dy > 350) game.dy *= -1;
-
 			if (rule === Rule.ARCADE) {
 				if (game.ball2Y + game.dy2 < game.ball2Radius || game.ball2Y + game.dy2 > 350) game.dy2 *= -1;
 
@@ -574,6 +577,7 @@ export class GameService {
 				}
 			}
 
+			if (game.ballY + game.dy < game.ballRadius || game.ballY + game.dy > 350) game.dy *= -1;
 
 			if (game.ballX + game.dx < game.ballRadius || game.ballX + game.dx > 530) {
 
@@ -600,16 +604,26 @@ export class GameService {
 
 	up(id: number, role: string) {
 		const room = this.rooms.find(elem => elem.roomId === id);
-		if (room.redPaddleY <= 0) return;
-		if (room.bluePaddleY <= 0) return;
+
+		if (room.redPaddleY <= 0)
+			return;
+
+		if (room.bluePaddleY <= 0)
+			return;
+
 		if (role === 'red') room.redPaddleY -= 10;
 		if (role === 'blue') room.bluePaddleY -= 10; 
 	}
 
 	down(id: number, role: string) {
 		const room = this.rooms.find(elem => elem.roomId === id);
-		if (room.redPaddleY >= 280) return;
-		if (room.bluePaddleY >= 280) return;
+
+		if (room.redPaddleY >= 280)
+			return;
+
+		if (room.bluePaddleY >= 280)
+			return;
+
 		if (role === 'red') room.redPaddleY += 10;
 		if (role === 'blue') room.bluePaddleY += 10;
 	}

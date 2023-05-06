@@ -9,6 +9,9 @@ import { Type } from './ws.type';
 import { WsGateWay } from './ws.gateway';
 import { DmService } from 'src/dm/dm.service';
 import { GameService } from 'src/game/game.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { GameRoomUser } from 'src/game/entity/game.room.user.entity';
+import { Repository } from 'typeorm';
 
 interface login {
 	name: string,
@@ -47,6 +50,9 @@ export class WsService {
 
 		@Inject(forwardRef(() => WsGateWay))
 		private wsGateWay: WsGateWay,
+
+		@InjectRepository(GameRoomUser)
+		private gameRoomUserRepository: Repository<GameRoomUser>,
 
 
 	) { }
@@ -98,9 +104,9 @@ export class WsService {
 				if (tmpClient !== client) return;
 
 
-				await this.userService.updateStatus(name, UserStatus.LOGOUT);
 				const user = await this.userService.findOne(name);
 
+				await this.userService.updateStatus(name, UserStatus.LOGOUT);
 				for (const chat of user.chat) {
 					let clients = await this.wsGateWay.server.in('chatRoom' + chat.room.id).fetchSockets();
 					for (const elem of clients) {

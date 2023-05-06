@@ -19,7 +19,7 @@ import { GameRoomUser } from 'src/game/entity/game.room.user.entity';
 		forwardRef(() => DmModule),
 		forwardRef(() => UserModule),
 		forwardRef(() => ChatModule),
-		TypeOrmModule.forFeature([ User, ChatRoom, Dm ]),
+		TypeOrmModule.forFeature([ User, ChatRoom, Dm, GameRoomUser ]),
 	],
 	
 	providers: [ WsGateWay, WsService ],

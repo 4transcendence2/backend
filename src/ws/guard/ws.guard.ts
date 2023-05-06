@@ -9,6 +9,7 @@ import { Type } from "../ws.type";
 import { Rule } from "src/game/game.rule";
 import { GameService } from "src/game/game.service";
 import { DmService } from "src/dm/dm.service";
+import { UserStatus } from "src/user/user.status";
 
 @Injectable()
 export class LoginGuard implements CanActivate {
@@ -1334,6 +1335,9 @@ export class SearchGameGuard implements CanActivate {
 		@Inject(forwardRef(() => GameService))
 		private gameSerivce: GameService,
 
+		@Inject(forwardRef(() => UserService))
+		private userService: UserService,
+
 	) { }
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
@@ -1356,6 +1360,14 @@ export class SearchGameGuard implements CanActivate {
 			this.wsService.result('searchGameResult', client, 'error', '올바른 rule이 아닙니다. rank, normal, arcade 셋 중 하나를 입력해주세요.');
 			return false;
 		}
+
+		// 이미 게임중인 유저의 경우
+		const user = await this.userService.findOne(await this.wsService.findName(client));
+		if (user.status === UserStatus.GAMING) {
+			this.wsService.result('searchGameResult', client, 'error', '이미 게임중입니다.');
+			return false;
+		}
+		
 
 		// 이미 게임을 찾고 있는 유저인경우
 		if (this.gameSerivce.normal.find(elem => elem.client === client) !== undefined) {
