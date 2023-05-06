@@ -1362,13 +1362,11 @@ export class SearchGameGuard implements CanActivate {
 		}
 
 		// 이미 게임중인 유저의 경우
-		const user = await this.userService.findOne(await this.wsService.findName(client));
-		if (user.status === UserStatus.GAMING) {
+		if (await this.userService.isGaming(await this.wsService.findName(client))) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임중입니다.');
 			return false;
 		}
 		
-
 		// 이미 게임을 찾고 있는 유저인경우
 		if (this.gameSerivce.normal.find(elem => elem.client === client) !== undefined) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
