@@ -393,7 +393,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(TokenGuard)
 	@UseGuards(LoginGuard)
 	@UseGuards(DeclineGameGuard)
-	@SubscribeMessage('acceptGame')
+	@SubscribeMessage('declineGame')
 	async delcineGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.gameService.declineGame(client, body);
 	}
