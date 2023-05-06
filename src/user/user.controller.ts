@@ -6,6 +6,7 @@ import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TempJwtGuard } from 'src/auth/temp_jwt/tempJwt.guard';
 import { AuthService } from 'src/auth/auth.service';
+import { join } from 'path';
 const fs = require('fs');
 require('dotenv').config();
 
@@ -47,6 +48,21 @@ export class UserController {
 
 		res.setHeader('Content-Type', 'image/png');
 		res.send(user.avatar);
+	}
+
+
+	@Get('badge/:achievement')
+	async getBadge(@Param('achievement') achievement, @Res() res: Response) {
+		if (achievement !== 'win3' && achievement !== 'win5' && achievement !== 'win10') {
+			res.status(404);
+			return res.json({
+				status: "error",
+				detail: "존재하지 않는 업적입니다.",
+			})
+		}
+		res.setHeader('Content-Type', 'image/png');
+		res.send(fs.readFileSync(join(__dirname, `../../public/${achievement}.png`)));
+		return;
 	}
 
 

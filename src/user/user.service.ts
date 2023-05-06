@@ -79,6 +79,11 @@ export class UserService {
 			})
 		}
 
+		let achievement: string[] = [];
+		if (user.win3)	achievement.push('win3');
+		if (user.win5)	achievement.push('win5');
+		if (user.win10)	achievement.push('win10');
+
 		return ({
 			"username": user.name,
 			"status": user.status,
@@ -87,6 +92,7 @@ export class UserService {
 			"lose": user.lose,
 			"relation": relation,
 			"gameHistory": list,
+			"achievement": achievement,
 		})
 
 	}
@@ -215,6 +221,20 @@ export class UserService {
 	async win(name: string) {
 		const user = await this.findOne(name);
 		user.win++;
+		if (user.win <= 10) {
+			if (user.win === 3) {
+				user.win3 = true;
+			}
+	
+			if (user.win === 5) {
+				user.win5 = true;
+			}
+	
+			if (user.win === 10) {
+				user.win10 = true;
+			}
+		}
+
 		await this.usersRepository.save(user);
 	}
 

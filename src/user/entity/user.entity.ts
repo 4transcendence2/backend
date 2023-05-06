@@ -108,4 +108,20 @@ export class User {
 		nullable: true,
 	})
 	intra_id: string
+
+	@Column({
+		default: false,
+	})
+	win3: boolean;
+
+	@Column({
+		default: false,
+	})
+	win5: boolean;
+
+	@Column({
+		default: false,
+	})
+	win10: boolean;
+
 }
