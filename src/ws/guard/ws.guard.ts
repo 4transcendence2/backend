@@ -1349,24 +1349,29 @@ export class SearchGameGuard implements CanActivate {
 			return false;
 		}
 		
+		const username = await this.wsService.findName(client);
+
+		
 		// 이미 게임을 찾고 있는 유저인경우
-		if (this.gameSerivce.normal.find(elem => elem.client === client) !== undefined) {
+		if (this.gameSerivce.normal.find(elem => elem.name === username) !== undefined) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
-		if (this.gameSerivce.rank.find(elem => elem.client === client) !== undefined) {
+		if (this.gameSerivce.rank.find(elem => elem.name === username) !== undefined) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
-		if (this.gameSerivce.arcade.find(elem => elem.client === client) !== undefined) {
+		if (this.gameSerivce.arcade.find(elem => elem.name === username) !== undefined) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
 
-		if (this.gameSerivce.invitationList.find(elem => elem.fromClient === client) !== undefined) {
+		if (this.gameSerivce.invitationList.find(elem => elem.from === username) !== undefined) {
 			this.wsService.result('searchGameResult', client, 'error', '이미 게임을 찾고 있습니다.');
 			return false;
 		}
+
+
 
 		return true;
 	}

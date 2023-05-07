@@ -346,7 +346,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JoinGameRoomGuard)
 	@SubscribeMessage('joinGameRoom')
 	async joinGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.joinGameRoom(client, body);
+		this.gameService.joinGameRoom(client, body);
 	}
 
 
