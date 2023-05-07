@@ -459,7 +459,9 @@ export class GameService {
 		const winner = game.redScore === 5 ? 'red' : 'blue';
 		const newHistory = this.gameHistoryRepository.create({
 			red: redUser,
+			red_score: game.redScore,
 			blue: blueUser,
+			blue_score: game.blueScore,
 			winner: winner,
 			time: new Date(Date.now()),
 			rule: game.rule,

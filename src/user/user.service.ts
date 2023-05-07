@@ -74,15 +74,21 @@ export class UserService {
 		const gameHistory = await this.gameService.findHistory(user);
 
 		let list: {
+			id: number,
 			red: string,
 			blue: string,
+			redScore: number,
+			blueScore: number,
 			winner: string,
 		}[] = [];
 
 		for(const history of gameHistory) {
 			list.push({
+				id: history.id,
 				red: history.red.name,
 				blue: history.blue.name,
+				redScore: history.red_score,
+				blueScore: history.blue_score,
 				winner: history.winner,
 			})
 		}

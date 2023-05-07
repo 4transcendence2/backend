@@ -10,6 +10,16 @@ export class GameHistory {
 	@ManyToOne(() => User, (user) => user.red)
 	red: User;
 
+	@Column({
+		nullable: true,
+	})
+	red_score: number;
+
+	@Column({
+		nullable: true,
+	})
+	blue_score: number;
+
 
 	@ManyToOne(() => User, (user) => user.blue)
 	blue: User;
