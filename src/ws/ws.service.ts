@@ -258,13 +258,13 @@ export class WsService {
 
 			clearInterval(id);
 			if (q.type === 'sub') {
-				await this.subscribe(client, q.body);
+				await this.subscribe(q.client, q.body);
 				// console.log(new Date(Date.now()), q.type, q.detail);
 				this.result('subscribeResult', client, 'approved', undefined, body.type);
 
 			}
 			if (q.type === 'unsub') {
-				await this.unsubscribe(client, q.body);
+				await this.unsubscribe(q.client, q.body);
 				// console.log(new Date(Date.now()), q.type, q.detail);
 				this.result('unsubscribeResult', client, 'approved', undefined, body.type);
 			}
