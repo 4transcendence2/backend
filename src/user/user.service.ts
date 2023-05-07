@@ -47,6 +47,14 @@ export class UserService {
 			}
 		});
 	}
+	
+	async findOneByIntra(intra: string): Promise<User> {
+		return await this.usersRepository.findOne({
+			where: {
+				intra_id: intra,
+			}
+		});
+	}
 
 	async getProfile(requesterName: string, name: string) {
 		if (!(await this.isExist(name))) {
