@@ -602,7 +602,7 @@ export class GameService {
 			bluePaddleWidth: 10,
 			bluePaddleHeight: 80,
 			blueScore: 0,
-			spectator: [],
+			// spectator: [],
 		};
 		this.rooms.push(game);
 		let intervalId = setInterval(async () => {
