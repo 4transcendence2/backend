@@ -260,13 +260,13 @@ export class WsService {
 			if (q.type === 'sub') {
 				await this.subscribe(q.client, q.body);
 				// console.log(new Date(Date.now()), q.type, q.detail);
-				this.result('subscribeResult', client, 'approved', undefined, body.type);
+				this.result('subscribeResult', q.client, 'approved', undefined, q.detail);
 
 			}
 			if (q.type === 'unsub') {
 				await this.unsubscribe(q.client, q.body);
 				// console.log(new Date(Date.now()), q.type, q.detail);
-				this.result('unsubscribeResult', client, 'approved', undefined, body.type);
+				this.result('unsubscribeResult', q.client, 'approved', undefined, q.detail);
 			}
 			this.queueLen--;
 		}, 10)
