@@ -46,7 +46,7 @@ interface status {
 	bluePaddleWidth: number,
 	bluePaddleHeight: number,
 	blueScore: number,
-	spectator: string[],
+	// spectator: string[],
 };
 
 interface invitation {
@@ -478,16 +478,36 @@ export class GameService {
 			})
 		}
 
-		for (const spectator of game.spectator) {
-			let client = await this.wsService.findClient(spectator);
-			if (client === undefined) continue;
+		const gameRoom = await this.findOne(game.roomId);
+		const spectators = await this.gameRoomUserRepository.find({
+			where: {
+				room: gameRoom,
+				role: Role.SPECTATOR,
+			},
+			relations: {
+				user: true,
+			}
+		});
 
+		for (const spectator of spectators) {
+			let client = await this.wsService.findClient(spectator.user.name);
 			client.emit('message', {
 				type: 'finish',
 				roomId: game.roomId,
 				winner: winner,
 			})
 		}
+
+		// for (const spectator of game.spectator) {
+		// 	let client = await this.wsService.findClient(spectator);
+		// 	if (client === undefined) continue;
+
+		// 	client.emit('message', {
+		// 		type: 'finish',
+		// 		roomId: game.roomId,
+		// 		winner: winner,
+		// 	})
+		// }
 	}
 
 	async saveHistory(game: status) {
