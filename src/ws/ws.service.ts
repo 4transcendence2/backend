@@ -20,14 +20,15 @@ interface login {
 	status: string,
 }
 
-interface queue {
-	client: Socket,
+export interface queue {
+	name: string,
 	type: string,
 	detail: string | undefined,
 	body: {
 		type: string | undefined,
 		roomId: number | undefined,
-	}
+	},
+	error: boolean,
 }
 
 @Injectable()
@@ -256,17 +257,23 @@ export class WsService {
 			this.queue.splice(0, 1);
 
 			clearInterval(id);
-			if (q.type === 'sub') {
-				await this.subscribe(q.client, q.body);
-				// console.log(new Date(Date.now()), await this.findName(q.client), q.type, q.detail, q.body.roomId);
-				this.result('subscribeResult', q.client, 'approved', undefined, q.detail, q.body.roomId);
 
+			if (!q.error) {
+				if (q.type === 'sub') {
+					let qC = await this.findClient(q.name);
+					await this.subscribe(qC, q.body);
+					// console.log(new Date(Date.now()), qC.id, q.name, q.type, q.detail, q.body.roomId);
+					this.result('subscribeResult', qC, 'approved', undefined, q.detail, q.body.roomId);
+	
+				}
+				if (q.type === 'unsub') {
+					let qC = await this.findClient(q.name);
+					await this.unsubscribe(qC, q.body);
+					// console.log(new Date(Date.now()), qC.id, q.name, q.type, q.detail, q.body.roomId);
+					this.result('unsubscribeResult', qC, 'approved', undefined, q.detail, q.body.roomId);
+				}
 			}
-			if (q.type === 'unsub') {
-				await this.unsubscribe(q.client, q.body);
-				// console.log(new Date(Date.now()), await this.findName(q.client), q.type, q.detail, q.body.roomId);
-				this.result('unsubscribeResult', q.client, 'approved', undefined, q.detail, q.body.roomId);
-			}
+			
 			this.queueLen--;
 		}, 10)
 

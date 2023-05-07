@@ -665,7 +665,6 @@ export class GameService {
 
 	match() {
 		setInterval(async () => {
-
 			if (this.rank.length > 1) {
 				let user1 = await this.userService.findOne(this.rank[0].name);
 				let user2 = await this.userService.findOne(this.rank[1].name);
