@@ -359,10 +359,43 @@ export class GameService {
 			user: user,
 			role: Role.SPECTATOR
 		});
-		await this.gameRoomUserRepository.save(newGmaeRoomUser);
+		await this.gameRoomUserRepository.save(newGmaeRoomUser); 
 
-		const room = this.rooms.find(elem => elem.roomId === game.id);
-		room.spectator.push(user.name);
+		// const room = this.rooms.find(elem => elem.roomId === game.id);
+		// room.spectator.push(user.name);
+		this.updateSpectator(game.id);
+	}
+
+	async updateSpectator(id: number) {
+		const clients = await this.wsGateway.server.in('gameRoom' + id).fetchSockets();
+		const gameRoom = await this.findOne(id);
+		const roomUsers = await this.gameRoomUserRepository.find({
+			where: {
+				room: gameRoom,
+				role: Role.SPECTATOR,
+			},
+			relations: {
+				user: true,
+			}
+		});
+
+		let list: {
+			username: string,
+		} [] = [];
+
+		for (const roomUser of roomUsers) {
+			list.push({
+				username: roomUser.user.name,
+			})
+		}
+
+		for (const client of clients) {
+			let elemClient = await this.wsService.findClient(undefined, client.id);
+			elemClient.emit('message', {
+				type: 'spectator',
+				list: list,
+			})
+		}
 	}
 
 
@@ -389,8 +422,9 @@ export class GameService {
 		} else if (room.blueUser === user.name) { // 블루가 나가면
 			room.redScore = 5;
 		} else { // 관전자가 나가면
-			let index = room.spectator.findIndex(elem => elem === user.name);
-			if (index !== -1) room.spectator.splice(index, 1);
+			// let index = room.spectator.findIndex(elem => elem === user.name);
+			// if (index !== -1) room.spectator.splice(index, 1);
+			this.updateSpectator(game.id);
 		}
 
 	}
