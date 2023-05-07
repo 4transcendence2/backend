@@ -611,7 +611,6 @@ export class GameService {
 				}
 			}
 
-
 			this.wsGateway.server.to('gameRoom' + game.roomId).emit('message', {
 				type: 'game',
 				status: game,

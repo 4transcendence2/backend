@@ -830,77 +830,54 @@ export class SubscribeGuard implements CanActivate {
 			detail: body.type,
 			body: body,
 		});
-		if (body.Type === Type.GAME_ROOM) {
-			console.log(body.roomId);
-			console.log(await this.gameService.isExist(body.roomId));
-		}
-		// console.log(this.wsService.queue[0].detail, this.wsService.queue[0].type)
-		// if (body.type === 'chatRoom') console.log('guard sub');
-		// console.log(new Date(Date.now()), 'sub gura');
 		this.wsService.queueLen++;
 
 
 		// body 데이터 확인
 		if (body === undefined) {
 			this.wsService.result('subscribeResult', client, 'error', '전달받은 데이터가 없습니다.')
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// type 프로퍼티 확인
 		if (body.type === undefined) {
 			this.wsService.result('subscribeResult', client, 'error', 'type 프로퍼티가 없습니다.');
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// type 유효성 확인
 		if (!Object.values(Type).includes(body.type)) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 type입니디ㅏ.');
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// roomId 프로퍼티 확인
 		if ((body.type === Type.CHAT_ROOM || body.type === Type.GAME_ROOM) && body.roomId === undefined) {
 			this.wsService.result('subscribeResult', client, 'error', 'roomId 프로퍼티가 없습니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// username 프로퍼티 확인
 		if (body.type === Type.DM && body.username === undefined) {
 			this.wsService.result('subscribeResult', client, 'error', 'username 프로퍼티가 없습니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// username 유효성 검사
 		if (body.type === Type.DM && !(await this.userService.isExist(body.username))) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 username입니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// 채팅 roomId 유효성 검사
 		if (body.type === Type.CHAT_ROOM && !(await this.chatService.isExist(body.roomId))) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// 게임 roomId 유효성 검사
 		if (body.type === Type.GAME_ROOM && !await this.gameService.isExist(body.roomId)) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
-			// this.wsService.queue.pop();
-			// this.wsService.queueLen--;
 			return false;
 		}
 		return true;
@@ -943,48 +920,36 @@ export class UnsubscribeGuard implements CanActivate {
 		// body 데이터 확인
 		if (body === undefined) {
 			this.wsService.result('unsubscribeResult', client, 'error', '전달받은 데이터가 없습니다.');
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// type 프로퍼티 확인
 		if (body.type === undefined) {
 			this.wsService.result('unsubscribeResult', client, 'error', 'type 프로퍼티가 없습니다.');
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// type 유효성 확인
 		if (!Object.values(Type).includes(body.type)) {
 			this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 type입니디ㅏ.');
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// roomId 프로퍼티 확인
 		if ((body.type === Type.CHAT_ROOM || body.type === Type.GAME_ROOM) && body.roomId === undefined) {
 			this.wsService.result('unsubscribeResult', client, 'error', 'roomId 프로퍼티가 없습니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// username 프로퍼티 확인
 		if (body.type === Type.DM && body.username === undefined) {
 			this.wsService.result('unsubscribeResult', client, 'error', 'username 프로퍼티가 없습니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
 		// 채팅 roomId 유효성 검사
 		if (body.type === Type.CHAT_ROOM && !(await this.chatService.isExist(body.roomId))) {
 			this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 
@@ -995,8 +960,6 @@ export class UnsubscribeGuard implements CanActivate {
 
 			if (!await this.dmService.isExist(user1, user2)) {
 				this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
-				this.wsService.queue.pop();
-				this.wsService.queueLen--;
 				return false;
 			}
 		}
@@ -1004,20 +967,15 @@ export class UnsubscribeGuard implements CanActivate {
 		// game id 유효성 검사
 		if (body.type === Type.GAME_ROOM && !(await this.gameService.isExist(body.roomId))) {
 			this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
-			// this.wsService.queue.pop();
-			// this.wsService.queueLen--;
 			return false;
 		}
 
 		// username 유효성 검사
 		if (body.type === Type.DM && !(await this.userService.isExist(body.username))) {
 			this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 username입니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
 			return false;
 		}
 		return true;
-
 	}
 }
 

@@ -370,7 +370,6 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(InviteGameGuard)
 	@SubscribeMessage('inviteGame')
 	async inviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		console.log('"??');
 		this.gameService.inviteGame(client, body);
 	}
 
@@ -414,6 +413,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	down(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.gameService.down(body.roomId, body.role);
 	}
+	
 	
 
 

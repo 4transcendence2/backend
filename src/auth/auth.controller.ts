@@ -68,7 +68,7 @@ export class AuthController {
 		if (user === null) {
 			return resp.json({
 				status: false,
-				intraId: user,
+				intraId: me.login,
 			})
 		}
 

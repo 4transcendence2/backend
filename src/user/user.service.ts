@@ -102,7 +102,6 @@ export class UserService {
 			"gameHistory": list,
 			"achievement": achievement,
 		})
-
 	}
 
 	async createUser(userInfo: CreateUserDto) {
@@ -231,7 +230,7 @@ export class UserService {
 		const user = await this.findOne(name);
 		user.win++;
 		if (user.win <= 10) {
-			if (user.win === 3) {
+			if (user.win >= 3) {
 				user.win3 = true;
 			}
 	

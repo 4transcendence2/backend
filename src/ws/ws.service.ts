@@ -144,8 +144,7 @@ export class WsService {
 
 		// gameRoom
 		if (body.type === Type.GAME_ROOM) {
-			const game = await this.gameService.findOne(body.roomId);
-			await client.join('gameRoom' + game.id);
+			await client.join('gameRoom' + body.roomId);
 		}
 
 
@@ -259,13 +258,13 @@ export class WsService {
 			clearInterval(id);
 			if (q.type === 'sub') {
 				await this.subscribe(q.client, q.body);
-				// console.log(new Date(Date.now()), q.type, q.detail);
+				console.log(new Date(Date.now()), await this.findName(q.client), q.type, q.detail, q.body.roomId);
 				this.result('subscribeResult', q.client, 'approved', undefined, q.detail, q.body.roomId);
 
 			}
 			if (q.type === 'unsub') {
 				await this.unsubscribe(q.client, q.body);
-				// console.log(new Date(Date.now()), q.type, q.detail);
+				console.log(new Date(Date.now()), await this.findName(q.client), q.type, q.detail, q.body.roomId);
 				this.result('unsubscribeResult', q.client, 'approved', undefined, q.detail, q.body.roomId);
 			}
 			this.queueLen--;
