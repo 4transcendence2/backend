@@ -14,4 +14,8 @@ export class CreateUserDto {
 	@IsNotEmpty()
 	@Matches(/[0-9]\d{1,14}$/)
 	readonly phonenumber: string;
+
+	@IsString()
+	@IsNotEmpty()
+	readonly intraId: string;
 }
