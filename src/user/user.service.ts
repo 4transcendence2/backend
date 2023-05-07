@@ -240,11 +240,11 @@ export class UserService {
 				user.win3 = true;
 			}
 	
-			if (user.win === 5) {
+			if (user.win >= 5) {
 				user.win5 = true;
 			}
 	
-			if (user.win === 10) {
+			if (user.win >= 10) {
 				user.win10 = true;
 			}
 		}
