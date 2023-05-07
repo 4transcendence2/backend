@@ -899,8 +899,8 @@ export class SubscribeGuard implements CanActivate {
 		// 게임 roomId 유효성 검사
 		if (body.type === Type.GAME_ROOM && !await this.gameService.isExist(body.roomId)) {
 			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
+			// this.wsService.queue.pop();
+			// this.wsService.queueLen--;
 			return false;
 		}
 		return true;
@@ -1003,9 +1003,9 @@ export class UnsubscribeGuard implements CanActivate {
 
 		// game id 유효성 검사
 		if (body.type === Type.GAME_ROOM && !(await this.gameService.isExist(body.roomId))) {
-			this.wsService.result('subscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
-			this.wsService.queue.pop();
-			this.wsService.queueLen--;
+			this.wsService.result('unsubscribeResult', client, 'error', '유효하지 않는 roomId입니다.', body.type);
+			// this.wsService.queue.pop();
+			// this.wsService.queueLen--;
 			return false;
 		}
 
