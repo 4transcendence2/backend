@@ -222,6 +222,9 @@ export class GameService {
 					role: Role.BLUE,
 				});
 
+				await this.userService.updateStatus(from.name, UserStatus.GAMING);
+				await this.userService.updateStatus(to.name, UserStatus.GAMING);
+
 				client.join('gameRoom' + newGame.id);
 				(await this.wsService.findClient(body.username)).join('gameRoom' + newGame.id);
 				this.gameRoomUserRepository.save(newGameUser1);
@@ -665,6 +668,7 @@ export class GameService {
 
 	match() {
 		setInterval(async () => {
+			// console.log(this.wsService.queue.length);
 			if (this.rank.length > 1) {
 				let user1 = await this.userService.findOne(this.rank[0].name);
 				let user2 = await this.userService.findOne(this.rank[1].name);
