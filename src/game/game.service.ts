@@ -416,6 +416,7 @@ export class GameService {
 		//게임룸 상태 업데이트
 		const room = this.rooms.find(room => room.roomId === game.id);
 
+		if (room === undefined) return;
 
 		if (room.redUser === user.name) { //레드가 나가면
 			room.blueScore = 5;
