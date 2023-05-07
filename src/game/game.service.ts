@@ -363,10 +363,10 @@ export class GameService {
 
 		// const room = this.rooms.find(elem => elem.roomId === game.id);
 		// room.spectator.push(user.name);
-		this.updateSpectator(game.id);
+		this.updateSpectator(game.id, client);
 	}
 
-	async updateSpectator(id: number) {
+	async updateSpectator(id: number, client?: Socket) {
 		const clients = await this.wsGateway.server.in('gameRoom' + id).fetchSockets();
 		const gameRoom = await this.findOne(id);
 		const roomUsers = await this.gameRoomUserRepository.find({
@@ -388,6 +388,11 @@ export class GameService {
 				username: roomUser.user.name,
 			})
 		}
+
+		if (client !== undefined) client.emit('message', {
+			type: 'spectator',
+			list: list,
+		});
 
 		for (const client of clients) {
 			let elemClient = await this.wsService.findClient(undefined, client.id);
