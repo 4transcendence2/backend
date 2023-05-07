@@ -23,7 +23,11 @@ interface login {
 interface queue {
 	client: Socket,
 	type: string,
-	detail: string | any,
+	detail: string | undefined,
+	body: {
+		type: string | undefined,
+		roomId: number | undefined,
+	}
 }
 
 @Injectable()
@@ -126,7 +130,7 @@ export class WsService {
 			})
 	}
 
-	async subscribe(@ConnectedSocket() client: Socket, body: any) {
+	async subscribe(@ConnectedSocket() client: Socket, body) {
 		const name = await this.findName(client);
 		
 		// chatRoom
@@ -254,13 +258,13 @@ export class WsService {
 
 			clearInterval(id);
 			if (q.type === 'sub') {
-				await this.subscribe(client, body);
+				await this.subscribe(client, q.body);
 				// console.log(new Date(Date.now()), q.type, q.detail);
 				this.result('subscribeResult', client, 'approved', undefined, body.type);
 
 			}
 			if (q.type === 'unsub') {
-				await this.unsubscribe(client, body);
+				await this.unsubscribe(client, q.body);
 				// console.log(new Date(Date.now()), q.type, q.detail);
 				this.result('unsubscribeResult', client, 'approved', undefined, body.type);
 			}

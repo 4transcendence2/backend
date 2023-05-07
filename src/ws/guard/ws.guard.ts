@@ -828,6 +828,7 @@ export class SubscribeGuard implements CanActivate {
 			client: client,
 			type: 'sub',
 			detail: body.type,
+			body: body,
 		});
 		if (body.Type === Type.GAME_ROOM) {
 			console.log(body.roomId);
@@ -935,6 +936,7 @@ export class UnsubscribeGuard implements CanActivate {
 			client: client,
 			type: 'unsub',
 			detail: body.type,
+			body: body,
 		})
 		this.wsService.queueLen++;
 
