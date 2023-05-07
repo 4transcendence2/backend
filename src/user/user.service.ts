@@ -80,6 +80,7 @@ export class UserService {
 			redScore: number,
 			blueScore: number,
 			winner: string,
+			rule: string,
 		}[] = [];
 
 		for(const history of gameHistory) {
@@ -90,6 +91,7 @@ export class UserService {
 				redScore: history.red_score,
 				blueScore: history.blue_score,
 				winner: history.winner,
+				rule: history.rule,
 			})
 		}
 
