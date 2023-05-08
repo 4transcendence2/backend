@@ -408,15 +408,16 @@ export class GameService {
 		const user = await this.userService.findOne(await this.wsService.findName(client));
 		const game = await this.findOne(body.roomId);
 
+		
+		const gameRoomUser = await this.findRoomUser(game.id, user);
+		await this.gameRoomUserRepository.remove(gameRoomUser);
+		
+		await this.userService.updateStatus(user.name, UserStatus.LOGIN);
+		
 		client.emit('exitGameRoomResult', {
 			status: 'approved',
 			roomId: game.id,
 		});
-
-		const gameRoomUser = await this.findRoomUser(game.id, user);
-		await this.gameRoomUserRepository.remove(gameRoomUser);
-
-		await this.userService.updateStatus(user.name, UserStatus.LOGIN);
 
 		//게임룸 상태 업데이트
 		const room = this.rooms.find(room => room.roomId === game.id);
@@ -428,8 +429,6 @@ export class GameService {
 		} else if (room.blueUser === user.name) { // 블루가 나가면
 			room.redScore = 5;
 		} else { // 관전자가 나가면
-			// let index = room.spectator.findIndex(elem => elem === user.name);
-			// if (index !== -1) room.spectator.splice(index, 1);
 			this.updateSpectator(game.id);
 		}
 

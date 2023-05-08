@@ -7,6 +7,7 @@ import { UserService } from './user.service';
 import { GameModule } from 'src/game/game.module';
 import { WsModule } from 'src/ws/ws.module';
 import { UserFriend } from './entity/user.friend';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
 	imports: [
@@ -14,6 +15,7 @@ import { UserFriend } from './entity/user.friend';
 		forwardRef(() => AuthModule),
 		forwardRef(() => WsModule),
 		forwardRef(() => GameModule),
+		forwardRef(() => ChatModule),
 ],
 	controllers: [ UserController ],
 	providers: [ UserService ],

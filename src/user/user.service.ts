@@ -10,6 +10,8 @@ import { UserFriend } from './entity/user.friend';
 import { WsService } from 'src/ws/ws.service';
 import { GameService } from 'src/game/game.service';
 import { UserStatus } from './user.status';
+import { WsGateWay } from 'src/ws/ws.gateway';
+import { ChatService } from 'src/chat/chat.service';
 const fs = require('fs');
 
 @Injectable()
@@ -26,6 +28,12 @@ export class UserService {
 
 		@Inject(forwardRef(() => GameService))
 		private gameService: GameService,
+
+		@Inject(forwardRef(() => WsGateWay))
+		private wsGateway: WsGateWay,
+
+		@Inject(forwardRef(() => ChatService))
+		private chatService: ChatService,
 
 
 
@@ -153,6 +161,25 @@ export class UserService {
 			await this.usersRepository.save(user);
 			this.wsService.updateYourFriend(name);
 
+			// 채팅방 업데이트
+			const chatRooms = await this.usersRepository.findOne({
+				where: {
+					id: user.id,
+				},
+				relations: {
+					chat: {
+						room: true,
+					}
+				}
+			});
+
+			for (const chat of chatRooms.chat) {
+				let clients = await this.wsGateway.server.in('chatRoom' + chat.room.id).fetchSockets();
+				for (const elem of clients) {
+					let elemClient = await this.wsService.findClient(undefined, elem.id);
+					this.chatService.updateChatRoom(elemClient, chat.room.id);
+				}
+			}
 		} catch (err) {
 			console.log(err);
 		}
