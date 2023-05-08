@@ -562,22 +562,24 @@ export class GameService {
 	}
 
 	initGame(game: status) {
-			game.ballX = 270;
-			game.ballY = 180;
-			game.redPaddleX = 0;
-			game.redPaddleY = 140;
-			game.bluePaddleX = 530;
-			game.bluePaddleY = 140;
-			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5;
-			game.dx = Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3;
-			game.ball2X = game.rule === Rule.ARCADE ? 270 : null;
-			game.ball2Y = game.rule === Rule.ARCADE ? 180 : null;
-			game.ball2Radius = game.rule === Rule.ARCADE ? 10 : null;
-			game.dx2 = game.rule === Rule.ARCADE ? Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5 : null;
-			game.dy2 = game.rule === Rule.ARCADE ? Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3 : null;
+		const randomX = Math.random();
+		game.ballX = 270;
+		game.ballY = 180;
+		game.redPaddleX = 0;
+		game.redPaddleY = 140;
+		game.bluePaddleX = 530;
+		game.bluePaddleY = 140;
+		game.dx = randomX >= 0.5 ? Math.floor(Math.random() * 6) + 7 : Math.floor(Math.random() * -6) - 7;
+		game.dy = Math.random() >= 0.5 ? Math.floor(Math.random() * 4) + 7 : Math.floor(Math.random() * -4) - 7;
+		game.ball2X = game.rule === Rule.ARCADE ? 270 : null;
+		game.ball2Y = game.rule === Rule.ARCADE ? 180 : null;
+		game.ball2Radius = game.rule === Rule.ARCADE ? 10 : null;
+		game.dx2 = game.rule === Rule.ARCADE ? (randomX < 0.5 ? Math.floor(Math.random() * 6) + 7 : Math.floor(Math.random() * -6) - 7) : null;
+		game.dy2 = game.rule === Rule.ARCADE ? (Math.random() >= 0.5 ? Math.floor(Math.random() * 4) + 3 : Math.floor(Math.random() * -4)) - 3 : null;
 	}
 
 	play(id: number, rule: string, red: string, blue: string) {
+		const randomX = Math.random();
 		const game: status = {
 			playing: true,
 			rule: rule,
@@ -588,10 +590,10 @@ export class GameService {
 			ball2Y: rule === Rule.ARCADE ? 180 : null,
 			ballRadius: 10,
 			ball2Radius: rule === Rule.ARCADE ? 10 : null,
-			dx: Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5,
-			dy: Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3,
-			dx2: rule === Rule.ARCADE ? Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * -10) - 5 : null,
-			dy2: rule === Rule.ARCADE ? Math.random() >= 0.5 ? Math.floor(Math.random() * 10) + 3 : Math.floor(Math.random() * -10) - 3 : null,
+			dx: randomX >= 0.5 ? Math.floor(Math.random() * 6) + 7 : Math.floor(Math.random() * -6) - 7,
+			dy: Math.random() >= 0.5 ? Math.floor(Math.random() * 4) + 3 : Math.floor(Math.random() * -4) - 3,
+			dx2: rule === Rule.ARCADE ? (randomX < 0.5 ? Math.floor(Math.random() * 6) + 7 : Math.floor(Math.random() * -6) - 7) : null,
+			dy2: rule === Rule.ARCADE ? (Math.random() >= 0.5 ? Math.floor(Math.random() * 4) + 3 : Math.floor(Math.random() * -4)) - 3 : null,
 			redUser: red,
 			redPaddleX: 0,
 			redPaddleY: 140,
@@ -604,12 +606,12 @@ export class GameService {
 			bluePaddleWidth: 10,
 			bluePaddleHeight: 80,
 			blueScore: 0,
-			// spectator: [],
 		};
 		this.rooms.push(game);
 		let intervalId = setInterval(async () => {
 			if (game.playing === false) {
 				clearInterval(intervalId);
+
 				// 게임 종료 이벤트, 결과 등록 및 히스토리 등록 등등
 				await this.sendResult(game);
 				await this.saveHistory(game);
@@ -712,19 +714,8 @@ export class GameService {
 		}
 	}
 
-
-
-
-
-
-
-
-
-
-
 	match() {
 		setInterval(async () => {
-			// console.log(this.wsService.queue.length);
 			if (this.rank.length > 1) {
 				let user1 = await this.userService.findOne(this.rank[0].name);
 				let user2 = await this.userService.findOne(this.rank[1].name);
