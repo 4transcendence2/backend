@@ -504,16 +504,6 @@ export class GameService {
 			})
 		}
 
-		// for (const spectator of game.spectator) {
-		// 	let client = await this.wsService.findClient(spectator);
-		// 	if (client === undefined) continue;
-
-		// 	client.emit('message', {
-		// 		type: 'finish',
-		// 		roomId: game.roomId,
-		// 		winner: winner,
-		// 	})
-		// }
 	}
 
 	async saveHistory(game: status) {
@@ -563,6 +553,12 @@ export class GameService {
 
 		this.userService.updateStatus(redUser.name, UserStatus.LOGIN);
 		this.userService.updateStatus(blueUser.name, UserStatus.LOGIN);
+
+		const clients = await this.wsGateway.server.in('gameRoomList').fetchSockets();
+		for (const client of clients) {
+			let eC = await this.wsService.findClient(undefined, client.id);
+			this.updateGameRoomList(eC);
+		}
 	}
 
 	initGame(game: status) {
