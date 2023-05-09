@@ -1,15 +1,11 @@
-import { Controller, Get, Post, Request, UseGuards, Param, Body, Res, Headers, NotFoundException, UnauthorizedException} from '@nestjs/common';
+import { Controller, Get, Post, Request, UseGuards, Param, Body, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { PhoneNumberDto } from './dto/phone-number.dto';
 import { Response } from 'express'
 import { OtpDto } from './dto/otp.dto';
-import { JwtService } from '@nestjs/jwt';
 import { TempJwtGuard } from './temp_jwt/tempJwt.guard';
-import { TempJwtService } from './temp_jwt/tempJwt.service';
-import { SignupJwtService } from './signup_jwt/signupJwt.service';
 import { UserService } from 'src/user/user.service';
-import { LoginGuard } from './auth.guard';
 require('dotenv').config();
 
 @Controller('auth')
