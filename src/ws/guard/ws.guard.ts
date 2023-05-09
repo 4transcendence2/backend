@@ -9,7 +9,6 @@ import { Type } from "../ws.type";
 import { Rule } from "src/game/game.rule";
 import { GameService } from "src/game/game.service";
 import { DmService } from "src/dm/dm.service";
-import { UserStatus } from "src/user/user.status";
 
 @Injectable()
 export class LoginGuard implements CanActivate {
@@ -36,7 +35,7 @@ export class CreateChatRoomGuard implements CanActivate {
 		private wsService: WsService,
 
 
-	) { }
+	) {}
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();

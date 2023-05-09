@@ -296,6 +296,10 @@ export class ChatService {
 	async sendHistory(client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
 		const user = await this.userService.findOne(await this.wsService.findName(client));
+
+
+		if (room === null) return;
+
 		const blockList = await this.blockRepository.find({
 			where: {
 				room: room,
@@ -873,7 +877,7 @@ export class ChatService {
 		const room = await this.findOne(id);
 		const roomUsers = await this.findAllRoomUser(room);
 
-		if (room === null || roomUsers === null) return;
+		if (room === null || roomUsers.length === 0) return;
 
 		const userList: {
 			username: string,
