@@ -92,7 +92,6 @@ export class JoinChatRoomGuard implements CanActivate {
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client = context.switchToWs().getClient();
 		const body = context.switchToWs().getData();
-
 		// body 데이터 확인
 		if (body === undefined) {
 			this.wsService.result('joinChatRoomResult', client, 'error', '전달받은 바디 데이터가 없습니다.');
@@ -834,7 +833,6 @@ export class SubscribeGuard implements CanActivate {
 		this.wsService.queue.push(q);
 		this.wsService.queueLen++;
 
-
 		// body 데이터 확인
 		if (body === undefined) {
 			this.wsService.result('subscribeResult', client, 'error', '전달받은 데이터가 없습니다.')
@@ -843,7 +841,7 @@ export class SubscribeGuard implements CanActivate {
 		}
 
 		// type 프로퍼티 확인
-		if (body.type === undefined) {
+		if (body.type === undefined || body.type === null) {
 			this.wsService.result('subscribeResult', client, 'error', 'type 프로퍼티가 없습니다.');
 			q.error = true;
 			// return false;
@@ -857,7 +855,7 @@ export class SubscribeGuard implements CanActivate {
 		}
 
 		// roomId 프로퍼티 확인
-		if ((body.type === Type.CHAT_ROOM || body.type === Type.GAME_ROOM) && body.roomId === undefined) {
+		if ((body.type === Type.CHAT_ROOM || body.type === Type.GAME_ROOM) && (body.roomId === undefined || body.roomId === null)) {
 			this.wsService.result('subscribeResult', client, 'error', 'roomId 프로퍼티가 없습니다.', body.type);
 			q.error = true;
 			// return false;

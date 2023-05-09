@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/user.create.dto';
 import { User } from './entity/user.entity';
 import { Socket, Server } from 'socket.io';
-const bcrypt = require('bcrypt');
 import { join } from 'path';
 import { UserFriend } from './entity/user.friend';
 import { WsService } from 'src/ws/ws.service';
@@ -13,6 +12,7 @@ import { UserStatus } from './user.status';
 import { WsGateWay } from 'src/ws/ws.gateway';
 import { ChatService } from 'src/chat/chat.service';
 const fs = require('fs');
+const bcrypt = require('bcrypt');
 
 @Injectable()
 export class UserService {

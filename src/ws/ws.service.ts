@@ -56,9 +56,6 @@ export class WsService {
 		@Inject(forwardRef(() => WsGateWay))
 		private wsGateWay: WsGateWay,
 
-		@InjectRepository(GameRoomUser)
-		private gameRoomUserRepository: Repository<GameRoomUser>,
-
 
 	) { }
 	async login(@ConnectedSocket() client: Socket) {
@@ -91,7 +88,6 @@ export class WsService {
 						this.chatService.updateChatRoom(elemClient, chat.room.id);
 					}
 				}
-
 
 			})
 			.catch(err => {
