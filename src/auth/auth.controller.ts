@@ -21,6 +21,7 @@ export class AuthController {
 		return await this.authService.login(code, res);
 	}
 
+	// test code
 	@Post('login/test')
 	async loginTest(@Body() body) {
 		const username = body.username;
