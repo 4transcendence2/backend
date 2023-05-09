@@ -3,6 +3,7 @@ import { UserService } from "src/user/user.service";
 import { User } from "src/user/entity/user.entity";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from 'bcrypt'
+import { use } from "passport";
 
 @Injectable()
 export class TempJwtService {
@@ -10,11 +11,13 @@ export class TempJwtService {
 		private jwtService: JwtService,
 	) {}
 
-	async login(user: User) {
-		const payload = { name: user.name, id: user.id, phone: user.phone };
-		return {
-			status: 'approved',
-			accessToken: this.jwtService.sign(payload),
+	publish(intraId: string, username: string, phone: string, activate: boolean) {
+		const payload = {
+			intraId: intraId,
+			username: username,
+			phone: phone,
+			activate: activate,
 		}
+		return this.jwtService.sign(payload);
 	}
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Headers, Res, Request, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Headers, Res, Request, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Inject, forwardRef } from '@nestjs/common';
 import { CreateUserDto } from './dto/user.create.dto';
 import { UserService } from './user.service';
 import { UseGuards } from '@nestjs/common';
@@ -7,6 +7,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { TempJwtGuard } from 'src/auth/temp_jwt/tempJwt.guard';
 import { AuthService } from 'src/auth/auth.service';
 import { join } from 'path';
+import { SignupJwtGuard } from 'src/auth/signup_jwt/signupJwt.guard';
+import { AuthGuard } from '@nestjs/passport';
 const fs = require('fs');
 require('dotenv').config();
 
@@ -14,11 +16,14 @@ require('dotenv').config();
 export class UserController {
 	constructor(
 		private userService: UserService,
+
+		@Inject(forwardRef(() => AuthService))
+		private authService: AuthService,
 	) {}
 
 
-	// @UseGuards(AuthGuard('jwt'))
-	@UseGuards(TempJwtGuard)
+	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(TempJwtGuard)
 	@Get('profile/:name')
 	async getProfile(@Param('name') name, @Request() req, @Res() res: Response) {
 		try {
@@ -33,8 +38,16 @@ export class UserController {
 		}
 	}
 
-	// @UseGuards(AuthGuard('jwt'))
-	@UseGuards(TempJwtGuard)
+	@UseGuards(AuthGuard('jwt'))
+	@Get('is2fa')
+	async is2FA(@Request() req: any, @Res() res: Response) {
+		return res.json({
+			status: await this.userService.is2FA(req.user.username),
+		})
+	}
+
+	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(TempJwtGuard)
 	@Get('avatar/:name')
 	async getAvatar(@Param('name') name, @Res() res: Response) {
 		const user = await this.userService.findOne(name);
@@ -51,6 +64,7 @@ export class UserController {
 	}
 
 
+	@UseGuards(AuthGuard('jwt'))
 	@Get('badge/:achievement')
 	async getBadge(@Param('achievement') achievement, @Res() res: Response) {
 		if (achievement !== 'win3' && achievement !== 'win5' && achievement !== 'win10') {
@@ -66,8 +80,8 @@ export class UserController {
 	}
 
 
-	// @UseGuards(AuthGuard('jwt'))
-	@UseGuards(TempJwtGuard)
+	@UseGuards(AuthGuard('jwt'))
+	// @UseGuards(TempJwtGuard)
 	@Post('avatar')
 	@UseInterceptors(FileInterceptor('avatar'))
 	async updateAvatar(@UploadedFile(
@@ -86,21 +100,22 @@ export class UserController {
 	}
 
 
-	// @UseGuards(SignupJwtGuard)
+	@UseGuards(SignupJwtGuard)
 	@Post('create')
-	async createUser(@Body() userInfo: CreateUserDto, @Res() res: Response) {
+	async createUser(@Request() req, @Body() info: CreateUserDto, @Res() res: Response) {
 		try {
-			await this.userService.createUser(userInfo);
+			await this.userService.createUser(req.user.intraId, info.username);
 			res.status(201);
 			return res.json({
 				status: 'approved',
 				detail: "User is created",
-			});
+				accessToken: this.authService.publishToken(req.user.intraId, info.username),
+			})
 		} catch (error) {
 			res.status(400);
 			return res.json({
-				status: error.severity,
-				detail: error.detail,
+				status: 'error',
+				detail: '중복된 username 또는 intraId 입니다.',
 			})
 		}
 	}

@@ -6,16 +6,16 @@ export class CreateUserDto {
 	@IsNotEmpty()
 	readonly username: string;
 
-	@IsString()
-	@IsNotEmpty()
-	readonly password: string;
+	// @IsString()
+	// @IsNotEmpty()
+	// readonly password: string;
 
-	@IsString()
-	@IsNotEmpty()
-	@Matches(/[0-9]\d{1,14}$/)
-	readonly phonenumber: string;
+	// @IsString()
+	// @IsNotEmpty()
+	// @Matches(/[0-9]\d{1,14}$/)
+	// readonly phonenumber: string;
 
-	@IsString()
-	@IsNotEmpty()
-	readonly intraId: string;
+	// @IsString()
+	// @IsNotEmpty()
+	// readonly intraId: string;
 }

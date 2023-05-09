@@ -10,7 +10,9 @@ import { WsService } from 'src/ws/ws.service';
 import { GameService } from 'src/game/game.service';
 import { UserStatus } from './user.status';
 import { WsGateWay } from 'src/ws/ws.gateway';
-import { ChatService } from 'src/chat/chat.service';
+import { ChatService } from 'src/chat/chat.service'
+import { Response } from 'express';
+import { SignupJwtService } from 'src/auth/signup_jwt/signupJwt.service';
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 
@@ -35,9 +37,16 @@ export class UserService {
 		@Inject(forwardRef(() => ChatService))
 		private chatService: ChatService,
 
-
-
 	) {}
+
+
+
+
+
+
+
+
+	
 
 	async findAll(): Promise<User[]> {
 		return await this.usersRepository.find();
@@ -120,18 +129,15 @@ export class UserService {
 		})
 	}
 
-	async createUser(userInfo: CreateUserDto) {
-		const hashedPassword = await bcrypt.hash(userInfo.password, parseInt(process.env.HASH_KEY));
+	async createUser(intraId: string, username: string) {
+		// const hashedPassword = await bcrypt.hash(userInfo.password, parseInt(process.env.HASH_KEY));
 		const defaultAvatar = await fs.readFileSync(join(__dirname, '../..', 'public', 'default.png'), (err) => {
 			if (err) console.log(err, "기본 아바타 파일 이상");
 		});
 		const newUser: User = this.usersRepository.create({
-			chat: [],
-			name: userInfo.username,
-			password: hashedPassword,
+			name: username,
 			avatar: defaultAvatar,
-			phone: userInfo.phonenumber,
-			intra_id: userInfo.intraId,
+			intra_id: intraId,
 		});
 		await this.usersRepository.save(newUser);
 	}
@@ -143,10 +149,26 @@ export class UserService {
 		await this.usersRepository.save(user);
 	}
 
+	async activate2FA(name: string, phone: string) {
+		const user = await this.findOne(name);
+		user.tfa = true;
+		user.phone = phone;
+		await this.usersRepository.save(user);
+	}
 
+	async inactivate2FA(name: string) {
+		const user = await this.findOne(name);
+		user.tfa = false;
+		user.phone = null;
+		await this.usersRepository.save(user);
+	}
 
 	async isExist(username: string): Promise<boolean> {
 		return await this.findOne(username) === null ? false : true;
+	}
+
+	async is2FA(username: string): Promise<boolean> {
+		return (await this.findOne(username)).tfa
 	}
 
 	async isGaming(name: string, client?: Socket): Promise<boolean> {
@@ -185,7 +207,6 @@ export class UserService {
 		}
 	}
 
-
 	async addFriend(server: Server, client: Socket, body: any) {
 		const user = await this.findOne(await this.wsService.findName(client));
 		const friend = await this.findOne(body.username);
@@ -209,7 +230,6 @@ export class UserService {
 			}
 		}
 	}
-
 
 	async removeFriend(server: Server, client: Socket, body: any) {
 		const user = await this.findOne(await this.wsService.findName(client));
@@ -236,7 +256,6 @@ export class UserService {
 			}
 		}
 	}
-
 
 	async findFriends(user: User): Promise<UserFriend[]> {
 		return await this.usersFriendRepository.find({
@@ -292,9 +311,13 @@ export class UserService {
 		user.rating += 20;
 		await this.usersRepository.save(user);
 	}
+
 	async minus(name: string) {
 		const user = await this.findOne(name);
 		user.rating -= 20;
 		await this.usersRepository.save(user);
 	}
+
+	
+
 }

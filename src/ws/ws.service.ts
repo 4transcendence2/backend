@@ -222,12 +222,12 @@ export class WsService {
 			if (body.type === Type.GAME_ROOM_LIST) {
 				await client.leave('gameRoomList');
 			}
-	
+
 			// dmList
 			if (body.type === Type.DM_LIST) {
 				await client.leave('dmList');
 			}
-	
+
 			// friendList
 			if (body.type === Type.FRIEND_LIST) {
 				await client.leave('friendList');

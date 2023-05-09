@@ -16,25 +16,16 @@ export class User {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column({
-		enum: UserStatus,
-		default: UserStatus.LOGOUT,
-	})
+	@Column({ enum: UserStatus, default: UserStatus.LOGOUT })
 	status: string;
 
-	@Column({
-		default: 1000,
-	})
+	@Column({ default: 1000 })
 	rating: number;
 
-	@Column({
-		default: 0,
-	})
+	@Column({ default: 0 })
 	win: number;
 
-	@Column({
-		default: 0,
-	})
+	@Column({ default: 0 })
 	lose: number;
 
 	@OneToMany(() => UserFriend, (userFriend) => userFriend.from)
@@ -80,48 +71,31 @@ export class User {
 	@OneToMany(() => Block, (block) => block.to)
 	blocked: Block[];
 
-
 	@OneToMany(() => ChatRoom, (chatRoom) => chatRoom.owner)
 	owner: ChatRoom[];
 
-	@Column({
-		unique: true,
-	})
+	@Column({ unique: true })
 	name: string;
 
-	@Column({
-	})
-	password: string;
-
-	@Column({
-		type: "bytea",
-		nullable: false,
-	})
+	@Column({ type: "bytea", nullable: false })
 	avatar: Buffer;
 
-	@Column({	
-		nullable: false,
-	})
+	@Column({	nullable: true })
 	phone: string;
 
-	@Column({
-		nullable: true,
-	})
-	intra_id: string
+	@Column({ nullable: false, unique: true })
+	intra_id: string;
 
-	@Column({
-		default: false,
-	})
+	@Column({ default: false })
+	tfa: boolean;
+
+	@Column({ default: false })
 	win3: boolean;
 
-	@Column({
-		default: false,
-	})
+	@Column({ default: false })
 	win5: boolean;
 
-	@Column({
-		default: false,
-	})
+	@Column({ default: false })
 	win10: boolean;
 
 }

@@ -16,6 +16,7 @@ import { ChatModule } from 'src/chat/chat.module';
 		forwardRef(() => WsModule),
 		forwardRef(() => GameModule),
 		forwardRef(() => ChatModule),
+		
 ],
 	controllers: [ UserController ],
 	providers: [ UserService ],

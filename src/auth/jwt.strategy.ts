@@ -18,6 +18,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 			id: payload.id,
 			name: payload.name,
 			phone: payload.phone 
-		});
+	});
 	}
 }
