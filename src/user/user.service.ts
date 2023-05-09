@@ -1,7 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/user.create.dto';
 import { User } from './entity/user.entity';
 import { Socket, Server } from 'socket.io';
 import { join } from 'path';
@@ -11,10 +10,7 @@ import { GameService } from 'src/game/game.service';
 import { UserStatus } from './user.status';
 import { WsGateWay } from 'src/ws/ws.gateway';
 import { ChatService } from 'src/chat/chat.service'
-import { Response } from 'express';
-import { SignupJwtService } from 'src/auth/signup_jwt/signupJwt.service';
 const fs = require('fs');
-const bcrypt = require('bcrypt');
 
 @Injectable()
 export class UserService {
@@ -318,6 +314,31 @@ export class UserService {
 		await this.usersRepository.save(user);
 	}
 
+
+
+
+
+
+
+
+
+
+
+
+	// test code
+	async createTest() {
+		const defaultAvatar = await fs.readFileSync(join(__dirname, '../..', 'public', 'default.png'), (err) => {
+			if (err) console.log(err, "기본 아바타 파일 이상");
+		});
+		for (let i = 1; i < 10; ++i) {
+			let newUser = this.usersRepository.create({
+				name: i.toString(),
+				intra_id: i.toString(),
+				avatar: defaultAvatar,
+			});
+			await this.usersRepository.save(newUser);
+		}
+	}
 	
 
 }

@@ -21,6 +21,21 @@ export class AuthController {
 		return await this.authService.login(code, res);
 	}
 
+	@Post('login/test')
+	async loginTest(@Body() body) {
+		const username = body.username;
+
+		if (0 < parseInt(username) && parseInt(username) < 10) {
+			return ({
+				accessToken: this.authService.publishToken(body.username, body.username),
+			});
+		} else {
+			return ({
+				accessToken: 'error',
+			})
+		}
+	}
+
 	@Get('exist/:name')
 	async isExist(@Param('name') name: string, @Res() res: Response) {
 		return res.json({

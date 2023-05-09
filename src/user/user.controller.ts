@@ -119,4 +119,15 @@ export class UserController {
 			})
 		}
 	}
+
+	// test code
+	@Get('create/test')
+	async createTest() {
+		try {
+			await this.userService.createTest();
+			return;
+		} catch (err) {
+			return err;
+		}
+	}
 }
