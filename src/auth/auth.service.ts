@@ -72,6 +72,7 @@ export class AuthService {
 		if (user.tfa === false) {
 			return res.json({
 				status: 'approved',
+				username: user.name,
 				accessToken: this.publishToken(intraId, user.name),
 			})
 		}
@@ -85,6 +86,7 @@ export class AuthService {
 				return res.json({
 					status: 'published',
 					detail: '2fa',
+					username: user.name,
 					accessToken: this.tempJwtService.publish(intraId, user.name, user.phone, false),
 				})
 			} catch(err) {
