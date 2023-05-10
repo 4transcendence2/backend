@@ -90,7 +90,7 @@ export class UserController {
 		})
 	) file: Express.Multer.File, @Request() req) {
 		try {
-			await this.userService.updateAvatar(req.user.name, file.buffer);
+			await this.userService.updateAvatar(req.user.username, file.buffer);
 		} catch (err) {
 			console.log(err);
 		}
