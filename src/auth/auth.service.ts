@@ -100,7 +100,7 @@ export class AuthService {
 	}
 
 	async getAccessToken(code: string): Promise<string> {
-		const url = `https://api.intra.42.fr/oauth/token?grant_type=authorization_code&client_id=${process.env.FT_OAUTH_UID}&client_secret=${process.env.FT_OAUTH_SECRET}&code=${code}&redirect_uri=http://localhost:5173`;
+		const url = `https://api.intra.42.fr/oauth/token?grant_type=authorization_code&client_id=${process.env.FT_OAUTH_UID}&client_secret=${process.env.FT_OAUTH_SECRET}&code=${code}&redirect_uri=http://localhost:5173/signin`;
 
 		const res = await fetch(url, {
 			method: 'post',
