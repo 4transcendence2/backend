@@ -27,7 +27,7 @@ export class UserController {
 	@Get('profile/:name')
 	async getProfile(@Param('name') name, @Request() req, @Res() res: Response) {
 		try {
-			const result = await this.userService.getProfile(req.user.name, name);
+			const result = await this.userService.getProfile(req.user.username, name);
 			return res.json(result);
 		} catch (err) {
 			res.status(404);
