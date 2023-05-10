@@ -143,6 +143,8 @@ export class AuthService {
 			})
 		} catch(err) {
 			const errArr = err.message.split(' ');
+			console.log(err.message);
+			console.log(err);
 
 			if (errArr[1] === 'Invalid' && errArr[2] === 'parameter' && errArr[3] ==='`To`:') {
 				res.status(400);
