@@ -145,6 +145,7 @@ export class AuthService {
 			return res.json({
 				status: 'error',
 				detail: 'OTP API server is sick. Try later.',
+				content: err,
 			})
 		}
 	}
