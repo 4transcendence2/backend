@@ -6,6 +6,7 @@ import { SignupJwtService } from './signup_jwt/signupJwt.service';
 import { WsService } from 'src/ws/ws.service';
 import { JwtService } from '@nestjs/jwt';
 import { TempJwtService } from './temp_jwt/tempJwt.service';
+import { stringify } from 'querystring';
 require('dotenv').config();
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
@@ -166,15 +167,10 @@ export class AuthService {
 
 	async sendOtp(phoneNumber: string) {
 			const formatNumber = '+82' + phoneNumber.substring(1);
-			client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
-			.catch(err => {
-				console.log(err);
-				throw new Error(err)
-			})
+			await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
 			.verifications
 			.create({ to: formatNumber, channel: 'sms' })
 			.catch (err => {
-				console.log(err);
 				throw new Error(err);
 			})
 	}
