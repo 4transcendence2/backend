@@ -212,7 +212,7 @@ export class AuthService {
 		try {
 			const token = await this.extractToken(header);
 			const decodedToken = jwt.verify(token, secret);
-			return decodedToken['name'];
+			return decodedToken['username'];
 		} catch (err) {
 			throw new UnauthorizedException();
 		}

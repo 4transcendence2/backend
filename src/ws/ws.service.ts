@@ -59,7 +59,7 @@ export class WsService {
 
 	) { }
 	async login(@ConnectedSocket() client: Socket) {
-		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
+		await this.authService.decodeToken(client.handshake.headers, process.env.SECRET)
 			.then(async name => {
 				if (await this.isLogin(undefined, name)) {
 					client.emit('error', {
@@ -99,7 +99,7 @@ export class WsService {
 	}
 
 	async logout(@ConnectedSocket() client: Socket) {
-		await this.authService.decodeToken(client.handshake.headers, process.env.TMP_SECRET)
+		await this.authService.decodeToken(client.handshake.headers, process.env.SECRET)
 			.then(async name => {
 				const tmpClient = await this.findClient(name);
 				if (tmpClient !== client) return;

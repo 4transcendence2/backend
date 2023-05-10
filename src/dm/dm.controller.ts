@@ -25,7 +25,7 @@ export class DmController {
 	@UseGuards(SendListGuard)
 	@Get('list')
 	async sendList(@Headers() header, @Response() res) {
-		const name = await this.authService.decodeToken(header, process.env.TMP_SECRET);
+		const name = await this.authService.decodeToken(header, process.env.SECRET);
 		const user = await this.userService.findOne(name);
 		return this.dmService.sendList(user, res);
 	}
