@@ -1,5 +1,5 @@
 require('dotenv').config();
-import { Injectable, Headers, forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Headers, forwardRef, Inject, UnauthorizedException, HttpException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entity/user.entity';
 import { Response } from 'express';
@@ -167,13 +167,16 @@ export class AuthService {
 	}
 
 	async sendOtp(phoneNumber: string) {
-		const formatNumber = '+82' + phoneNumber.substring(1);
-		client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
-    .verifications
-    .create({ to: formatNumber, channel: 'sms' })
-		.catch(err => {
+		try {
+			const formatNumber = '+82' + phoneNumber.substring(1);
+			client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
+			.verifications
+			.create({ to: formatNumber, channel: 'sms' })
+		} catch (err) {
 			throw new Error(err);
-		});
+		}
+		// .catch((err: any) => {
+		// });
 	}
 
 	async checkOtp(payload: any, otp: string, res: Response) {
