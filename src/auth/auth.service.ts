@@ -145,7 +145,6 @@ export class AuthService {
 			return res.json({
 				status: 'error',
 				detail: 'OTP API server is sick. Try later.',
-				content: err,
 			})
 		}
 	}
@@ -169,11 +168,13 @@ export class AuthService {
 			const formatNumber = '+82' + phoneNumber.substring(1);
 			client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
 			.catch(err => {
+				console.log(err);
 				throw new Error(err)
 			})
 			.verifications
 			.create({ to: formatNumber, channel: 'sms' })
 			.catch (err => {
+				console.log(err);
 				throw new Error(err);
 			})
 	}
