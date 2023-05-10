@@ -6,13 +6,7 @@ import { GameService } from "./game.service";
 export class GameController {
 
 	constructor(
-		private gameService: GameService
 	) {}
 	
-
-	// @Post('create')
-	// async createRoom() {
-	// 	await this.gameService.createRoom();
-	// }
 }
 

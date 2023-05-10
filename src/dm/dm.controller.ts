@@ -1,10 +1,9 @@
 import { Controller, Get, Headers, Inject, Param, Res, Response, UseGuards, forwardRef } from '@nestjs/common';
-import { JwtGuard } from 'src/auth/jwt.guard';
-import { TempJwtGuard } from 'src/auth/temp_jwt/tempJwt.guard';
 import { SendListGuard } from './dm.guard';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { DmService } from './dm.service';
+import { AuthGuard } from '@nestjs/passport';
 require('dotenv').config();
 
 @Controller('dm')
@@ -20,8 +19,7 @@ export class DmController {
 		private dmService: DmService,
 	) {}
 
-	// @UserGuard(JwtGuard)
-	@UseGuards(TempJwtGuard)
+	@UseGuards(AuthGuard('jwt'))
 	@UseGuards(SendListGuard)
 	@Get('list')
 	async sendList(@Headers() header, @Response() res) {
