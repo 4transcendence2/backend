@@ -54,12 +54,13 @@ export class AuthController {
 	@UseGuards(AuthGuard('jwt'))
 	@Get('inactivate/2fa')
 	async inactivate2FA(@Request() req: any, @Res() res: Response) {
-		return await this.authService.inactivate2FA(req.user.name, res);
+		return await this.authService.inactivate2FA(req.user.username, res);
 	}
 
 	@UseGuards(TempJwtGuard)
 	@Post('check/otp')
 	async checkLoginOtp(@Request() req, @Body() body: OtpDto, @Res() res: Response) {
+		console.log(req.user);
 		return await this.authService.checkOtp(req.user, body.otp, res);
 	}
 }

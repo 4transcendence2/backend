@@ -16,8 +16,8 @@ export class TempJwtStrategy extends PassportStrategy(Strategy, 'tmpJwt') {
 
 	async validate(payload: any) {
 		return ({
-			intraId: payload.id,
-			username: payload.name,
+			intraId: payload.intraId,
+			username: payload.username,
 			phone: payload.phone,
 			activate: payload.activate,
 		});
