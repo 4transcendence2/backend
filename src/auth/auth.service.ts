@@ -142,12 +142,21 @@ export class AuthService {
 				accessToken: this.tempJwtService.publish(payload.intraId, payload.username, phone, true),
 			})
 		} catch(err) {
-			console.log(err.message);
-			res.status(500);
-			return res.json({
-				status: 'error',
-				detail: 'OTP API server is sick. Try later.',
-			})
+			const errArr = err.message.split(' ');
+
+			if (errArr[1] === 'Invalid' && errArr[2] === 'parameter' && errArr[3] ==='`To`:') {
+				res.status(400);
+				return res.json({
+					status: 'error',
+					detail: 'Invalid phonenumber.',
+				})
+			} else {
+				res.status(500);
+				return res.json({
+					status: 'error',
+					detail: 'OTP API server is sick. Try later.',
+				})
+			}
 		}
 	}
 
