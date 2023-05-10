@@ -27,6 +27,7 @@ export class AuthController {
 		const username = body.username;
 
 		if (0 < parseInt(username) && parseInt(username) < 10) {
+			console.log(body.username)
 			return ({
 				accessToken: this.authService.publishToken(body.username, body.username),
 			});
@@ -59,6 +60,7 @@ export class AuthController {
 	@UseGuards(TempJwtGuard)
 	@Post('check/otp')
 	async checkLoginOtp(@Request() req, @Body() body: OtpDto, @Res() res: Response) {
+		console.log(req.user);
 		return await this.authService.checkOtp(req.user, body.otp, res);
 	}
 }

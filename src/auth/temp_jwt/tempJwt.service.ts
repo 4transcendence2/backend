@@ -18,6 +18,7 @@ export class TempJwtService {
 			phone: phone,
 			activate: activate,
 		}
+		console.log(payload);
 		return this.jwtService.sign(payload);
 	}
 }
