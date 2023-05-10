@@ -40,9 +40,7 @@ export class UserController {
 	@UseGuards(AuthGuard('jwt'))
 	@Get('is2fa')
 	async is2FA(@Request() req: any, @Res() res: Response) {
-		return res.json({
-			status: await this.userService.is2FA(req.user.username),
-		})
+		return res.json(await this.userService.is2FA(req.user.username));
 	}
 
 	@UseGuards(AuthGuard('jwt'))

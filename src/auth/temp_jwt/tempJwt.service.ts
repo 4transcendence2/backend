@@ -1,9 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { UserService } from "src/user/user.service";
-import { User } from "src/user/entity/user.entity";
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from 'bcrypt'
-import { use } from "passport";
 
 @Injectable()
 export class TempJwtService {
@@ -18,7 +14,6 @@ export class TempJwtService {
 			phone: phone,
 			activate: activate,
 		}
-		console.log(payload);
 		return this.jwtService.sign(payload);
 	}
 }

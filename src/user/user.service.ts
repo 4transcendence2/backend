@@ -163,8 +163,12 @@ export class UserService {
 		return await this.findOne(username) === null ? false : true;
 	}
 
-	async is2FA(username: string): Promise<boolean> {
-		return (await this.findOne(username)).tfa
+	async is2FA(username: string) {
+		const user = await this.findOne(username);
+		return ({
+			status: user.tfa,
+			phonenumber: user.phone
+		});
 	}
 
 	async isGaming(name: string, client?: Socket): Promise<boolean> {
