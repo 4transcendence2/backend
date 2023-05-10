@@ -1,14 +1,12 @@
-require('dotenv').config();
 import { Injectable, Headers, forwardRef, Inject, UnauthorizedException, HttpException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import { User } from 'src/user/entity/user.entity';
 import { Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { SignupJwtService } from './signup_jwt/signupJwt.service';
 import { WsService } from 'src/ws/ws.service';
 import { JwtService } from '@nestjs/jwt';
 import { TempJwtService } from './temp_jwt/tempJwt.service';
-const bcrypt = require('bcrypt');
+require('dotenv').config();
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 @Injectable()
@@ -167,16 +165,16 @@ export class AuthService {
 	}
 
 	async sendOtp(phoneNumber: string) {
-		try {
 			const formatNumber = '+82' + phoneNumber.substring(1);
 			client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
+			.catch(err => {
+				throw new Error(err)
+			})
 			.verifications
 			.create({ to: formatNumber, channel: 'sms' })
-		} catch (err) {
-			throw new Error(err);
-		}
-		// .catch((err: any) => {
-		// });
+			.catch (err => {
+				throw new Error(err);
+			})
 	}
 
 	async checkOtp(payload: any, otp: string, res: Response) {
