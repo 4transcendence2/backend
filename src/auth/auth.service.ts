@@ -142,6 +142,7 @@ export class AuthService {
 				accessToken: this.tempJwtService.publish(payload.intraId, payload.username, phone, true),
 			})
 		} catch(err) {
+			console.log(err.message);
 			res.status(500);
 			return res.json({
 				status: 'error',

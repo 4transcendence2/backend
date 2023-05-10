@@ -52,7 +52,7 @@ export class AuthController {
 	}
 
 	@UseGuards(AuthGuard('jwt'))
-	@Post('inactivate/2fa')
+	@Get('inactivate/2fa')
 	async inactivate2FA(@Request() req: any, @Res() res: Response) {
 		return await this.authService.inactivate2FA(req.user.name, res);
 	}
