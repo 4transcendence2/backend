@@ -1,6 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { GameService } from './game.service';
-import { GameController } from './game.controller';
 import { Repository } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GameRoom } from './entity/game.room.entity';
@@ -17,6 +16,5 @@ import { GameHistory } from './entity/game.history.entity';
 	],
 	providers: [ GameService, Repository ],
 	exports: [ GameService ],
-	controllers: [ GameController ],
 })
 export class GameModule {}

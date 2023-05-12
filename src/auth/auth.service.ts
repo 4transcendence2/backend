@@ -1,4 +1,4 @@
-import { Injectable, Headers, forwardRef, Inject, UnauthorizedException, HttpException } from '@nestjs/common';
+import { Injectable, Headers, forwardRef, Inject, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { Response } from 'express';
 import * as jwt from 'jsonwebtoken';
@@ -6,7 +6,6 @@ import { SignupJwtService } from './signup_jwt/signupJwt.service';
 import { WsService } from 'src/ws/ws.service';
 import { JwtService } from '@nestjs/jwt';
 import { TempJwtService } from './temp_jwt/tempJwt.service';
-import { stringify } from 'querystring';
 require('dotenv').config();
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
@@ -93,6 +92,7 @@ export class AuthService {
 				return res.json({
 					status: 'error',
 					detail: 'OTP API server is sick. Try later.',
+					content: err.message,
 				})
 			}
 		}
@@ -104,7 +104,7 @@ export class AuthService {
 		const res = await fetch(url, {
 			method: 'post',
 		}).then(res => res.json()).catch(err => {
-			console.log('42OAuth access token fetch error.');
+			console.error('42OAuth access token fetch error.', err.message);
 		});
 
 		return (res.error || res.access_token === undefined) ? 'error' : res.access_token;
@@ -119,19 +119,11 @@ export class AuthService {
 		})
 		.then(res => res.json())
 		.catch(err => {
-			console.log('42 Get IntraId fetch error.');
+			console.error('42 Get IntraId fetch error.', err.message);
 		});
 
 		return me.login === undefined ? 'error' : me.login;
 	}
-
-	// async validateUser(id: string, password: string): Promise<User> {
-	// 	const user = await this.userService.findOne(id);
-	// 	// if (user && await bcrypt.compare(password, user.password)) {
-	// 	// 	return user;
-	// 	// }
-	// 	return null;
-	// }
 
 	async activate2FA(payload: {intraId: string, username: string }, phone: string, res: Response) {
 		try {
@@ -143,8 +135,6 @@ export class AuthService {
 			})
 		} catch(err) {
 			const errArr = err.message.split(' ');
-			console.log(err.message);
-			console.log(err);
 
 			if (errArr[1] === 'Invalid' && errArr[2] === 'parameter' && errArr[3] ==='`To`:') {
 				res.status(400);
@@ -182,7 +172,8 @@ export class AuthService {
 			await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
 			.verifications
 			.create({ to: formatNumber, channel: 'sms' })
-			.catch (err => {
+			.catch ((err: any) => {
+				console.error(err.message);
 				throw new Error(err);
 			})
 	}
@@ -225,6 +216,7 @@ export class AuthService {
 			const decodedToken = jwt.verify(token, secret);
 			return decodedToken['username'];
 		} catch (err) {
+			console.error(err.message);
 			throw new UnauthorizedException();
 		}
 	}

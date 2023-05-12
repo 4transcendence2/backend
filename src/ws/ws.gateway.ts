@@ -19,7 +19,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 		private wsService: WsService,
 
 		@Inject(forwardRef(() => ChatService))
-    private chatService: ChatService,
+		private chatService: ChatService,
 
 		@Inject(forwardRef(() => UserService))
 		private userService: UserService,
@@ -41,15 +41,15 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	/*
 		Socket connect Event
 	*/
-	async handleConnection(client: Socket) {
-		await this.wsService.login(client);
-}
+	handleConnection(client: Socket) {
+		this.wsService.login(client);
+	}
 
 	/*
 		Socket Disconnect Event
 	*/
-	async handleDisconnect(client: Socket) {
-		await this.wsService.logout(client);
+	handleDisconnect(client: Socket) {
+		this.wsService.logout(client);
 	}
 
 	/*
@@ -59,12 +59,12 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(SubscribeGuard)
 	@SubscribeMessage('subscribe')
-	async subscribe(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+	subscribe(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.wsService.handleQueue(client, body);
 	}
-	
-	
-	
+
+
+
 	/*
 	Unsubscribe
 	*/
@@ -72,11 +72,11 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(UnsubscribeGuard)
 	@SubscribeMessage('unsubscribe')
-	async unsubscribe(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+	unsubscribe(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.wsService.handleQueue(client, body);
 	}
-	
-	
+
+
 	/*
 	Create Chat Room Event
 	*/
@@ -84,8 +84,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(CreateChatRoomGuard)
 	@SubscribeMessage('createChatRoom')
-	async createChatRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.createChatRoom(this.server, client, body);
+	createChatRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.createChatRoom(this.server, client, body);
 	}
 
 
@@ -96,10 +96,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(JoinChatRoomGuard)
 	@SubscribeMessage('joinChatRoom')
-	async joinChatRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.joinChatRoom(this.server, client, body);
+	joinChatRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.joinChatRoom(this.server, client, body);
 	}
-	
+
 	/*
 		Exit Room Event
 	*/
@@ -107,8 +107,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(ExitChatRoomGuard)
 	@SubscribeMessage('exitChatRoom')
-	async exitChatRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.exitChatRoom(this.server, client, body);
+	exitChatRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.exitChatRoom(this.server, client, body);
 	}
 
 	/*
@@ -118,8 +118,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(ChatGuard)
 	@SubscribeMessage('chat')
-	async chat(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.chat(this.server, client, body);
+	chat(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.chat(this.server, client, body);
 	}
 
 
@@ -130,8 +130,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(KickGuard)
 	@SubscribeMessage('kick')
-	async kick(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.kick(this.server, client, body);
+	kick(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.kick(this.server, client, body);
 	}
 
 
@@ -142,8 +142,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(BanGuard)
 	@SubscribeMessage('ban')
-	async ban(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.ban(this.server, client, body);
+	ban(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.ban(this.server, client, body);
 	}
 
 
@@ -154,8 +154,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(UnbanGuard)
 	@SubscribeMessage('unban')
-	async unBan(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.unban(this.server, client, body);
+	unBan(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.unban(this.server, client, body);
 	}
 
 	/*
@@ -165,8 +165,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(MuteGuard)
 	@SubscribeMessage('mute')
-	async mute(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.mute(this.server, client, body);
+	mute(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.mute(this.server, client, body);
 	}
 
 
@@ -177,8 +177,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(InviteChatGuard)
 	@SubscribeMessage('inviteChat')
-	async inviteChat(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.invite(this.server, client, body);
+	inviteChat(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.invite(this.server, client, body);
 	}
 
 	/*
@@ -188,10 +188,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(AppointAdminGuard)
 	@SubscribeMessage('appointAdmin')
-	async appointAdmin(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.appointAdmin(this.server, client, body);
+	appointAdmin(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.appointAdmin(this.server, client, body);
 	}
-	
+
 
 	/*
 		Set PW
@@ -200,8 +200,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(SetPasswordGuard)
 	@SubscribeMessage('setPassword')
-	async setPassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.setPassword(this.server, client, body);
+	setPassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.setPassword(this.server, client, body);
 	}
 
 
@@ -212,8 +212,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(ChangePasswordGuard)
 	@SubscribeMessage('changePassword')
-	async changePassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.changePassword(this.server, client, body);
+	changePassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.changePassword(this.server, client, body);
 	}
 
 
@@ -224,11 +224,11 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(RemovePasswordGuard)
 	@SubscribeMessage('removePassword')
-	async removePassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.removePassword(this.server, client, body);
+	removePassword(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.removePassword(this.server, client, body);
 	}
 
-	
+
 	/*
 	Dismiss Admin
 	*/
@@ -236,10 +236,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(DismissAdminGuard)
 	@SubscribeMessage('dismissAdmin')
-	async dismissAdmin(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.dismissAdmin(this.server, client ,body);
+	dismissAdmin(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.dismissAdmin(this.server, client, body);
 	}
-	
+
 
 	/*
 		Block
@@ -248,8 +248,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(BlockGuard)
 	@SubscribeMessage('block')
-	async block(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.block(this.server, client, body);
+	block(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.block(this.server, client, body);
 	}
 
 
@@ -261,8 +261,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(UnblockGuard)
 	@SubscribeMessage('unblock')
-	async unblock(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.chatService.unBlock(this.server, client, body);
+	unblock(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.chatService.unBlock(this.server, client, body);
 	}
 
 
@@ -273,8 +273,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(AddFriendGuard)
 	@SubscribeMessage('addFriend')
-	async addFriend(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.userService.addFriend(this.server, client, body);
+	addFriend(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.userService.addFriend(this.server, client, body);
 	}
 
 
@@ -285,8 +285,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(RemoveFriendGuard)
 	@SubscribeMessage('removeFriend')
-	async removeFriend(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.userService.removeFriend(this.server, client, body);
+	removeFriend(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.userService.removeFriend(this.server, client, body);
 	}
 
 
@@ -298,10 +298,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(DmGuard)
 	@SubscribeMessage('dm')
 	dm(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.dmService.dm(this.server, client ,body);
+		this.dmService.dm(this.server, client, body);
 	}
-	
-	
+
+
 	/*
 	Exit Dm
 	*/
@@ -310,7 +310,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(ExitDmGuard)
 	@SubscribeMessage('exitDm')
 	exitDm(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.dmService.exit(this.server, client ,body);
+		this.dmService.exit(this.server, client, body);
 	}
 
 
@@ -323,10 +323,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(SearchGameGuard)
 	@SubscribeMessage('searchGame')
-	async searchGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.gameService.enrollQueue(client, body);
+	searchGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.gameService.enrollQueue(client, body);
 	}
-	
+
 	/*
 		CancleSearch
 	*/
@@ -334,7 +334,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(CancleSearchGuard)
 	@SubscribeMessage('cancleSearch')
-	async cancleSearch(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+	cancleSearch(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.gameService.cancleQueue(client, body);
 	}
 
@@ -345,8 +345,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(JoinGameRoomGuard)
 	@SubscribeMessage('joinGameRoom')
-	async joinGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.gameService.joinGameRoom(client, body);
+	joinGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.gameService.joinGameRoom(client, body);
 	}
 
 
@@ -357,8 +357,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(ExitGameRoomGuard)
 	@SubscribeMessage('exitGameRoom')
-	async exitGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		await this.gameService.exitGameRoom(client, body);
+	exitGameRoom(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.gameService.exitGameRoom(client, body);
 	}
 
 
@@ -369,7 +369,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(InviteGameGuard)
 	@SubscribeMessage('inviteGame')
-	async inviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+	inviteGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.gameService.inviteGame(client, body);
 	}
 
@@ -381,7 +381,7 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(AcceptGameGuard)
 	@SubscribeMessage('acceptGame')
-	async acceptGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+	acceptGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.gameService.acceptGame(client, body);
 	}
 
@@ -393,10 +393,10 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(LoginGuard)
 	@UseGuards(DeclineGameGuard)
 	@SubscribeMessage('declineGame')
-	async delcineGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+	delcineGame(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.gameService.declineGame(client, body);
 	}
-	
+
 	/*
 		paadle up
 	*/
@@ -413,8 +413,8 @@ export class WsGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 	down(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.gameService.down(body.roomId, body.role);
 	}
-	
-	
+
+
 
 
 

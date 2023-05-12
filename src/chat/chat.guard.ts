@@ -11,8 +11,6 @@ require('dotenv').config();
 export class SendHistoryGuard implements CanActivate {
 
 	constructor(
-		@Inject(forwardRef(() => UserService))
-		private userService: UserService,
 
 		@Inject(forwardRef(() => AuthService))
 		private authService: AuthService,

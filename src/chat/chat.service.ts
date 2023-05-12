@@ -6,11 +6,11 @@ import { WsService } from 'src/ws/ws.service';
 import { Socket, Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
 import { RoomStatus } from './chat.room.status';
-import { UserStatus } from 'src/user/user.status';
 import { User } from 'src/user/entity/user.entity';
 import { ChatRoomUser } from './entity/chat.room.user.entity';
 import { ChatHistory } from './entity/chat.history.entity';
 import { Block } from './entity/chat.block.entity';
+import * as bcrypt from 'bcrypt';
 
 
 @Injectable()
@@ -108,9 +108,6 @@ export class ChatService {
 		const user = await this.userService.findOne(name === undefined ? await this.wsService.findName(client) : name);
 		return await this.findRoomUser(user, room) !== null ? true : false;
 	}
-
-
-	/*---------------채팅방---------------*/
 	
 	async createChatRoom(server: Server, client: Socket, body: any) {
 		const name = await this.wsService.findName(client);
@@ -119,7 +116,7 @@ export class ChatService {
 		const newRoom = this.chatRoomRepository.create({
 			status: body.status,
 			title: body.title,
-			password: body.status === 'protected' ? body.password : null,
+			password: body.status === 'protected' ? await bcrypt.hash(body.password, parseInt(process.env.HASH_KEY)) : null,
 			owner: user,
 			users: [],
 			ban: [],
@@ -355,10 +352,6 @@ export class ChatService {
 			list: list,
 		});
 	}
-
-	// async sendHistory(id: number, user: User) {
-
-	// }
 
 	async chat(server: Server, client: Socket, body: any) {
 		const room = await this.findOne(body.roomId);
@@ -801,21 +794,19 @@ export class ChatService {
 
 	async changePassword(server: Server, client: Socket, body: any) {
 		let room = await this.findOne(body.roomId);
-		room.password = body.password;
+		room.password = await bcrypt.hash(body.password, parseInt(process.env.HASH_KEY));
 
 		client.emit('changePasswordResult', {
 			status: 'approved',
 			roomId: room.id,
 		})
-
-
 		await this.chatRoomRepository.save(room);
 	}
 
 	async removePassword(server: Server, client: Socket, body: any) {
 		let room = await this.findOne(body.roomId);
 		room.status = RoomStatus.PULBIC;
-		room.password = body.password;
+		room.password = null;
 
 		client.emit('removePasswordResult', {
 			status: 'approved',

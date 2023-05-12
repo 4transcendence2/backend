@@ -9,9 +9,6 @@ import { Type } from './ws.type';
 import { WsGateWay } from './ws.gateway';
 import { DmService } from 'src/dm/dm.service';
 import { GameService } from 'src/game/game.service';
-import { InjectRepository } from '@nestjs/typeorm';
-import { GameRoomUser } from 'src/game/entity/game.room.user.entity';
-import { Repository } from 'typeorm';
 
 interface login {
 	name: string,

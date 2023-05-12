@@ -1,6 +1,5 @@
-import { Injectable, Req } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
-import { Request } from "express";
 import { ExtractJwt, Strategy } from "passport-jwt";
 require('dotenv').config();
 

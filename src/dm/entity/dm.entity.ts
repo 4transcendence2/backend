@@ -1,5 +1,5 @@
 import { User } from "src/user/entity/user.entity";
-import { Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { DmHistory } from "./dm.history";
 import { DmUser } from "./dm.user.entity";
 

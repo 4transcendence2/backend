@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, ManyToOne, ManyToMany, JoinTable, OneToMany, JoinColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, ManyToMany, OneToMany } from "typeorm";
 import { RoomStatus } from "../chat.room.status";
 import { User } from "src/user/entity/user.entity";
 import { ChatRoomUser } from "./chat.room.user.entity";

@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Socket, Server } from 'socket.io';
+import { Socket } from 'socket.io';
 import { Repository } from 'typeorm';
 import { GameRoom } from './entity/game.room.entity';
 import { GameRoomUser } from './entity/game.room.user.entity';
@@ -46,7 +46,6 @@ interface status {
 	bluePaddleWidth: number,
 	bluePaddleHeight: number,
 	blueScore: number,
-	// spectator: string[],
 };
 
 interface invitation {
@@ -272,10 +271,6 @@ export class GameService {
 	}
 
 	async acceptGame(client: Socket, body: any) {
-		// client.emit('acceptGameResult', {
-		// 	username: body.username,
-		// 	status: 'approved',
-		// });
 		const invitation = this.invitationList.find(elem => elem.from = body.username);
 		invitation.status = 'accept';
 		invitation.toClient = client;
@@ -360,9 +355,6 @@ export class GameService {
 			role: Role.SPECTATOR
 		});
 		await this.gameRoomUserRepository.save(newGmaeRoomUser); 
-
-		// const room = this.rooms.find(elem => elem.roomId === game.id);
-		// room.spectator.push(user.name);
 		this.updateSpectator(game.id, client);
 	}
 

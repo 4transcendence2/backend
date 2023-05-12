@@ -1,10 +1,9 @@
-import { Body, Controller, Get, Param, Post, Headers, Res, Request, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Inject, forwardRef } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res, Request, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Inject, forwardRef } from '@nestjs/common';
 import { CreateUserDto } from './dto/user.create.dto';
 import { UserService } from './user.service';
 import { UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { TempJwtGuard } from 'src/auth/temp_jwt/tempJwt.guard';
 import { AuthService } from 'src/auth/auth.service';
 import { join } from 'path';
 import { SignupJwtGuard } from 'src/auth/signup_jwt/signupJwt.guard';

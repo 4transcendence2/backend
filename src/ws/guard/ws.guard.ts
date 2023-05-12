@@ -9,6 +9,7 @@ import { Type } from "../ws.type";
 import { Rule } from "src/game/game.rule";
 import { GameService } from "src/game/game.service";
 import { DmService } from "src/dm/dm.service";
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class LoginGuard implements CanActivate {
@@ -132,7 +133,8 @@ export class JoinChatRoomGuard implements CanActivate {
 
 			// 비번방인데 비번을 확인
 			if (room.status === RoomStatus.PROTECTED) {
-				if (room.password !== body.password) {
+				const result = await bcrypt.compare(body.password, room.password);
+				if (!result) {
 					this.wsService.result('joinChatRoomResult', client, 'warning', '비밀번호가 틀렸습니다.', undefined, body.roomId);
 					return false;
 				}
@@ -1804,7 +1806,7 @@ export class ChangePasswordGuard implements CanActivate {
 		}
 
 
-		// 해당 방으 소유자인지 확인
+		// 해당 방의 소유자인지 확인
 		if (!await this.chatService.isOwner(body.roomId, client)) {
 			this.wsService.result('changePasswordResult', client, 'error', '권한이 없습니다.', undefined, body.roomId);
 			return false;

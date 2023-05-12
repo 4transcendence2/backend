@@ -2,7 +2,7 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Socket, Server } from 'socket.io';
 import { Dm } from './entity/dm.entity';
-import { Repository, LessThan, Equal, Like } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { WsService } from 'src/ws/ws.service';
 import { UserService } from 'src/user/user.service';
@@ -51,9 +51,6 @@ export class DmService {
 			relations: {
 				from: true,
 				to: true,
-				// history: {
-				// 	user: true,
-				// }
 			},
 			where: [
 				{from: user1, to: user2},
@@ -182,37 +179,6 @@ export class DmService {
 		await this.dmUserRepository.remove(dmUser);
 	}
 
-	// async updateDmList(name: string, client: Socket) {
-	// 	const user = await this.userService.findOne(name);
-	// 	const dm = await this.findAll(user);
-	// 	const list: {
-	// 		username: string,
-	// 		content: string,
-	// 	} [] = [];
-		
-
-	// 	for (let i = 0; i < dm.length; ++i) {
-	// 		if (dm[i].history.length === 0) continue;
-	// 		const history = await this.dmHistoryRepository.findOne({
-	// 			where: {
-	// 				dm: dm[i],
-	// 			},
-	// 			order: {
-	// 				time: 'DESC'
-	// 			},
-	// 		})
-	// 		list.push({
-	// 			username: dm[i].from.name === user.name ? dm[i].to.name : dm[i].from.name,
-	// 			content: history !== null ? history.content : undefined,
-	// 		});
-	// 	}
-
-	// 	client.emit('message', {
-	// 		type: 'dmList',
-	// 		list: list,
-	// 	});
-	// }
-
 	async sendList(user: User, res: any) {
 		const dmUsers = await this.findAllDmUser(user);
 		const list: {
@@ -284,37 +250,6 @@ export class DmService {
 			type: 'history',
 			list: list,
 		});
-
-
-
 	}
-
-	// async sendHistory(user1: User, user2: User, res: any) {
-	// 	const dm = await this.findOne(user1, user2);
-	// 	const history = await this.dmHistoryRepository.find({
-	// 		where: {
-	// 			dm: dm,
-	// 		},
-	// 		relations: {
-	// 			user: true,
-	// 		}
-	// 	})
-
-	// 	const list: {
-	// 		from: string,
-	// 		content: string,
-	// 	}[] = [];
-
-	// 	for (const elem of history) {
-	// 		list.push({
-	// 			from: elem.user.name,
-	// 			content: elem.content,
-	// 		})
-	// 	};
-
-	// 	return res.json({
-	// 		list: list,
-	// 	})
-	// }
 }
 

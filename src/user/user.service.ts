@@ -1,4 +1,4 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { HttpException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
@@ -33,7 +33,7 @@ export class UserService {
 		@Inject(forwardRef(() => ChatService))
 		private chatService: ChatService,
 
-	) {}
+	) { }
 
 
 
@@ -42,7 +42,7 @@ export class UserService {
 
 
 
-	
+
 
 	async findAll(): Promise<User[]> {
 		return await this.usersRepository.find();
@@ -60,7 +60,7 @@ export class UserService {
 			}
 		});
 	}
-	
+
 	async findOneByIntra(intra: string): Promise<User> {
 		return await this.usersRepository.findOne({
 			where: {
@@ -96,7 +96,7 @@ export class UserService {
 			rule: string,
 		}[] = [];
 
-		for(const history of gameHistory) {
+		for (const history of gameHistory) {
 			list.push({
 				id: history.id,
 				red: history.red.name,
@@ -109,9 +109,9 @@ export class UserService {
 		}
 
 		let achievement: string[] = [];
-		if (user.win3)	achievement.push('win3');
-		if (user.win5)	achievement.push('win5');
-		if (user.win10)	achievement.push('win10');
+		if (user.win3) achievement.push('win3');
+		if (user.win5) achievement.push('win5');
+		if (user.win10) achievement.push('win10');
 
 		return ({
 			"username": user.name,
@@ -126,9 +126,14 @@ export class UserService {
 	}
 
 	async createUser(intraId: string, username: string) {
-		// const hashedPassword = await bcrypt.hash(userInfo.password, parseInt(process.env.HASH_KEY));
-		const defaultAvatar = await fs.readFileSync(join(__dirname, '../..', 'public', 'default.png'), (err) => {
-			if (err) console.log(err, "기본 아바타 파일 이상");
+		const defaultAvatar = await fs.readFileSync(join(__dirname, '../..', 'public', 'default.png'), (err: any) => {
+			if (err) {
+				console.error(err.message, "기본 아바타 파일 이상");
+				throw new HttpException({
+					status: 'error',
+					detail: 'Default Avatar file is sick. Check with server.',
+				}, 500);
+			}
 		});
 		const newUser: User = this.usersRepository.create({
 			name: username,
@@ -203,7 +208,7 @@ export class UserService {
 				}
 			}
 		} catch (err) {
-			console.log(err);
+			console.error(err.message);
 		}
 	}
 
@@ -287,11 +292,11 @@ export class UserService {
 			if (user.win >= 3) {
 				user.win3 = true;
 			}
-	
+
 			if (user.win >= 5) {
 				user.win5 = true;
 			}
-	
+
 			if (user.win >= 10) {
 				user.win10 = true;
 			}
@@ -305,7 +310,7 @@ export class UserService {
 		user.lose++;
 		await this.usersRepository.save(user);
 	}
-	
+
 	async plus(name: string) {
 		const user = await this.findOne(name);
 		user.rating += 20;
@@ -343,6 +348,6 @@ export class UserService {
 			await this.usersRepository.save(newUser);
 		}
 	}
-	
+
 
 }

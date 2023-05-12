@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Inject, Param, Res, Response, UseGuards, forwardRef } from '@nestjs/common';
+import { Controller, Get, Headers, Inject, Response, UseGuards, forwardRef } from '@nestjs/common';
 import { SendListGuard } from './dm.guard';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
