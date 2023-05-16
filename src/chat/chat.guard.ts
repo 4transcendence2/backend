@@ -1,6 +1,5 @@
 import { CanActivate, ExecutionContext, HttpException, Inject, Injectable, forwardRef } from "@nestjs/common";
 import { AuthService } from "src/auth/auth.service";
-import { UserService } from "src/user/user.service";
 import { WsService } from "src/ws/ws.service";
 import { ChatService } from "./chat.service";
 require('dotenv').config();

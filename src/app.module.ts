@@ -7,9 +7,7 @@ import { WsModule } from './ws/ws.module';
 import { GameModule } from './game/game.module';
 import { TempJwtModule } from './auth/temp_jwt/tempJwt.module';
 import { SignupJwtModule } from './auth/signup_jwt/signupJwt.module';
-import { MulterModule } from '@nestjs/platform-express';
 import { DmModule } from './dm/dm.module';
-require('dotenv').config();
 
 
 
@@ -37,9 +35,6 @@ require('dotenv').config();
 		WsModule,
 		GameModule,
 		DmModule
-		// MulterModule.register({
-		// 	dest: join(__dirname, '..', 'public', 'avatar')
-		// }),
 	],
 	controllers: [],
 	providers: [],

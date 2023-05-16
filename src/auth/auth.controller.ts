@@ -6,7 +6,6 @@ import { OtpDto } from './dto/otp.dto';
 import { TempJwtGuard } from './temp_jwt/tempJwt.guard';
 import { UserService } from 'src/user/user.service';
 import { JwtGuard } from './jwt.guard';
-require('dotenv').config();
 
 @Controller('auth')
 export class AuthController {

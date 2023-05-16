@@ -9,7 +9,6 @@ import { JwtStrategy } from './jwt.strategy';
 import { TempJwtModule } from './temp_jwt/tempJwt.module';
 import { SignupJwtModule } from './signup_jwt/signupJwt.module';
 import { WsModule } from 'src/ws/ws.module';
-require('dotenv').config();
 
 @Module({
 	imports: [

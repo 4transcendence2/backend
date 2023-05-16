@@ -1,5 +1,4 @@
 import { CanActivate, ExecutionContext, Inject, Injectable, forwardRef } from "@nestjs/common";
-import { Observable } from "rxjs";
 import { AuthService } from "src/auth/auth.service";
 
 @Injectable()

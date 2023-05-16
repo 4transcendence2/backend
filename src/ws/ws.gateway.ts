@@ -8,7 +8,6 @@ import { TokenGuard } from "./guard/ws.token.guard";
 import { AcceptGameGuard, AddFriendGuard, AppointAdminGuard, BanGuard, BlockGuard, CancleSearchGuard, ChangePasswordGuard, ChatGuard, CreateChatRoomGuard, DeclineGameGuard, DismissAdminGuard, DmGuard, ExitChatRoomGuard, ExitDmGuard, ExitGameRoomGuard, InviteChatGuard, InviteGameGuard, JoinChatRoomGuard, JoinGameRoomGuard, KickGuard, LoginGuard, MuteGuard, RemoveFriendGuard, RemovePasswordGuard, SearchGameGuard, SetPasswordGuard, SubscribeGuard, UnbanGuard, UnblockGuard, UnsubscribeGuard } from "./guard/ws.guard";
 import { DmService } from "src/dm/dm.service";
 import { GameService } from "src/game/game.service";
-require('dotenv').config();
 
 @WebSocketGateway({
 	cors: { origin: '*' },
